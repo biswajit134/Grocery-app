@@ -56,6 +56,13 @@ function App() {
         headers: { Authorization: `Bearer ${authToken}` }
       });
       if (res.ok) {
+        // Read auto-refreshed token from response headers if present
+        const refreshedToken = res.headers.get('X-New-Token');
+        if (refreshedToken) {
+          setToken(refreshedToken);
+          localStorage.setItem('vendorToken', refreshedToken);
+        }
+
         const data = await res.json();
         if (data.role !== 'vendor') {
           setErrorMsg('Access denied. This portal is for vendors only.');
@@ -64,7 +71,7 @@ function App() {
         }
         setVendorUser(data);
         if (data.isApproved) {
-          fetchProducts(data._id, authToken);
+          fetchProducts(data._id, refreshedToken || authToken);
         }
       } else {
         handleLogout();

@@ -209,6 +209,17 @@ app.get('/api/auth/me', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Check if the approval status in token is different from DB
+    if (decoded.isApproved !== user.isApproved) {
+      const newToken = jwt.sign(
+        { id: user._id, username: user.username, role: user.role, isApproved: user.isApproved },
+        JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+      res.setHeader('X-New-Token', newToken);
+      res.setHeader('Access-Control-Expose-Headers', 'X-New-Token');
+    }
+
     res.json(user);
   } catch (error) {
     console.error('Verify token error:', error);
