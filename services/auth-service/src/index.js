@@ -77,14 +77,14 @@ app.post('/api/auth/register', async (req, res) => {
       name,
       phone: phone || '',
       address: address || '',
-      role: (role === 'driver' || role === 'user') ? role : 'user'
+      role: (role === 'driver' || role === 'vendor' || role === 'user') ? role : 'user'
     });
 
     await newUser.save();
 
     // Create JWT Token
     const token = jwt.sign(
-      { id: newUser._id, username: newUser.username, role: newUser.role },
+      { id: newUser._id, username: newUser.username, role: newUser.role, isApproved: newUser.isApproved },
       JWT_SECRET,
       { expiresIn: '24h' }
     );
@@ -98,7 +98,8 @@ app.post('/api/auth/register', async (req, res) => {
         name: newUser.name,
         role: newUser.role,
         phone: newUser.phone,
-        address: newUser.address
+        address: newUser.address,
+        isApproved: newUser.isApproved
       }
     });
 
@@ -167,7 +168,7 @@ app.post('/api/auth/login', async (req, res) => {
 
     // Create JWT Token
     const token = jwt.sign(
-      { id: user._id, username: user.username, role: user.role },
+      { id: user._id, username: user.username, role: user.role, isApproved: user.isApproved },
       JWT_SECRET,
       { expiresIn: '24h' }
     );
@@ -181,7 +182,8 @@ app.post('/api/auth/login', async (req, res) => {
         name: user.name,
         role: user.role,
         phone: user.phone,
-        address: user.address
+        address: user.address,
+        isApproved: user.isApproved
       }
     });
 
@@ -232,6 +234,59 @@ app.get('/api/auth/drivers', async (req, res) => {
     res.json(drivers);
   } catch (error) {
     console.error('Fetch drivers error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// 6. Get registered vendors (Admin only)
+app.get('/api/auth/vendors', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'No token, authorization denied' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied. Admins only.' });
+    }
+
+    const vendors = await User.find({ role: 'vendor' }).select('-password');
+    res.json(vendors);
+  } catch (error) {
+    console.error('Fetch vendors error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// 7. Approve vendor account (Admin only)
+app.put('/api/auth/vendors/:id/approve', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'No token, authorization denied' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied. Admins only.' });
+    }
+
+    const vendor = await User.findOneAndUpdate(
+      { _id: req.params.id, role: 'vendor' },
+      { $set: { isApproved: true } },
+      { new: true }
+    ).select('-password');
+
+    if (!vendor) {
+      return res.status(404).json({ message: 'Vendor not found' });
+    }
+
+    res.json(vendor);
+  } catch (error) {
+    console.error('Approve vendor error:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });

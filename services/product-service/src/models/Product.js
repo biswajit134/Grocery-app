@@ -42,6 +42,14 @@ const ProductSchema = new mongoose.Schema({
     protein: { type: String, default: 'N/A' },
     carbs: { type: String, default: 'N/A' }
   },
+  vendorId: {
+    type: String,
+    default: null
+  },
+  vendorName: {
+    type: String,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now

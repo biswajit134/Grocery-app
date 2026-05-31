@@ -79,6 +79,17 @@ services:
     networks:
       - grocery-network
 
+  vendor:
+    build: ./vendor
+    container_name: grocery-vendor
+    ports:
+      - "3002:3002"
+    depends_on:
+      - auth-service
+      - product-service
+    networks:
+      - grocery-network
+
 volumes:
   mongodb_data:
   redis_data:

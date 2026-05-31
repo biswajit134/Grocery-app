@@ -4,6 +4,28 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const redis = require('redis');
 const Product = require('./models/Product');
+const jwt = require('jsonwebtoken');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwtkeyforgroceryhub';
+
+// Auth Middleware
+const authMiddleware = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'No token, authorization denied' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    console.error('Auth middleware error in Product Service:', error.message);
+    res.status(401).json({ message: 'Token is not valid' });
+  }
+};
+
 
 const app = express();
 const PORT = process.env.PORT || 5002;
@@ -270,12 +292,12 @@ app.get('/health', (req, res) => {
 // 2. Get all products (with category filter and caching)
 app.get('/api/products', async (req, res) => {
   try {
-    const { category, search } = req.query;
+    const { category, search, vendorId } = req.query;
     
-    // Caching is active ONLY if Redis is connected and we are not doing a text search
+    // Caching is active ONLY if Redis is connected and we are not doing a text search or filtering by vendor
     const cacheKey = category ? `products:category:${category}` : 'products:all';
     
-    if (redisConnected && !search) {
+    if (redisConnected && !search && !vendorId) {
       const cachedData = await redisClient.get(cacheKey);
       if (cachedData) {
         console.log(`Cache hit for key: ${cacheKey}`);
@@ -291,11 +313,14 @@ app.get('/api/products', async (req, res) => {
     if (search) {
       query.name = { $regex: search, $options: 'i' };
     }
+    if (vendorId) {
+      query.vendorId = vendorId;
+    }
 
     const products = await Product.find(query).sort({ createdAt: -1 });
 
-    // Cache results if Redis is connected and this isn't a search query
-    if (redisConnected && !search) {
+    // Cache results if Redis is connected and this isn't a search or vendor query
+    if (redisConnected && !search && !vendorId) {
       await redisClient.set(cacheKey, JSON.stringify(products), { EX: 3600 }); // Cache for 1 hour
       console.log(`Cache miss. Set cache for key: ${cacheKey}`);
     }
@@ -321,8 +346,8 @@ app.get('/api/products/:id', async (req, res) => {
   }
 });
 
-// 4. Create Product (Admin only check implemented client-side & validated by request body if needed)
-app.post('/api/products', async (req, res) => {
+// 4. Create Product (Admin or Approved Vendor)
+app.post('/api/products', authMiddleware, async (req, res) => {
   try {
     const { name, category, price, unit, image, stock, description, rating, nutrition } = req.body;
 
@@ -330,7 +355,17 @@ app.post('/api/products', async (req, res) => {
       return res.status(400).json({ message: 'Please enter all required fields' });
     }
 
-    const newProduct = new Product({
+    // Enforce role authorization
+    if (req.user.role !== 'admin' && req.user.role !== 'vendor') {
+      return res.status(403).json({ message: 'Access denied. Authorized users only.' });
+    }
+
+    // Enforce vendor approval
+    if (req.user.role === 'vendor' && !req.user.isApproved) {
+      return res.status(403).json({ message: 'Access denied. Vendor account is pending admin verification.' });
+    }
+
+    const productPayload = {
       name,
       category,
       price,
@@ -340,8 +375,17 @@ app.post('/api/products', async (req, res) => {
       description,
       rating: rating || 4.5,
       nutrition: nutrition || { calories: 'N/A', protein: 'N/A', carbs: 'N/A' }
-    });
+    };
 
+    if (req.user.role === 'vendor') {
+      productPayload.vendorId = req.user.id;
+      productPayload.vendorName = req.user.username;
+    } else {
+      productPayload.vendorId = req.body.vendorId || null;
+      productPayload.vendorName = req.body.vendorName || null;
+    }
+
+    const newProduct = new Product(productPayload);
     await newProduct.save();
     
     // Invalidate Redis cache
@@ -354,18 +398,34 @@ app.post('/api/products', async (req, res) => {
   }
 });
 
-// 5. Update Product (Admin only)
-app.put('/api/products/:id', async (req, res) => {
+// 5. Update Product (Admin or Product Owner Vendor)
+app.put('/api/products/:id', authMiddleware, async (req, res) => {
   try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Enforce role authorization
+    if (req.user.role !== 'admin' && req.user.role !== 'vendor') {
+      return res.status(403).json({ message: 'Access denied. Authorized users only.' });
+    }
+
+    // Enforce owner check / approval for vendors
+    if (req.user.role === 'vendor') {
+      if (!req.user.isApproved) {
+        return res.status(403).json({ message: 'Access denied. Vendor account is pending verification.' });
+      }
+      if (product.vendorId !== req.user.id) {
+        return res.status(403).json({ message: 'Access denied. You do not own this product.' });
+      }
+    }
+
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
       { new: true, runValidators: true }
     );
-
-    if (!updatedProduct) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
 
     // Invalidate Redis cache
     await clearProductsCache();
@@ -377,13 +437,30 @@ app.put('/api/products/:id', async (req, res) => {
   }
 });
 
-// 6. Delete Product (Admin only)
-app.delete('/api/products/:id', async (req, res) => {
+// 6. Delete Product (Admin or Product Owner Vendor)
+app.delete('/api/products/:id', authMiddleware, async (req, res) => {
   try {
-    const deletedProduct = await Product.findByIdAndDelete(req.params.id);
-    if (!deletedProduct) {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
+
+    // Enforce role authorization
+    if (req.user.role !== 'admin' && req.user.role !== 'vendor') {
+      return res.status(403).json({ message: 'Access denied. Authorized users only.' });
+    }
+
+    // Enforce owner check / approval for vendors
+    if (req.user.role === 'vendor') {
+      if (!req.user.isApproved) {
+        return res.status(403).json({ message: 'Access denied. Vendor account is pending verification.' });
+      }
+      if (product.vendorId !== req.user.id) {
+        return res.status(403).json({ message: 'Access denied. You do not own this product.' });
+      }
+    }
+
+    await Product.findByIdAndDelete(req.params.id);
 
     // Invalidate Redis cache
     await clearProductsCache();

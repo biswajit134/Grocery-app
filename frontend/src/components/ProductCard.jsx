@@ -102,6 +102,12 @@ export default function ProductCard({ product, onAddToCart, onViewDetails }) {
             {product.name}
           </h3>
 
+          {product.vendorName && (
+            <div style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: '600', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+              🏪 Sold by: {product.vendorName}
+            </div>
+          )}
+
           {/* Description */}
           <p style={{
             fontSize: '0.8rem',

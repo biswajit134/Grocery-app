@@ -21,11 +21,49 @@ export default function AdminDashboard({
   onDeleteProduct, 
   onUpdateOrderStatus 
 }) {
-  const [activeTab, setActiveTab] = useState('products'); // 'products' or 'orders'
+  const [activeTab, setActiveTab] = useState('products'); // 'products', 'orders', or 'vendors'
   const [editingProduct, setEditingProduct] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [drivers, setDrivers] = useState([]);
+  const [vendors, setVendors] = useState([]);
   
+  const fetchVendors = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      const res = await fetch('http://localhost:5001/api/auth/vendors', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setVendors(data);
+      }
+    } catch (error) {
+      console.error('Error fetching vendors in admin dashboard:', error);
+    }
+  };
+
+  const handleApproveVendor = async (vendorId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:5001/api/auth/vendors/${vendorId}/approve`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        fetchVendors();
+      } else {
+        const err = await res.json();
+        alert(err.message || 'Approval failed');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   React.useEffect(() => {
     const fetchDrivers = async () => {
       try {
@@ -44,6 +82,8 @@ export default function AdminDashboard({
     };
     if (activeTab === 'orders') {
       fetchDrivers();
+    } else if (activeTab === 'vendors') {
+      fetchVendors();
     }
   }, [activeTab]);
 
@@ -263,6 +303,20 @@ export default function AdminDashboard({
             }}
           >
             Manage Orders ({totalOrders})
+          </button>
+          <button
+            onClick={() => setActiveTab('vendors')}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '8px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              backgroundColor: activeTab === 'vendors' ? 'var(--primary)' : 'transparent',
+              color: activeTab === 'vendors' ? '#fff' : 'var(--text-secondary)',
+              transition: 'all 0.2s'
+            }}
+          >
+            Manage Vendors ({vendors.length})
           </button>
         </div>
 
@@ -529,6 +583,87 @@ export default function AdminDashboard({
                           )}
                         </td>
 
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* TAB C: Manage Vendors */}
+      {activeTab === 'vendors' && (
+        <div className="glass-panel" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)', backgroundColor: 'rgba(255,255,255,0.01)' }}>
+                  <th style={{ padding: '16px 20px' }}>Vendor Name</th>
+                  <th style={{ padding: '16px 20px' }}>Username</th>
+                  <th style={{ padding: '16px 20px' }}>Contact Email</th>
+                  <th style={{ padding: '16px 20px' }}>Phone Number</th>
+                  <th style={{ padding: '16px 20px' }}>Approval Status</th>
+                  <th style={{ padding: '16px 20px', textAlign: 'right' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {vendors.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                      No vendor accounts have been registered yet.
+                    </td>
+                  </tr>
+                ) : (
+                  vendors.map((vendor) => {
+                    const vendorId = vendor._id?.toString() || vendor.id?.toString() || '';
+                    return (
+                      <tr key={vendorId} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background-color 0.2s' }} className="table-row-hover">
+                        <td style={{ padding: '16px 20px', fontWeight: '600' }}>
+                          {vendor.name}
+                        </td>
+                        <td style={{ padding: '16px 20px' }}>
+                          {vendor.username}
+                        </td>
+                        <td style={{ padding: '16px 20px' }}>
+                          {vendor.email}
+                        </td>
+                        <td style={{ padding: '16px 20px' }}>
+                          {vendor.phone || 'N/A'}
+                        </td>
+                        <td style={{ padding: '16px 20px' }}>
+                          <span style={{
+                            padding: '4px 10px',
+                            borderRadius: '12px',
+                            fontSize: '0.75rem',
+                            fontWeight: '600',
+                            backgroundColor: vendor.isApproved ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                            color: vendor.isApproved ? '#10b981' : '#f59e0b',
+                            display: 'inline-block'
+                          }}>
+                            {vendor.isApproved ? 'Approved' : 'Pending Verification'}
+                          </span>
+                        </td>
+                        <td style={{ padding: '16px 20px', textAlign: 'right' }}>
+                          {!vendor.isApproved ? (
+                            <button
+                              onClick={() => handleApproveVendor(vendorId)}
+                              className="btn btn-primary"
+                              style={{
+                                padding: '6px 12px',
+                                borderRadius: '8px',
+                                fontSize: '0.75rem'
+                              }}
+                            >
+                              Approve Request
+                            </button>
+                          ) : (
+                            <span style={{ color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.75rem' }}>
+                              ✓ Verified Partner
+                            </span>
+                          )}
+                        </td>
                       </tr>
                     );
                   })
