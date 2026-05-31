@@ -345,9 +345,6 @@ function App() {
 
   return (
     <div className="app-container">
-      {/* Immersive Floating Background Orbs */}
-      <div className="background-orb orb-1"></div>
-      <div className="background-orb orb-2"></div>
       
       {/* IMMERSIVE SIDEBAR NAVBAR */}
       <Header 
