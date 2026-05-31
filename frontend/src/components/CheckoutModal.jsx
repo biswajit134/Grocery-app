@@ -33,6 +33,9 @@ export default function CheckoutModal({ isOpen, onClose, cartItems, currentUser,
   const shipping = subtotal > 30 ? 0 : 4.99;
   const totalAmount = Math.max(0, subtotal + tax + shipping - discountAmount);
 
+  // Check if vendor/driver is pending approval
+  const isPendingApproval = (currentUser?.role === 'vendor' || currentUser?.role === 'driver') && !currentUser?.isApproved;
+
   // Validate Coupon Code
   const handleValidateCoupon = async () => {
     if (!couponCode) return;
@@ -260,6 +263,20 @@ Thank you for shopping at GroceryHub!
 
           {/* Modal Content */}
           <div style={{ padding: '24px', overflowY: 'auto', flexGrow: 1 }}>
+            {isPendingApproval && (
+              <div style={{
+                backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                border: '1px solid rgba(239, 68, 68, 0.2)',
+                borderRadius: '12px',
+                padding: '12px',
+                fontSize: '0.85rem',
+                color: 'var(--danger)',
+                marginBottom: '16px',
+                textAlign: 'center'
+              }}>
+                Your account is pending administrator approval. Placing orders is restricted.
+              </div>
+            )}
             
             {/* STEP 1: Delivery Details */}
             {step === 1 && (
@@ -435,16 +452,19 @@ Thank you for shopping at GroceryHub!
 
                 <button
                   type="submit"
+                  disabled={isPendingApproval}
                   className="btn btn-primary"
                   style={{
                     width: '100%',
                     padding: '12px',
                     borderRadius: '10px',
                     fontSize: '0.95rem',
-                    marginTop: '10px'
+                    marginTop: '10px',
+                    opacity: isPendingApproval ? 0.6 : 1,
+                    cursor: isPendingApproval ? 'not-allowed' : 'pointer'
                   }}
                 >
-                  Continue to Payment <ArrowRight size={16} />
+                  {isPendingApproval ? 'Admin Approval Pending' : <>Continue to Payment <ArrowRight size={16} /></>}
                 </button>
               </form>
             )}
@@ -703,10 +723,17 @@ Thank you for shopping at GroceryHub!
                   </button>
                   <button
                     type="submit"
+                    disabled={isPendingApproval}
                     className="btn btn-primary"
-                    style={{ flex: 2, padding: '12px' }}
+                    style={{ 
+                      flex: 2, 
+                      padding: '12px',
+                      opacity: isPendingApproval ? 0.6 : 1,
+                      cursor: isPendingApproval ? 'not-allowed' : 'pointer',
+                      backgroundColor: isPendingApproval ? 'var(--text-muted)' : 'var(--primary)'
+                    }}
                   >
-                    Place Order — ${totalAmount.toFixed(2)}
+                    {isPendingApproval ? 'Admin Approval Pending' : `Place Order — $${totalAmount.toFixed(2)}`}
                   </button>
                 </div>
 
