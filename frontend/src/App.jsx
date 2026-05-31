@@ -18,7 +18,8 @@ import {
   Truck,
   Heart,
   Download,
-  Navigation
+  Navigation,
+  Star
 } from 'lucide-react';
 
 const AUTH_URL = import.meta.env.VITE_AUTH_URL || 'http://localhost:5001/api/auth';
