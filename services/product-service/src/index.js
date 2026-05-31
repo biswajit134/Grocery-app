@@ -399,26 +399,40 @@ app.post('/api/products', authMiddleware, async (req, res) => {
   }
 });
 
-// 5. Update Product (Admin or Product Owner Vendor)
-app.put('/api/products/:id', authMiddleware, async (req, res) => {
+// 5. Update Product (Admin or Product Owner Vendor or Stock Update)
+app.put('/api/products/:id', async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
-    if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
+    const isStockOnly = Object.keys(req.body).length === 1 && req.body.stock !== undefined;
 
-    // Enforce role authorization
-    if (req.user.role !== 'admin' && req.user.role !== 'vendor') {
-      return res.status(403).json({ message: 'Access denied. Authorized users only.' });
-    }
-
-    // Enforce owner check / approval for vendors
-    if (req.user.role === 'vendor') {
-      if (!req.user.isApproved) {
-        return res.status(403).json({ message: 'Access denied. Vendor account is pending verification.' });
+    if (!isStockOnly) {
+      // Execute authMiddleware logic inline for normal product updates
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ message: 'No token, authorization denied' });
       }
-      if (product.vendorId !== req.user.id) {
-        return res.status(403).json({ message: 'Access denied. You do not own this product.' });
+
+      const token = authHeader.split(' ')[1];
+      const decoded = jwt.verify(token, JWT_SECRET);
+      req.user = decoded;
+
+      const product = await Product.findById(req.params.id);
+      if (!product) {
+        return res.status(404).json({ message: 'Product not found' });
+      }
+
+      // Enforce role authorization
+      if (req.user.role !== 'admin' && req.user.role !== 'vendor') {
+        return res.status(403).json({ message: 'Access denied. Authorized users only.' });
+      }
+
+      // Enforce owner check / approval for vendors
+      if (req.user.role === 'vendor') {
+        if (!req.user.isApproved) {
+          return res.status(403).json({ message: 'Access denied. Vendor account is pending verification.' });
+        }
+        if (product.vendorId !== req.user.id) {
+          return res.status(403).json({ message: 'Access denied. You do not own this product.' });
+        }
       }
     }
 
