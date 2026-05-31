@@ -349,7 +349,7 @@ app.get('/api/products/:id', async (req, res) => {
 // 4. Create Product (Admin or Approved Vendor)
 app.post('/api/products', authMiddleware, async (req, res) => {
   try {
-    const { name, category, price, unit, image, stock, description, rating, nutrition } = req.body;
+    const { name, category, price, unit, image, stock, description, rating, nutrition, discountPrice } = req.body;
 
     if (!name || !category || !price || !unit || !image || !description) {
       return res.status(400).json({ message: 'Please enter all required fields' });
@@ -374,7 +374,8 @@ app.post('/api/products', authMiddleware, async (req, res) => {
       stock: stock || 0,
       description,
       rating: rating || 4.5,
-      nutrition: nutrition || { calories: 'N/A', protein: 'N/A', carbs: 'N/A' }
+      nutrition: nutrition || { calories: 'N/A', protein: 'N/A', carbs: 'N/A' },
+      discountPrice: discountPrice !== undefined ? discountPrice : null
     };
 
     if (req.user.role === 'vendor') {

@@ -63,6 +63,14 @@ const OrderSchema = new mongoose.Schema({
     enum: ['Pending Assignment', 'Accepted', 'Picked Up', 'Delivered'],
     default: 'Pending Assignment'
   },
+  couponCode: {
+    type: String,
+    default: null
+  },
+  discountAmount: {
+    type: Number,
+    default: 0
+  },
   createdAt: {
     type: Date,
     default: Date.now

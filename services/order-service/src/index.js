@@ -5,6 +5,8 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
 const Order = require('./models/Order');
+const Coupon = require('./models/Coupon');
+
 
 const app = express();
 const PORT = process.env.PORT || 5003;
@@ -57,7 +59,7 @@ app.get('/health', (req, res) => {
 // 2. Create Order (requires authentication)
 app.post('/api/orders', authMiddleware, async (req, res) => {
   try {
-    const { shippingDetails, items, paymentMethod, totalAmount } = req.body;
+    const { shippingDetails, items, paymentMethod, totalAmount, couponCode } = req.body;
 
     if (!shippingDetails || !items || items.length === 0 || !paymentMethod || !totalAmount) {
       return res.status(400).json({ message: 'Please provide all details' });
@@ -90,10 +92,13 @@ app.post('/api/orders', authMiddleware, async (req, res) => {
           stock: newStock
         });
 
+        // Use discountPrice if active
+        const unitPrice = (product.discountPrice !== null && product.discountPrice !== undefined) ? product.discountPrice : product.price;
+
         updatedItems.push({
           productId: item.productId,
           name: item.name,
-          price: item.price,
+          price: unitPrice,
           quantity: item.quantity,
           unit: item.unit,
           image: item.image
@@ -107,6 +112,34 @@ app.post('/api/orders', authMiddleware, async (req, res) => {
       }
     }
 
+    // Calculate subtotal
+    let subtotal = 0;
+    for (const item of updatedItems) {
+      subtotal += item.price * item.quantity;
+    }
+
+    // Apply coupon if valid
+    let discountAmount = 0;
+    let appliedCouponCode = null;
+    if (couponCode) {
+      const coupon = await Coupon.findOne({ code: couponCode.toUpperCase(), isActive: true });
+      if (!coupon) {
+        return res.status(400).json({ message: 'Invalid or expired coupon code' });
+      }
+      if (subtotal < coupon.minOrderAmount) {
+        return res.status(400).json({ message: `Minimum order amount of $${coupon.minOrderAmount} required for coupon ${coupon.code}` });
+      }
+      if (coupon.discountType === 'percent') {
+        discountAmount = (subtotal * coupon.discountValue) / 100;
+      } else {
+        discountAmount = coupon.discountValue;
+      }
+      discountAmount = Math.min(discountAmount, subtotal);
+      appliedCouponCode = coupon.code;
+    }
+
+    const finalTotal = subtotal - discountAmount;
+
     // Step 2b: Create Order
     const newOrder = new Order({
       userId: req.user.id,
@@ -114,7 +147,9 @@ app.post('/api/orders', authMiddleware, async (req, res) => {
       customerEmail: req.user.email || `${req.user.username}@groceryhub.com`,
       shippingDetails,
       items: updatedItems,
-      totalAmount,
+      totalAmount: finalTotal,
+      couponCode: appliedCouponCode,
+      discountAmount,
       paymentMethod,
       paymentStatus: paymentMethod === 'card' ? 'Paid' : 'Pending',
       status: 'Pending'
@@ -275,6 +310,92 @@ app.put('/api/orders/:id/driver-status', authMiddleware, async (req, res) => {
     res.json(order);
   } catch (error) {
     console.error('Update driver status error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// 9. Get all coupons (Admin only)
+app.get('/api/orders/coupons', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const coupons = await Coupon.find().sort({ createdAt: -1 });
+    res.json(coupons);
+  } catch (error) {
+    console.error('Get coupons error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// 10. Create new coupon (Admin only)
+app.post('/api/orders/coupons', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { code, discountType, discountValue, minOrderAmount, isActive } = req.body;
+    if (!code || discountValue === undefined) {
+      return res.status(400).json({ message: 'Coupon code and discount value are required' });
+    }
+    const existing = await Coupon.findOne({ code: code.toUpperCase() });
+    if (existing) {
+      return res.status(400).json({ message: 'Coupon code already exists' });
+    }
+    const coupon = new Coupon({
+      code: code.toUpperCase(),
+      discountType,
+      discountValue,
+      minOrderAmount: minOrderAmount || 0,
+      isActive: isActive !== undefined ? isActive : true
+    });
+    await coupon.save();
+    res.status(201).json(coupon);
+  } catch (error) {
+    console.error('Create coupon error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// 11. Delete coupon (Admin only)
+app.delete('/api/orders/coupons/:id', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const coupon = await Coupon.findByIdAndDelete(req.params.id);
+    if (!coupon) {
+      return res.status(404).json({ message: 'Coupon not found' });
+    }
+    res.json({ message: 'Coupon deleted successfully' });
+  } catch (error) {
+    console.error('Delete coupon error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// 12. Validate coupon (Public/Customer)
+app.post('/api/orders/coupons/validate', authMiddleware, async (req, res) => {
+  try {
+    const { code, orderAmount } = req.body;
+    if (!code || orderAmount === undefined) {
+      return res.status(400).json({ message: 'Coupon code and order amount are required' });
+    }
+    const coupon = await Coupon.findOne({ code: code.toUpperCase(), isActive: true });
+    if (!coupon) {
+      return res.status(400).json({ valid: false, message: 'Invalid or expired coupon code' });
+    }
+    if (orderAmount < coupon.minOrderAmount) {
+      return res.status(400).json({ valid: false, message: `Minimum order amount of $${coupon.minOrderAmount} required` });
+    }
+    let discountAmount = 0;
+    if (coupon.discountType === 'percent') {
+      discountAmount = (orderAmount * coupon.discountValue) / 100;
+    } else {
+      discountAmount = coupon.discountValue;
+    }
+    discountAmount = Math.min(discountAmount, orderAmount);
+    res.json({
+      valid: true,
+      couponCode: coupon.code,
+      discountType: coupon.discountType,
+      discountValue: coupon.discountValue,
+      discountAmount,
+      finalAmount: orderAmount - discountAmount
+    });
+  } catch (error) {
+    console.error('Validate coupon error:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });

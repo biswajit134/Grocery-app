@@ -21,11 +21,46 @@ export default function CheckoutModal({ isOpen, onClose, cartItems, currentUser,
   const [cardName, setCardName] = useState('');
   const [cardFlipped, setCardFlipped] = useState(false);
 
+  // Coupon States
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [couponMsg, setCouponMsg] = useState({ type: '', text: '' });
+
   // Calculate order totals
   const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const tax = subtotal * 0.08;
   const shipping = subtotal > 30 ? 0 : 4.99;
-  const totalAmount = subtotal + tax + shipping;
+  const totalAmount = Math.max(0, subtotal + tax + shipping - discountAmount);
+
+  // Validate Coupon Code
+  const handleValidateCoupon = async () => {
+    if (!couponCode) return;
+    setCouponMsg({ type: '', text: '' });
+    try {
+      const token = localStorage.getItem('token');
+      const ORDER_URL = import.meta.env.VITE_ORDER_URL || 'http://localhost:5003/api/orders';
+      const res = await fetch(`${ORDER_URL}/coupons/validate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ code: couponCode, orderAmount: subtotal })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Invalid coupon code');
+      }
+      setDiscountAmount(data.discountAmount);
+      setAppliedCoupon(data.couponCode);
+      setCouponMsg({ type: 'success', text: `Coupon ${data.couponCode} applied! Saved $${data.discountAmount.toFixed(2)}` });
+    } catch (err) {
+      setDiscountAmount(0);
+      setAppliedCoupon(null);
+      setCouponMsg({ type: 'error', text: err.message });
+    }
+  };
 
   // Pre-fill delivery details if user logged in
   useEffect(() => {
@@ -97,7 +132,8 @@ export default function CheckoutModal({ isOpen, onClose, cartItems, currentUser,
           image: item.image
         })),
         paymentMethod,
-        totalAmount
+        totalAmount,
+        couponCode: appliedCoupon
       };
 
       const result = await onSubmitOrder(orderData);
@@ -318,6 +354,52 @@ Thank you for shopping at GroceryHub!
                   </div>
                 </div>
 
+                {/* Promo Code Input */}
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px',
+                  marginTop: '4px'
+                }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '500', color: 'var(--text-secondary)' }}>
+                    Have a Coupon Code?
+                  </label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input
+                      type="text"
+                      placeholder="e.g. FRESH20"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      style={{
+                        flex: 1,
+                        backgroundColor: 'var(--bg-secondary)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '10px',
+                        padding: '10px 14px',
+                        fontSize: '0.9rem',
+                        textTransform: 'uppercase'
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleValidateCoupon}
+                      className="btn btn-secondary"
+                      style={{ padding: '10px 16px', borderRadius: '10px', fontSize: '0.9rem' }}
+                    >
+                      Verify Code
+                    </button>
+                  </div>
+                  {couponMsg.text && (
+                    <div style={{ 
+                      fontSize: '0.8rem', 
+                      color: couponMsg.type === 'success' ? 'var(--success)' : 'var(--danger)',
+                      fontWeight: '500'
+                    }}>
+                      {couponMsg.text}
+                    </div>
+                  )}
+                </div>
+
                 {/* Totals snippet */}
                 <div style={{
                   marginTop: '10px',
@@ -326,6 +408,25 @@ Thank you for shopping at GroceryHub!
                   padding: '14px',
                   border: '1px solid var(--border-color)'
                 }}>
+                  <div className="flex-between" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                    <span>Subtotal:</span>
+                    <span>${subtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex-between" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                    <span>Estimated Tax (8%):</span>
+                    <span>${tax.toFixed(2)}</span>
+                  </div>
+                  <div className="flex-between" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                    <span>Shipping:</span>
+                    <span>{shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}</span>
+                  </div>
+                  {discountAmount > 0 && (
+                    <div className="flex-between" style={{ fontSize: '0.85rem', color: 'var(--success)', marginBottom: '6px', fontWeight: '500' }}>
+                      <span>Coupon Discount ({appliedCoupon}):</span>
+                      <span>-${discountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <hr style={{ borderColor: 'var(--border-color)', margin: '8px 0' }} />
                   <div className="flex-between" style={{ fontSize: '0.9rem', fontWeight: '600' }}>
                     <span>Total Bill:</span>
                     <span style={{ color: 'var(--primary)', fontSize: '1.1rem' }}>${totalAmount.toFixed(2)}</span>

@@ -90,6 +90,18 @@ services:
     networks:
       - grocery-network
 
+  admin:
+    build: ./admin
+    container_name: grocery-admin
+    ports:
+      - "3003:3003"
+    depends_on:
+      - auth-service
+      - product-service
+      - order-service
+    networks:
+      - grocery-network
+
 volumes:
   mongodb_data:
   redis_data:

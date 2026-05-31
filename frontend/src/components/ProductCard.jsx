@@ -144,12 +144,30 @@ export default function ProductCard({ product, onAddToCart, onViewDetails }) {
         {/* Footer info (price + button) */}
         <div className="flex-between" style={{ marginTop: 'auto' }}>
           <div>
-            <span style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--primary)' }}>
-              ${product.price.toFixed(2)}
-            </span>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginLeft: '4px' }}>
-              / {product.unit}
-            </span>
+            {product.discountPrice !== null && product.discountPrice !== undefined ? (
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--primary)' }}>
+                    ${product.discountPrice.toFixed(2)}
+                  </span>
+                  <span style={{ fontSize: '0.85rem', textDecoration: 'line-through', color: 'var(--text-muted)' }}>
+                    ${product.price.toFixed(2)}
+                  </span>
+                </div>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                  / {product.unit}
+                </span>
+              </div>
+            ) : (
+              <div>
+                <span style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--primary)' }}>
+                  ${product.price.toFixed(2)}
+                </span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginLeft: '4px' }}>
+                  / {product.unit}
+                </span>
+              </div>
+            )}
           </div>
 
           <div style={{ display: 'flex', gap: '8px' }}>

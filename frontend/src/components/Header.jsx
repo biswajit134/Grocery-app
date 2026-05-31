@@ -134,21 +134,7 @@ export default function Header({
             >
               Shop
             </button>
-            {currentUser && currentUser.role === 'admin' && (
-              <button 
-                onClick={() => setActiveView('admin')} 
-                className="flex-center"
-                style={{
-                  fontWeight: activeView === 'admin' ? '600' : '400',
-                  color: activeView === 'admin' ? 'var(--primary)' : 'var(--text-secondary)',
-                  cursor: 'pointer',
-                  gap: '4px'
-                }}
-              >
-                <Settings size={16} /> Admin
-              </button>
-            )}
-            {currentUser && currentUser.role !== 'admin' && (
+            {currentUser && (
               <button 
                 onClick={() => setActiveView('orders')} 
                 style={{
@@ -399,15 +385,7 @@ export default function Header({
               >
                 Shop Listing
               </button>
-              {currentUser && currentUser.role === 'admin' && (
-                <button 
-                  onClick={() => { setActiveView('admin'); setMobileMenuOpen(false); }}
-                  style={{ textAlign: 'left', fontSize: '1.1rem', color: activeView === 'admin' ? 'var(--primary)' : 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}
-                >
-                  <Settings size={18} /> Admin Dashboard
-                </button>
-              )}
-              {currentUser && currentUser.role !== 'admin' && (
+              {currentUser && (
                 <button 
                   onClick={() => { setActiveView('orders'); setMobileMenuOpen(false); }}
                   style={{ textAlign: 'left', fontSize: '1.1rem', color: activeView === 'orders' ? 'var(--primary)' : 'var(--text-primary)' }}

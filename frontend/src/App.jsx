@@ -5,7 +5,6 @@ import ProductDetailModal from './components/ProductDetailModal';
 import CartDrawer from './components/CartDrawer';
 import AuthModal from './components/AuthModal';
 import CheckoutModal from './components/CheckoutModal';
-import AdminDashboard from './components/AdminDashboard';
 import { 
   Leaf, 
   Sparkles, 
@@ -129,13 +128,11 @@ function App() {
     }
   };
 
-  // API Call: Fetch Orders (User's own or all if Admin)
+  // API Call: Fetch Orders (User's own)
   const fetchOrders = async () => {
     if (!token) return;
     try {
-      const endpoint = currentUser?.role === 'admin' && activeView === 'admin'
-        ? `${ORDER_URL}`
-        : `${ORDER_URL}/my-orders`;
+      const endpoint = `${ORDER_URL}/my-orders`;
 
       const res = await fetch(endpoint, {
         headers: { Authorization: `Bearer ${token}` }
@@ -210,10 +207,11 @@ function App() {
         alert(`Cannot add. Only ${product.stock} units are in stock.`);
         return;
       }
+      const itemPrice = (product.discountPrice !== null && product.discountPrice !== undefined) ? product.discountPrice : product.price;
       setCart([...cart, {
         productId: product._id || product.id,
         name: product.name,
-        price: product.price,
+        price: itemPrice,
         quantity: qty,
         unit: product.unit,
         image: product.image
@@ -280,89 +278,6 @@ function App() {
     fetchOrders();
     
     return completedOrder;
-  };
-
-  // Admin Catalog CRUD Operations
-  const handleAdminAddProduct = async (productData) => {
-    try {
-      const res = await fetch(`${PRODUCT_URL}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(productData)
-      });
-      if (res.ok) {
-        fetchProducts();
-      } else {
-        const errData = await res.json();
-        alert(`Failed to add product: ${errData.message}`);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const handleAdminUpdateProduct = async (prodId, updateData) => {
-    try {
-      const res = await fetch(`${PRODUCT_URL}/${prodId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(updateData)
-      });
-      if (res.ok) {
-        fetchProducts();
-      } else {
-        const errData = await res.json();
-        alert(`Failed to edit product: ${errData.message}`);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const handleAdminDeleteProduct = async (prodId) => {
-    try {
-      const res = await fetch(`${PRODUCT_URL}/${prodId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        fetchProducts();
-      } else {
-        const errData = await res.json();
-        alert(`Failed to delete product: ${errData.message}`);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const handleAdminUpdateOrderStatus = async (orderId, nextStatus) => {
-    try {
-      const res = await fetch(`${ORDER_URL}/${orderId}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ status: nextStatus })
-      });
-      if (res.ok) {
-        fetchOrders();
-        // Refresh catalog since stock or COD status might toggle
-        fetchProducts();
-      } else {
-        const errData = await res.json();
-        alert(`Failed to update order status: ${errData.message}`);
-      }
-    } catch (error) {
-      console.error(error);
-    }
   };
 
   return (
@@ -907,20 +822,6 @@ Thank you for shopping at GroceryHub!
               </div>
             )}
           </div>
-        )}
-
-        {/* VIEW 4: ADMIN DASHBOARD */}
-        {activeView === 'admin' && currentUser?.role === 'admin' && (
-          <AdminDashboard 
-            products={products}
-            orders={orders}
-            onAddProduct={handleAdminAddProduct}
-            onUpdateProduct={handleAdminUpdateProduct}
-            onDeleteProduct={handleAdminDeleteProduct}
-            onUpdateOrderStatus={handleAdminUpdateOrderStatus}
-          />
-        )}
-
       </main>
 
       {/* FOOTER */}
