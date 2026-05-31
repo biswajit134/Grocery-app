@@ -1,0 +1,17 @@
+{
+  "name": "product-service",
+  "version": "1.0.0",
+  "description": "Product catalog microservice for GroceryHub",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "mongoose": "^7.2.1",
+    "redis": "^4.6.7"
+  }
+}

@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: grocery-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - grocery-network
+
+  redis:
+    image: redis:alpine
+    container_name: grocery-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - grocery-network
+
+  auth-service:
+    build: ./services/auth-service
+    container_name: grocery-auth-service
+    ports:
+      - "5001:5001"
+    env_file:
+      - ./services/auth-service/.env
+    depends_on:
+      - mongodb
+    networks:
+      - grocery-network
+
+  product-service:
+    build: ./services/product-service
+    container_name: grocery-product-service
+    ports:
+      - "5002:5002"
+    env_file:
+      - ./services/product-service/.env
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - grocery-network
+
+  order-service:
+    build: ./services/order-service
+    container_name: grocery-order-service
+    ports:
+      - "5003:5003"
+    env_file:
+      - ./services/order-service/.env
+    depends_on:
+      - mongodb
+    networks:
+      - grocery-network
+
+  frontend:
+    build: ./frontend
+    container_name: grocery-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service
+      - product-service
+      - order-service
+    networks:
+      - grocery-network
+
+volumes:
+  mongodb_data:
+  redis_data:
+
+networks:
+  grocery-network:
+    driver: bridge
