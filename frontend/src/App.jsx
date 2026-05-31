@@ -886,7 +886,7 @@ Thank you for shopping at GroceryHub!
             <div>
               <div className="flex-center" style={{ gap: '8px', justifyContent: 'flex-start', marginBottom: '12px' }}>
                 <div style={{
-                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  background: 'linear-gradient(135deg, #ff6b00 0%, #ea580c 100%)',
                   padding: '6px',
                   borderRadius: '8px',
                   color: 'white',

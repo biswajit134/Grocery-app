@@ -52,7 +52,7 @@ export default function Header({
             style={{ gap: '8px', cursor: 'pointer' }}
           >
             <div style={{
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              background: 'linear-gradient(135deg, #ff6b00 0%, #ea580c 100%)',
               padding: '8px',
               borderRadius: '10px',
               color: 'white',
