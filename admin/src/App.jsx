@@ -410,11 +410,11 @@ export default function App() {
 
           <form onSubmit={handleLogin}>
             <div className="form-group">
-              <label>Email Address</label>
+              <label>Username</label>
               <input 
-                type="email" 
+                type="text" 
                 className="form-control" 
-                placeholder="admin@groceryhub.com"
+                placeholder="admin"
                 value={loginEmail} 
                 onChange={(e) => setLoginEmail(e.target.value)} 
                 required 
