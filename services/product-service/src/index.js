@@ -29,7 +29,7 @@ const authMiddleware = (req, res, next) => {
 
 const app = express();
 const PORT = process.env.PORT || 5002;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://root:admin@localhost:27017/grocery_products?authSource=admin';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/grocery_products';
 const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
 
 // Middleware
@@ -61,22 +61,19 @@ let redisConnected = false;
 async function connectDB() {
   const connectionStrings = [
     MONGO_URI,
-    MONGO_URI.replace('mongodb://mongodb:', 'mongodb://localhost:'),
-    MONGO_URI.includes('@') ? `mongodb://${MONGO_URI.split('@')[1].split('?')[0]}` : null,
-    MONGO_URI.includes('@') ? `mongodb://${MONGO_URI.split('@')[1].split('?')[0]}`.replace('mongodb://mongodb:', 'mongodb://localhost:') : null
+    MONGO_URI.replace('mongodb://mongodb:', 'mongodb://localhost:')
   ].filter(Boolean);
 
   let connected = false;
   for (const uri of connectionStrings) {
     try {
-      const sanitizedURI = uri.replace(/:[^@]+@/, ':****@');
-      console.log(`Attempting to connect to MongoDB: ${sanitizedURI}`);
+      console.log(`Attempting to connect to MongoDB: ${uri}`);
       await mongoose.connect(uri, { serverSelectionTimeoutMS: 2000 });
       console.log('Product Service connected to MongoDB successfully!');
       connected = true;
       break;
     } catch (err) {
-      console.warn(`Connection attempt failed for ${uri.split('@')[1] || uri}:`, err.message);
+      console.warn(`Connection attempt failed for ${uri}:`, err.message);
     }
   }
 

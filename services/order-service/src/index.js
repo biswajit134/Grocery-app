@@ -10,7 +10,7 @@ const Coupon = require('./models/Coupon');
 
 const app = express();
 const PORT = process.env.PORT || 5003;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://root:admin@localhost:27017/grocery_orders?authSource=admin';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/grocery_orders';
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwtkeyforgroceryhub';
 const PRODUCT_SERVICE_URL = process.env.PRODUCT_SERVICE_URL || 'http://product-service:5002';
 const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://auth-service:5001';
@@ -23,22 +23,19 @@ app.use(cors());
 async function connectDB() {
   const connectionStrings = [
     MONGO_URI,
-    MONGO_URI.replace('mongodb://mongodb:', 'mongodb://localhost:'),
-    MONGO_URI.includes('@') ? `mongodb://${MONGO_URI.split('@')[1].split('?')[0]}` : null,
-    MONGO_URI.includes('@') ? `mongodb://${MONGO_URI.split('@')[1].split('?')[0]}`.replace('mongodb://mongodb:', 'mongodb://localhost:') : null
+    MONGO_URI.replace('mongodb://mongodb:', 'mongodb://localhost:')
   ].filter(Boolean);
 
   let connected = false;
   for (const uri of connectionStrings) {
     try {
-      const sanitizedURI = uri.replace(/:[^@]+@/, ':****@');
-      console.log(`Attempting to connect to MongoDB: ${sanitizedURI}`);
+      console.log(`Attempting to connect to MongoDB: ${uri}`);
       await mongoose.connect(uri, { serverSelectionTimeoutMS: 2000 });
       console.log('Order Service connected to MongoDB successfully!');
       connected = true;
       break;
     } catch (err) {
-      console.warn(`Connection attempt failed for ${uri.split('@')[1] || uri}:`, err.message);
+      console.warn(`Connection attempt failed for ${uri}:`, err.message);
     }
   }
 
