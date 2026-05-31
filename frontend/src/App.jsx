@@ -1206,9 +1206,9 @@ Thank you for shopping at GroceryHub!
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <span style={{ fontWeight: '700', color: 'var(--text-primary)', marginBottom: '4px' }}>Reach GroceryHub</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem' }}><MapPin size={14} /> Sector 5, Salt Lake, Kolkata, IN</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem' }}><Phone size={14} /> +91 33 2345 6789</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem' }}><Mail size={14} /> support@groceryhub.com</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem' }}><MapPin size={14} /> 19/2 Kalabagan Lane, Howrah- 04,WB</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem' }}><Phone size={14} /> +91 79801 38058</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem' }}><Mail size={14} /> biswajithazra133@gmail.com</div>
             </div>
           </div>
 
