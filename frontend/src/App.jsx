@@ -822,6 +822,7 @@ Thank you for shopping at GroceryHub!
               </div>
             )}
           </div>
+        )}
       </main>
 
       {/* FOOTER */}
