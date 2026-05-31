@@ -150,21 +150,7 @@ export default function AuthModal({ isOpen, onClose, onLogin, onRegister }) {
               </button>
             </div>
 
-            {/* Admin Notice */}
-            {isLoginTab && (
-              <div style={{
-                backgroundColor: 'rgba(245, 158, 11, 0.08)',
-                border: '1px solid rgba(245, 158, 11, 0.2)',
-                borderRadius: '12px',
-                padding: '12px',
-                fontSize: '0.8rem',
-                color: 'var(--accent)',
-                marginBottom: '20px',
-                lineHeight: '1.4'
-              }}>
-                <strong>Admin Testing:</strong> Use username <code>admin</code> and password <code>password100</code> to unlock administrative capabilities.
-              </div>
-            )}
+
 
             {/* Error Message */}
             {error && (
