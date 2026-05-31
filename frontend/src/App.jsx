@@ -473,7 +473,8 @@ function App() {
                     { id: 'vegetables', title: 'Fresh Vegetables', color: '#10b981', img: 'https://images.unsplash.com/photo-1597362925123-77861d3fbac7?auto=format&fit=crop&q=80&w=600', desc: 'Spinach, broccoli, roma tomatoes and carrots.' },
                     { id: 'fruits', title: 'Sweet Fruits', color: '#f59e0b', img: 'https://images.unsplash.com/photo-1619546813926-a78fa6372cd2?auto=format&fit=crop&q=80&w=600', desc: 'Honeycrisp apples, bananas, fresh blueberries.' },
                     { id: 'spices', title: 'Fragrant Spices', color: '#ef4444', img: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&q=80&w=600', desc: 'Earthy turmeric, cardamom, black pepper.' },
-                    { id: 'meat', title: 'Premium Meat', color: '#a855f7', img: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&q=80&w=600', desc: 'Angus ribeye, chicken breast, ground turkey.' }
+                    { id: 'meat', title: 'Premium Meat', color: '#a855f7', img: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&q=80&w=600', desc: 'Angus ribeye, chicken breast, ground turkey.' },
+                    { id: 'bakery', title: 'Oven Fresh Bakery', color: '#d97706', img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80&w=600', desc: 'Artisanal sourdough bread, chocolate croissants, muffins.' }
                   ].map((cat) => (
                     <div 
                       key={cat.id} 
@@ -909,6 +910,7 @@ Thank you for shopping at GroceryHub!
               <button onClick={() => { setSelectedCategory('vegetables'); setActiveView('shop'); }} style={{ textAlign: 'left', cursor: 'pointer', fontSize: '0.85rem' }} className="btn-link">Vegetables</button>
               <button onClick={() => { setSelectedCategory('fruits'); setActiveView('shop'); }} style={{ textAlign: 'left', cursor: 'pointer', fontSize: '0.85rem' }} className="btn-link">Fruits</button>
               <button onClick={() => { setSelectedCategory('meat'); setActiveView('shop'); }} style={{ textAlign: 'left', cursor: 'pointer', fontSize: '0.85rem' }} className="btn-link">Fresh Meat</button>
+              <button onClick={() => { setSelectedCategory('bakery'); setActiveView('shop'); }} style={{ textAlign: 'left', cursor: 'pointer', fontSize: '0.85rem' }} className="btn-link">Bakery</button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>

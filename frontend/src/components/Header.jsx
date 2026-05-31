@@ -23,7 +23,8 @@ export default function Header({
     { id: 'vegetables', label: 'Vegetables' },
     { id: 'fruits', label: 'Fruits' },
     { id: 'spices', label: 'Spices' },
-    { id: 'meat', label: 'Meat' }
+    { id: 'meat', label: 'Meat' },
+    { id: 'bakery', label: 'Bakery' }
   ];
 
   const handleCategoryClick = (catId) => {

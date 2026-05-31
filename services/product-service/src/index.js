@@ -193,6 +193,40 @@ const DEFAULT_PRODUCTS = [
     description: 'Lean ground turkey breast. A great, light alternative for burgers, tacos, and meatballs.',
     rating: 4.5,
     nutrition: { calories: '148 kcal', protein: '22g', carbs: '0g' }
+  },
+  // Bakery
+  {
+    name: 'Artisanal Sourdough Bread',
+    category: 'bakery',
+    price: 4.49,
+    unit: '1 Loaf',
+    image: 'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?auto=format&fit=crop&q=80&w=600',
+    stock: 15,
+    description: 'Freshly baked artisanal sourdough bread with a crispy crust and soft, airy interior. Naturally fermented.',
+    rating: 4.8,
+    nutrition: { calories: '250 kcal', protein: '8g', carbs: '50g' }
+  },
+  {
+    name: 'Chocolate Croissant',
+    category: 'bakery',
+    price: 2.99,
+    unit: '2 Pack',
+    image: 'https://images.unsplash.com/photo-1549778398-f3837243c81d?auto=format&fit=crop&q=80&w=600',
+    stock: 10,
+    description: 'Flaky, buttery French puff pastry rolls filled with rich dark chocolate batons. Baked fresh daily.',
+    rating: 4.7,
+    nutrition: { calories: '340 kcal', protein: '5g', carbs: '38g' }
+  },
+  {
+    name: 'Fresh Blueberry Muffins',
+    category: 'bakery',
+    price: 3.99,
+    unit: '4 Pack',
+    image: 'https://images.unsplash.com/photo-1607958996333-41aef7caefaa?auto=format&fit=crop&q=80&w=600',
+    stock: 3,
+    description: 'Moist and cake-like bakery muffins loaded with sweet, juicy fresh blueberries and topped with sugar crystals.',
+    rating: 4.6,
+    nutrition: { calories: '280 kcal', protein: '4g', carbs: '44g' }
   }
 ];
 
@@ -217,7 +251,8 @@ async function clearProductsCache() {
       'products:category:vegetables',
       'products:category:fruits',
       'products:category:spices',
-      'products:category:meat'
+      'products:category:meat',
+      'products:category:bakery'
     ];
     await redisClient.del(keysToDelete);
     console.log('Redis products cache cleared');
