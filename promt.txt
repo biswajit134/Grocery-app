@@ -1,0 +1,88 @@
+Create a premium, modern, multi-user Grocery Platform called "GroceryHub" with a synchronized logistics and order fulfillment lifecycle across all four user portals. Use React for all frontends, styled with Vanilla CSS (harmonious black-and-orange theme,Outfit/Inter typography, glassmorphism, smooth animations), and Node.js/Express with MongoDB for the backend microservices, orchestrated via Docker Compose.
+
+The platform must satisfy the following architectural and functional specifications:
+
+1. DOCKER ORCHESTRATION & STORAGE
+- Services: mongodb (port 27017), redis (port 6379), auth-service (port 5001), product-service (port 5002), order-service (port 5003), frontend (port 3000), delivery-partner (port 3001), vendor (port 3002), admin (port 3003).
+- Networks: grocery-network (bridge).
+- Volumes: mongodb_data, redis_data.
+
+2. AUTH SERVICE (Node.js/Express + MongoDB)
+- Database: grocery_auth.
+- Model User: username, email, password, name, phone, address, role ('user', 'driver', 'vendor', 'admin'), isApproved (default false, true for admin/user/driver).
+- Endpoints:
+  - POST /api/auth/register (hashes password, generates JWT token, assigns roles).
+  - POST /api/auth/login (seeds and allows login for hardcoded user 'admin' with 'password100' or regular registered users).
+  - GET /api/auth/me (returns current profile).
+  - GET /api/auth/drivers (admin only, gets all drivers).
+  - GET /api/auth/vendors (admin only, gets all vendors).
+  - PUT /api/auth/vendors/:id/approve (admin only, sets isApproved = true).
+  - GET /api/auth/users/:id (public service-to-service profile details query including address).
+
+3. PRODUCT SERVICE (Node.js/Express + MongoDB + Redis Caching)
+- Database: grocery_products.
+- Model Product: name, category ('vegetables', 'fruits', 'spices', 'meat', 'bakery'), price, discountPrice (Number, default null), unit, image, stock, description, rating (default 4.5), nutrition (calories, protein, carbs), vendorId, vendorName.
+- Endpoints:
+  - GET /api/products (returns all products, supports filtering by category, search queries, and caching).
+  - GET /api/products/:id (returns single product).
+  - POST /api/products (vendor only, binds vendorId/vendorName).
+  - PUT /api/products/:id (vendor/admin only, updates inventory/details).
+  - DELETE /api/products/:id (vendor/admin only).
+
+4. ORDER SERVICE (Node.js/Express + MongoDB)
+- Database: grocery_orders.
+- Model Coupon: code (uppercase, unique), discountType ('percent', 'flat'), discountValue, minOrderAmount, isActive.
+- Model Order:
+  - userId, customerName, customerEmail, shippingDetails (name, phone, address, deliverySlot), totalAmount, couponCode, discountAmount, paymentMethod ('cod', 'card'), paymentStatus ('Pending', 'Paid'), assignedDriverId, assignedDriverName.
+  - items: array of { productId, name, price, quantity, unit, image, vendorId, vendorName, vendorAddress, vendorApproved (default false) }.
+  - status & deliveryStatus: enum ['Pending Admin Validation', 'Pending Vendor Approval', 'Pending Driver Assignment', 'Pending Driver Acceptance', 'Accepted', 'Picked Up', 'Delivered'] (default 'Pending Admin Validation').
+- Endpoints:
+  - POST /api/orders: Creates order. Deducts product stock. Validates coupon codes. Queries Auth Service to fetch and record physical vendorAddress for each item.
+  - GET /api/orders/my-orders: Returns customer's own orders.
+  - GET /api/orders: Admin only, returns all orders.
+  - PUT /api/orders/:id/validate: Admin only, moves status to 'Pending Vendor Approval'.
+  - GET /api/orders/vendor/my-orders: Vendor only, returns orders containing items from this vendor.
+  - PUT /api/orders/:id/vendor-approve: Vendor only, sets vendorApproved = true for items belonging to vendor. If all items in order are approved, advances status to 'Pending Driver Assignment'.
+  - PUT /api/orders/:id/assign: Admin only, assigns driverId/driverName, sets status to 'Pending Driver Acceptance'.
+  - PUT /api/orders/:id/driver-accept: Driver only, accepts delivery request, sets status to 'Accepted'.
+  - GET /api/orders/driver/my-deliveries: Driver only, returns driver's assigned orders.
+  - PUT /api/orders/:id/driver-status: Driver only, transitions deliveryStatus and status to 'Picked Up' or 'Delivered' (and marks COD orders Paid on delivery).
+  - Coupon CRUD: GET /api/orders/coupons, POST /api/orders/coupons, DELETE /api/orders/coupons/:id, POST /api/orders/coupons/validate.
+
+5. FRONTEND PORTS & REAL-TIME SYNC
+All frontends must implement a background polling hook using `useEffect` with `setInterval` that calls active order fetch functions every 3 seconds. This allows status changes, driver assignments, approvals, and deliveries to sync instantly across all user screens without reloading.
+
+6. CUSTOMER STOREFRONT (React SPA - Port 3000)
+- Views: Home catalog list with Category tabs, Search query input, Promo offers display (struck-through original price next to discountPrice), Cart sidebar.
+- Checkout Modal: Promo code application engine validating final total. Visual blockages preventing checkouts if selected vendor listings are not approved by Admin.
+- Order History Tab: 5-step milestone tracking timeline: Placed (Pending Admin Validation) -> Validated (Pending Vendor Approval) -> Prepared (Driver assigned/accepted) -> Transit (Picked Up) -> Delivered (Delivered).
+- Animated motorcycle progress bar simulating active transit steps.
+
+7. ADMIN PORTAL (React SPA - Port 3003)
+- Left Sidebar tabs: Dashboard, Catalog Manager, Logistics & Orders, Vendor Approvals, Coupon Engine.
+- Tab 1 Dashboard: total sales revenue, active order counts, out-of-stock alarms, pending vendor registrations.
+- Tab 2 Catalog: Product editor (add/edit products, stock adjusting, promo offer price creator).
+- Tab 3 Logistics:
+  - Orders list showing items details and approval states.
+  - If status is 'Pending Admin Validation': show "Validate Request" orange button.
+  - If status is 'Pending Vendor Approval': show warning waiting for vendor preparation.
+  - If status is 'Pending Driver Assignment': show driver assignment dropdown. Disable driver assignment for orders in other statuses.
+  - If status is 'Pending Driver Acceptance': show "Waiting for driver acceptance".
+- Tab 4 Vendor Approvals: lists registered vendors, shows approval status, provides "Approve Partner" button.
+- Tab 5 Coupon Engine: create and delete coupons.
+
+8. VENDOR HUB (React SPA - Port 3002)
+- Header navigation tabs: Product Catalog, Fulfillment Requests.
+- Catalog Tab: vendor inventory CRUD (name, category, price, sales unit, stock count, image URL, description). Shows alerts if stock is low or out.
+- Fulfillment Requests Tab:
+  - Displays orders containing products belonging to this vendor.
+  - Shows vendor's own store pickup address alongside the delivery destination.
+  - Lists ordered items from their catalog.
+  - Provides a premium orange "Approve Item Request" button (hidden if already approved).
+
+9. DELIVERY PARTNER APP (React SPA - Port 3001)
+- Login / Registration: driver profile creation.
+- Queue List:
+  - If status is 'Pending Driver Acceptance': displays delivery request details and an orange "Accept Delivery Request" button. Hides map and transit buttons until accepted.
+  - If accepted: shows progress map, and actions "Pick Up Package (Start Transit)" and "Handover Package (Mark Delivered)".
+  - Card Details: Displays Pick Up Address(es) (extracted from items' vendorAddress) and customer Destination Address for all delivery requests.
