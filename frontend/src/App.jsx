@@ -345,6 +345,9 @@ function App() {
 
   return (
     <div className="app-container">
+      {/* Immersive Floating Background Orbs */}
+      <div className="background-orb orb-1"></div>
+      <div className="background-orb orb-2"></div>
       
       {/* IMMERSIVE SIDEBAR NAVBAR */}
       <Header 
@@ -423,6 +426,23 @@ function App() {
                     </div>
                   </div>
                 ))}
+
+                {/* Carousel Manual Control Overlay Buttons */}
+                <button 
+                  className="tray-nav-btn left" 
+                  style={{ opacity: 1, left: '20px', display: 'flex' }}
+                  onClick={() => setCarouselIndex((prev) => (prev - 1 + carouselItems.length) % carouselItems.length)}
+                >
+                  ‹
+                </button>
+                <button 
+                  className="tray-nav-btn right" 
+                  style={{ opacity: 1, right: '20px', display: 'flex' }}
+                  onClick={() => setCarouselIndex((prev) => (prev + 1) % carouselItems.length)}
+                >
+                  ›
+                </button>
+
                 <div className="carousel-indicators">
                   {carouselItems.map((_, idx) => (
                     <div 
