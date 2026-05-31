@@ -228,7 +228,7 @@ export default function Header({
                   whiteSpace: 'nowrap',
                   display: 'none' // Shown on wider screens
                 }}>
-                  Hi, {currentUser.name.split(' ')[0]}
+                  Hi, {(currentUser.name || currentUser.username || 'User').split(' ')[0]}
                 </span>
                 <button 
                   onClick={logout} 

@@ -722,7 +722,7 @@ Thank you for shopping at GroceryHub!
                     <Download size={16} /> Receipt
                   </button>
                   <button
-                    onClick={onClose}
+                    onClick={() => onClose(true)}
                     className="btn btn-primary"
                     style={{ flex: 1, padding: '12px' }}
                   >

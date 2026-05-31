@@ -35,12 +35,12 @@ export default function AdminDashboard({
   const [prodDescription, setProdDescription] = useState('');
 
   // Calculate statistics
-  const totalSales = orders.reduce((acc, order) => acc + order.totalAmount, 0);
-  const totalOrders = orders.length;
-  const totalProducts = products.length;
+  const totalSales = (orders || []).reduce((acc, order) => acc + (order?.totalAmount || 0), 0);
+  const totalOrders = (orders || []).length;
+  const totalProducts = (products || []).length;
   
-  const lowStockItems = products.filter(p => p.stock <= 5);
-  const pendingOrders = orders.filter(o => o.status !== 'Delivered').length;
+  const lowStockItems = (products || []).filter(p => p && p.stock <= 5);
+  const pendingOrders = (orders || []).filter(o => o && o.status !== 'Delivered').length;
 
   const openAddModal = () => {
     setProdName('');

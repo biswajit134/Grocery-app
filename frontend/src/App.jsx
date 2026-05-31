@@ -17,7 +17,8 @@ import {
   ArrowRight,
   TrendingUp,
   Truck,
-  Heart
+  Heart,
+  Download
 } from 'lucide-react';
 
 const AUTH_URL = import.meta.env.VITE_AUTH_URL || 'http://localhost:5001/api/auth';
@@ -140,7 +141,7 @@ function App() {
       });
       if (res.ok) {
         const data = await res.json();
-        setOrders(data);
+        setOrders(Array.isArray(data) ? data : []);
       }
     } catch (err) {
       console.error('Error fetching orders:', err);
@@ -274,6 +275,8 @@ function App() {
     setCart([]);
     // Refresh products catalog
     fetchProducts();
+    // Refresh orders to sync history
+    fetchOrders();
     
     return completedOrder;
   };
@@ -754,12 +757,15 @@ function App() {
                       <div>
                         <h4 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '8px', fontWeight: '600' }}>Items ordered</h4>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                          {(order.items || []).map((item, idx) => (
-                            <div key={idx} style={{ fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between' }}>
-                              <span>{item.name} <span style={{ color: 'var(--text-muted)' }}>({item.quantity} x {item.unit})</span></span>
-                              <span style={{ fontWeight: '500' }}>${((item.price || 0) * (item.quantity || 0)).toFixed(2)}</span>
-                            </div>
-                          ))}
+                          {(order.items || []).map((item, idx) => {
+                            if (!item) return null;
+                            return (
+                              <div key={idx} style={{ fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between' }}>
+                                <span>{item.name} <span style={{ color: 'var(--text-muted)' }}>({item.quantity} x {item.unit})</span></span>
+                                <span style={{ fontWeight: '500' }}>${((item.price || 0) * (item.quantity || 0)).toFixed(2)}</span>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
 
@@ -812,7 +818,7 @@ Address: ${order.shippingDetails?.address || 'N/A'}
 Delivery Slot: ${order.shippingDetails?.deliverySlot || 'N/A'}
 
 ITEMS ORDERED:
-${(order.items || []).map(item => `- ${item.name} (${item.quantity} x ${item.unit}) : $${((item.price || 0) * (item.quantity || 0)).toFixed(2)}`).join('\n')}
+${(order.items || []).map(item => item ? `- ${item.name} (${item.quantity} x ${item.unit}) : $${((item.price || 0) * (item.quantity || 0)).toFixed(2)}` : '').filter(Boolean).join('\n')}
 
 SUMMARY:
 Total Amount Paid: $${(order.totalAmount || 0).toFixed(2)}
@@ -946,7 +952,12 @@ Thank you for shopping at GroceryHub!
       {/* 3. Checkout modal */}
       <CheckoutModal 
         isOpen={checkoutOpen}
-        onClose={() => setCheckoutOpen(false)}
+        onClose={(success) => {
+          setCheckoutOpen(false);
+          if (success === true) {
+            setActiveView('orders');
+          }
+        }}
         cartItems={cart}
         currentUser={currentUser}
         onSubmitOrder={handleSubmitOrder}
