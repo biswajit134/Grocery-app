@@ -507,6 +507,38 @@ app.delete('/api/products/:id', authMiddleware, async (req, res) => {
   }
 });
 
+// Submit review for product
+app.post('/api/products/:id/reviews', authMiddleware, async (req, res) => {
+  try {
+    const { rating, comment } = req.body;
+    if (!rating || !comment) {
+      return res.status(400).json({ message: 'Please enter all fields' });
+    }
+
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    if (!product.reviews) product.reviews = [];
+    product.reviews.push({ username: req.user.username, rating: Number(rating), comment, createdAt: new Date() });
+
+    product.reviewCount = product.reviews.length;
+    const totalRating = product.reviews.reduce((sum, rev) => sum + rev.rating, 0);
+    product.rating = totalRating / product.reviewCount;
+
+    await product.save();
+
+    // Invalidate Redis cache so updated rating/reviews propagate
+    await clearProductsCache();
+
+    res.status(201).json(product);
+  } catch (error) {
+    console.error('Submit product review error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Product Service running on port ${PORT}`);
 });

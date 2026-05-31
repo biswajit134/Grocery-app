@@ -17,7 +17,9 @@ import {
   Users, 
   DollarSign, 
   ClipboardList, 
-  AlertTriangle 
+  AlertTriangle,
+  Star,
+  MessageSquare
 } from 'lucide-react';
 
 const AUTH_URL = import.meta.env.VITE_AUTH_URL || 'http://localhost:5001/api/auth';
@@ -38,6 +40,8 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [selectedDriverReviews, setSelectedDriverReviews] = useState(null);
+  const [selectedProductReviews, setSelectedProductReviews] = useState(null);
 
   // Login Form States
   const [loginEmail, setLoginEmail] = useState('');
@@ -87,6 +91,28 @@ export default function App() {
         const vendorData = await vendorRes.json();
         setVendors(vendorData);
       }
+
+      // Fetch Drivers
+      const driverRes = await fetch(`${AUTH_URL}/drivers`, { headers });
+      if (driverRes.ok) {
+        const driverData = await driverRes.json();
+        setDrivers(driverData);
+        if (selectedDriverReviews) {
+          const updated = driverData.find(d => d._id === selectedDriverReviews._id);
+          if (updated) setSelectedDriverReviews(updated);
+        }
+      }
+
+      // Fetch Products
+      const prodRes = await fetch(PRODUCT_URL);
+      if (prodRes.ok) {
+        const prodData = await prodRes.json();
+        setProducts(prodData);
+        if (selectedProductReviews) {
+          const updated = prodData.find(p => p._id === selectedProductReviews._id);
+          if (updated) setSelectedProductReviews(updated);
+        }
+      }
     } catch (err) {
       console.error('Error polling data:', err);
     }
@@ -113,6 +139,10 @@ export default function App() {
       if (prodRes.ok) {
         const prodData = await prodRes.json();
         setProducts(prodData);
+        if (selectedProductReviews) {
+          const updated = prodData.find(p => p._id === selectedProductReviews._id);
+          if (updated) setSelectedProductReviews(updated);
+        }
       }
 
       // Fetch Orders
@@ -127,6 +157,10 @@ export default function App() {
       if (driverRes.ok) {
         const driverData = await driverRes.json();
         setDrivers(driverData);
+        if (selectedDriverReviews) {
+          const updated = driverData.find(d => d._id === selectedDriverReviews._id);
+          if (updated) setSelectedDriverReviews(updated);
+        }
       }
 
       // Fetch Vendors
@@ -522,6 +556,13 @@ export default function App() {
             Logistics & Orders
           </button>
           <button 
+            className={`tab-btn ${activeTab === 'drivers' ? 'active' : ''}`}
+            onClick={() => setActiveTab('drivers')}
+          >
+            <Users size={20} />
+            Delivery Partners
+          </button>
+          <button 
             className={`tab-btn ${activeTab === 'vendors' ? 'active' : ''}`}
             onClick={() => setActiveTab('vendors')}
           >
@@ -738,6 +779,7 @@ export default function App() {
                       <th>Base Price</th>
                       <th>Offer Price</th>
                       <th>Stock</th>
+                      <th>Avg Rating</th>
                       <th style={{ textAlign: 'right' }}>Actions</th>
                     </tr>
                   </thead>
@@ -774,6 +816,17 @@ export default function App() {
                             {prod.stock} units
                           </span>
                           {prod.stock <= 5 && <span style={{ marginLeft: '6px', fontSize: '0.75rem', backgroundColor: 'rgba(239,68,68,0.1)', color: 'var(--danger)', padding: '2px 6px', borderRadius: '4px' }}>Low Stock</span>}
+                        </td>
+                        <td>
+                          <button 
+                            onClick={() => setSelectedProductReviews(prod)}
+                            className="btn-secondary"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 10px', fontSize: '0.8rem', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', backgroundColor: 'transparent' }}
+                          >
+                            <Star size={12} fill="#f59e0b" color="#f59e0b" />
+                            <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{prod.rating ? Number(prod.rating).toFixed(1) : '4.5'}</span>
+                            <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>({prod.reviewCount || 0})</span>
+                          </button>
                         </td>
                         <td style={{ textAlign: 'right' }}>
                           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
@@ -1075,6 +1128,79 @@ export default function App() {
             </div>
           </div>
         )}
+
+        {/* 6. DELIVERY PARTNERS TAB */}
+        {activeTab === 'drivers' && (
+          <div className="animate-fade-in">
+            <div style={{ marginBottom: '32px' }}>
+              <h1 style={{ fontSize: '2.2rem', color: '#fff', marginBottom: '8px' }}>Delivery Partner Network</h1>
+              <p style={{ color: 'var(--text-secondary)' }}>Monitor registered courier performance, feedback ratings, and detailed customer reviews</p>
+            </div>
+
+            <div className="glass-panel" style={{ padding: '24px' }}>
+              <div style={{ overflowX: 'auto' }}>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Driver Name</th>
+                      <th>Credentials</th>
+                      <th>Contact Info</th>
+                      <th>Aggregated Rating</th>
+                      <th style={{ textAlign: 'right' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {drivers.map((drv) => (
+                      <tr key={drv._id} className="table-row-hover">
+                        <td>
+                          <div style={{ fontWeight: '600' }}>{drv.name}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Registered: {new Date(drv.createdAt).toLocaleDateString()}</div>
+                        </td>
+                        <td>
+                          <div style={{ fontSize: '0.85rem' }}>Username: <strong>{drv.username}</strong></div>
+                          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Email: {drv.email}</div>
+                        </td>
+                        <td>
+                          <div style={{ fontSize: '0.85rem' }}>Phone: {drv.phone || 'N/A'}</div>
+                          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Region: {drv.address || 'N/A'}</div>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Star size={14} fill="#f59e0b" color="#f59e0b" />
+                            <span style={{ fontWeight: '700', color: 'var(--primary)' }}>
+                              {drv.rating ? Number(drv.rating).toFixed(1) : '5.0'}
+                            </span>
+                            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                              ({drv.ratingCount || 0} reviews)
+                            </span>
+                          </div>
+                        </td>
+                        <td style={{ textAlign: 'right' }}>
+                          <button 
+                            onClick={() => {
+                              setSelectedDriverReviews(drv);
+                            }} 
+                            className="btn btn-secondary" 
+                            style={{ padding: '8px 14px', fontSize: '0.85rem' }}
+                          >
+                            View Reviews
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {drivers.length === 0 && (
+                      <tr>
+                        <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '40px' }}>
+                          No delivery partners registered in database
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* PRODUCT FORM MODAL */}
@@ -1324,6 +1450,106 @@ export default function App() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* DRIVER REVIEWS MODAL */}
+      {selectedDriverReviews && (
+        <div className="drawer-overlay flex-center" onClick={() => setSelectedDriverReviews(null)}>
+          <div className="glass-panel animate-scale-up" style={{ width: '100%', maxWidth: '500px', padding: '30px', maxHeight: '80vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
+            <div className="flex-between" style={{ marginBottom: '20px', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px' }}>
+              <div>
+                <h2 style={{ fontSize: '1.3rem', color: '#fff' }}>
+                  {selectedDriverReviews.name}'s Reviews
+                </h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '4px' }}>
+                  Overall Rating: {selectedDriverReviews.rating ? Number(selectedDriverReviews.rating).toFixed(1) : '5.0'} ★ ({selectedDriverReviews.ratingCount || 0} reviews)
+                </p>
+              </div>
+              <button onClick={() => setSelectedDriverReviews(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {selectedDriverReviews.reviews && selectedDriverReviews.reviews.length > 0 ? (
+                selectedDriverReviews.reviews.map((rev, idx) => (
+                  <div key={idx} className="glass-panel" style={{ padding: '14px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-color)' }}>
+                    <div className="flex-between" style={{ marginBottom: '6px' }}>
+                      <span style={{ fontSize: '0.85rem', fontWeight: '600' }}>{rev.customerName}</span>
+                      <div style={{ display: 'flex', gap: '2px' }}>
+                        {[...Array(5)].map((_, i) => (
+                          <Star 
+                            key={i} 
+                            size={10} 
+                            fill={i < rev.rating ? '#f59e0b' : 'none'} 
+                            color="#f59e0b" 
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
+                      {rev.feedback}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textAlign: 'center', padding: '24px 0' }}>
+                  No customer reviews left for this driver yet.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PRODUCT REVIEWS MODAL */}
+      {selectedProductReviews && (
+        <div className="drawer-overlay flex-center" onClick={() => setSelectedProductReviews(null)}>
+          <div className="glass-panel animate-scale-up" style={{ width: '100%', maxWidth: '500px', padding: '30px', maxHeight: '80vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
+            <div className="flex-between" style={{ marginBottom: '20px', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px' }}>
+              <div>
+                <h2 style={{ fontSize: '1.3rem', color: '#fff' }}>
+                  {selectedProductReviews.name} Reviews
+                </h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '4px' }}>
+                  Overall Score: {selectedProductReviews.rating ? Number(selectedProductReviews.rating).toFixed(1) : '4.5'} ★ ({selectedProductReviews.reviewCount || 0} reviews)
+                </p>
+              </div>
+              <button onClick={() => setSelectedProductReviews(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {selectedProductReviews.reviews && selectedProductReviews.reviews.length > 0 ? (
+                selectedProductReviews.reviews.map((rev, idx) => (
+                  <div key={idx} className="glass-panel" style={{ padding: '14px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-color)' }}>
+                    <div className="flex-between" style={{ marginBottom: '6px' }}>
+                      <span style={{ fontSize: '0.85rem', fontWeight: '600' }}>{rev.username}</span>
+                      <div style={{ display: 'flex', gap: '2px' }}>
+                        {[...Array(5)].map((_, i) => (
+                          <Star 
+                            key={i} 
+                            size={10} 
+                            fill={i < rev.rating ? '#f59e0b' : 'none'} 
+                            color="#f59e0b" 
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
+                      {rev.comment}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textAlign: 'center', padding: '24px 0' }}>
+                  No customer reviews left for this product yet.
+                </p>
+              )}
+            </div>
           </div>
         </div>
       )}

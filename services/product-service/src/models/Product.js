@@ -37,6 +37,18 @@ const ProductSchema = new mongoose.Schema({
     type: Number,
     default: 4.5
   },
+  reviewCount: {
+    type: Number,
+    default: 0
+  },
+  reviews: [
+    {
+      username: { type: String, required: true },
+      rating: { type: Number, required: true, min: 1, max: 5 },
+      comment: { type: String, required: true },
+      createdAt: { type: Date, default: Date.now }
+    }
+  ],
   nutrition: {
     calories: { type: String, default: 'N/A' },
     protein: { type: String, default: 'N/A' },

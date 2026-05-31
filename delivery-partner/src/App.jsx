@@ -11,7 +11,8 @@ import {
   TrendingUp, 
   Clock, 
   Navigation,
-  DollarSign
+  DollarSign,
+  Star
 } from 'lucide-react';
 
 const AUTH_URL = import.meta.env.VITE_AUTH_URL || 'http://localhost:5001/api/auth';
@@ -367,13 +368,13 @@ function App() {
                 </div>
               </div>
 
-              <div className="glass-panel" style={{ padding: '20px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <div className="flex-between" style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: '600', textTransform: 'uppercase' }}>
-                  <span>Driver Earnings</span>
-                  <DollarSign size={16} style={{ color: 'var(--primary)' }} />
+              <div className="metric-card glass-panel">
+                <div className="metric-icon-wrapper" style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
+                  <Star size={24} fill="#f59e0b" />
                 </div>
-                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--primary)' }}>
-                  ${totalEarnings.toFixed(2)}
+                <div className="metric-info">
+                  <h3>Overall Rating</h3>
+                  <p>{driverUser.rating ? Number(driverUser.rating).toFixed(1) : '5.0'} <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>({driverUser.ratingCount || 0} reviews)</span></p>
                 </div>
               </div>
 
@@ -545,6 +546,50 @@ function App() {
                 })}
               </div>
             )}
+
+            {/* DRIVER FEEDBACK COMMENTS */}
+            <div className="glass-panel" style={{ padding: '24px', borderRadius: '16px', marginTop: '32px', marginBottom: '24px' }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                Customer Appreciation & Reviews
+                <span style={{ fontSize: '0.85rem', fontWeight: 'normal', color: 'var(--text-secondary)' }}>
+                  ({driverUser.rating ? Number(driverUser.rating).toFixed(1) : '5.0'} ★ • {driverUser.reviews?.length || 0} comments)
+                </span>
+              </h3>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {driverUser.reviews && driverUser.reviews.length > 0 ? (
+                  driverUser.reviews.map((rev, idx) => (
+                    <div key={idx} className="glass-panel" style={{ padding: '16px', borderRadius: '12px', backgroundColor: 'rgba(255, 255, 255, 0.01)', border: '1px solid var(--border-color)' }}>
+                      <div className="flex-between" style={{ marginBottom: '8px' }}>
+                        <div>
+                          <strong style={{ fontSize: '0.9rem' }}>{rev.customerName}</strong>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                            {rev.createdAt ? new Date(rev.createdAt).toLocaleDateString() : 'N/A'}
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '2px' }}>
+                          {[...Array(5)].map((_, i) => (
+                            <Star 
+                              key={i} 
+                              size={12} 
+                              fill={i < rev.rating ? '#f59e0b' : 'none'} 
+                              color="#f59e0b" 
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.4', margin: 0 }}>
+                        {rev.feedback}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textAlign: 'center', padding: '16px 0', margin: 0 }}>
+                    No customer feedback recorded yet. Complete deliveries to receive reviews!
+                  </p>
+                )}
+              </div>
+            </div>
           </main>
         </div>
       )}

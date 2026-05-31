@@ -91,6 +91,15 @@ const OrderSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  isDriverRated: {
+    type: Boolean,
+    default: false
+  },
+  ratedItems: [
+    {
+      productId: { type: String }
+    }
+  ],
   createdAt: {
     type: Date,
     default: Date.now

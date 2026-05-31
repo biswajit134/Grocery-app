@@ -25,6 +25,128 @@ const AUTH_URL = import.meta.env.VITE_AUTH_URL || 'http://localhost:5001/api/aut
 const PRODUCT_URL = import.meta.env.VITE_PRODUCT_URL || 'http://localhost:5002/api/products';
 const ORDER_URL = import.meta.env.VITE_ORDER_URL || 'http://localhost:5003/api/orders';
 
+function DriverRatingCard({ order, token, currentUser, onDriverRated }) {
+  const [rating, setRating] = useState(5);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [feedback, setFeedback] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
+
+  const AUTH_URL = import.meta.env.VITE_AUTH_URL || 'http://localhost:5001/api/auth';
+  const ORDER_URL = import.meta.env.VITE_ORDER_URL || 'http://localhost:5003/api/orders';
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError('');
+    
+    try {
+      const reviewRes = await fetch(`${AUTH_URL}/drivers/${order.assignedDriverId}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          customerName: currentUser.name || currentUser.username,
+          rating,
+          feedback
+        })
+      });
+
+      if (!reviewRes.ok) {
+        throw new Error('Failed to submit driver review');
+      }
+
+      const orderRes = await fetch(`${ORDER_URL}/${order._id || order.id}/rate-driver`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (orderRes.ok) {
+        setSuccess(true);
+        if (onDriverRated) onDriverRated();
+      } else {
+        throw new Error('Failed to lock order rating status');
+      }
+    } catch (err) {
+      console.error(err);
+      setError(err.message || 'An error occurred during submission.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="glass-panel animate-fade-in" style={{ padding: '16px', borderRadius: '12px', marginBottom: '16px', border: '1px dashed var(--border-color)', backgroundColor: 'rgba(var(--primary-rgb), 0.01)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+        <span style={{ fontSize: '1.2rem' }}>🚚</span>
+        <h4 style={{ fontSize: '0.9rem', fontWeight: '700', margin: 0 }}>Rate Your Delivery Experience</h4>
+      </div>
+
+      {order.isDriverRated || success ? (
+        <div style={{ fontSize: '0.85rem', color: 'var(--success)', fontWeight: '600' }}>
+          ✓ Thank you! You rated {order.assignedDriverName} for this delivery.
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
+            How was your delivery by <strong>{order.assignedDriverName}</strong>?
+          </p>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Rating:</span>
+            <div style={{ display: 'flex', gap: '4px' }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setRating(star)}
+                  onMouseEnter={() => setHoverRating(star)}
+                  onMouseLeave={() => setHoverRating(0)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                >
+                  <Star 
+                    size={18} 
+                    fill={star <= (hoverRating || rating) ? '#f59e0b' : 'none'} 
+                    color="#f59e0b" 
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Leave some feedback for the driver..."
+              value={feedback}
+              onChange={(e) => setFeedback(e.target.value)}
+              required
+              style={{ flexGrow: 1, padding: '8px 12px', fontSize: '0.85rem', borderRadius: '8px' }}
+            />
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={submitting}
+              style={{ padding: '8px 16px', fontSize: '0.85rem', borderRadius: '8px' }}
+            >
+              {submitting ? 'Submitting...' : 'Submit'}
+            </button>
+          </div>
+
+          {error && <div style={{ fontSize: '0.8rem', color: 'var(--danger)' }}>{error}</div>}
+        </form>
+      )}
+    </div>
+  );
+}
+
 function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
   const [activeView, setActiveView] = useState('home'); // 'home', 'shop', 'admin', 'orders'
@@ -1057,6 +1179,16 @@ function App() {
                       </div>
                     </div>
 
+                    {/* Driver Review Section (Delivered orders with assigned drivers only) */}
+                    {order.status === 'Delivered' && order.assignedDriverId && (
+                      <DriverRatingCard 
+                        order={order} 
+                        token={token} 
+                        currentUser={currentUser} 
+                        onDriverRated={fetchOrders}
+                      />
+                    )}
+
                     {/* Middle Row: Items & Delivery address */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '16px' }}>
                       <div>
@@ -1064,10 +1196,46 @@ function App() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                           {(order.items || []).map((item, idx) => {
                             if (!item) return null;
+                            const isItemRated = order.ratedItems && order.ratedItems.some(ri => ri.productId === item.productId);
                             return (
-                              <div key={idx} style={{ fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between' }}>
+                              <div key={idx} style={{ fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', padding: '2px 0' }}>
                                 <span>{item.name} <span style={{ color: 'var(--text-muted)' }}>({item.quantity} x {item.unit})</span></span>
-                                <span style={{ fontWeight: '500' }}>${((item.price || 0) * (item.quantity || 0)).toFixed(2)}</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <span style={{ fontWeight: '500' }}>${((item.price || 0) * (item.quantity || 0)).toFixed(2)}</span>
+                                  {order.status === 'Delivered' && (
+                                    <button
+                                      onClick={async () => {
+                                        try {
+                                          const PRODUCT_URL = import.meta.env.VITE_PRODUCT_URL || 'http://localhost:5002/api/products';
+                                          const res = await fetch(`${PRODUCT_URL}/${item.productId}`);
+                                          if (res.ok) {
+                                            const prod = await res.json();
+                                            setSelectedProduct(prod);
+                                            
+                                            // Register rated item status in backend to mark as reviewed receipt
+                                            if (!isItemRated) {
+                                              await fetch(`${ORDER_URL}/${order._id || order.id}/rate-item`, {
+                                                method: 'PUT',
+                                                headers: {
+                                                  'Content-Type': 'application/json',
+                                                  Authorization: `Bearer ${token}`
+                                                },
+                                                body: JSON.stringify({ productId: item.productId })
+                                              });
+                                              fetchOrders();
+                                            }
+                                          }
+                                        } catch (err) {
+                                          console.error(err);
+                                        }
+                                      }}
+                                      className="btn btn-secondary"
+                                      style={{ padding: '2px 8px', fontSize: '0.7rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}
+                                    >
+                                      {isItemRated ? 'Reviewed' : 'Review'}
+                                    </button>
+                                  )}
+                                </div>
                               </div>
                             );
                           })}
@@ -1263,6 +1431,9 @@ Thank you for shopping at GroceryHub!
           product={selectedProduct}
           onClose={() => setSelectedProduct(null)}
           onAddToCart={handleAddToCart}
+          currentUser={currentUser}
+          token={token}
+          onReviewSubmitted={fetchProducts}
         />
       )}
 

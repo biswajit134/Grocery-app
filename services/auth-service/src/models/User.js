@@ -39,6 +39,22 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  rating: {
+    type: Number,
+    default: 5.0
+  },
+  ratingCount: {
+    type: Number,
+    default: 0
+  },
+  reviews: [
+    {
+      customerName: { type: String, required: true },
+      rating: { type: Number, required: true, min: 1, max: 5 },
+      feedback: { type: String, required: true },
+      createdAt: { type: Date, default: Date.now }
+    }
+  ],
   createdAt: {
     type: Date,
     default: Date.now

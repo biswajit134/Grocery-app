@@ -336,6 +336,34 @@ app.put('/api/auth/vendors/:id/approve', async (req, res) => {
   }
 });
 
+// Submit review for driver
+app.post('/api/auth/drivers/:id/reviews', async (req, res) => {
+  try {
+    const { customerName, rating, feedback } = req.body;
+    if (!customerName || !rating || !feedback) {
+      return res.status(400).json({ message: 'Please enter all fields' });
+    }
+
+    const driver = await User.findOne({ _id: req.params.id, role: 'driver' });
+    if (!driver) {
+      return res.status(404).json({ message: 'Driver not found' });
+    }
+
+    if (!driver.reviews) driver.reviews = [];
+    driver.reviews.push({ customerName, rating: Number(rating), feedback, createdAt: new Date() });
+    
+    driver.ratingCount = driver.reviews.length;
+    const totalRating = driver.reviews.reduce((sum, rev) => sum + rev.rating, 0);
+    driver.rating = totalRating / driver.ratingCount;
+
+    await driver.save();
+    res.status(201).json(driver);
+  } catch (error) {
+    console.error('Submit driver review error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Auth Service is running on port ${PORT}`);
 });

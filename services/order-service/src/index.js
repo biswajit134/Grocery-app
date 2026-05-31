@@ -560,6 +560,45 @@ app.post('/api/orders/coupons/validate', authMiddleware, async (req, res) => {
   }
 });
 
+// Rate driver on order
+app.put('/api/orders/:id/rate-driver', authMiddleware, async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    order.isDriverRated = true;
+    await order.save();
+    res.json({ success: true, order });
+  } catch (error) {
+    console.error('Rate driver order status error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// Rate item on order
+app.put('/api/orders/:id/rate-item', authMiddleware, async (req, res) => {
+  try {
+    const { productId } = req.body;
+    if (!productId) {
+      return res.status(400).json({ message: 'productId is required' });
+    }
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    if (!order.ratedItems) order.ratedItems = [];
+    if (!order.ratedItems.some(item => item.productId === productId)) {
+      order.ratedItems.push({ productId });
+      await order.save();
+    }
+    res.json({ success: true, order });
+  } catch (error) {
+    console.error('Rate item order status error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Order Service running on port ${PORT}`);
 });
