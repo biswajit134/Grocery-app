@@ -347,19 +347,34 @@ tr.table-row-hover:hover {
   display: inline-block;
 }
 
-.status-badge.pending {
+.status-badge.pending-admin-validation {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.status-badge.pending-vendor-approval {
   background-color: rgba(245, 158, 11, 0.15);
   color: #f59e0b;
 }
 
-.status-badge.packing {
+.status-badge.pending-driver-assignment {
   background-color: rgba(59, 130, 246, 0.15);
   color: #3b82f6;
 }
 
-.status-badge.out-for-delivery {
+.status-badge.pending-driver-acceptance {
   background-color: rgba(168, 85, 247, 0.15);
   color: #a855f7;
+}
+
+.status-badge.accepted {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.status-badge.picked-up {
+  background-color: rgba(6, 182, 212, 0.15);
+  color: #06b6d4;
 }
 
 .status-badge.delivered {

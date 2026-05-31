@@ -26,7 +26,11 @@ const OrderSchema = new mongoose.Schema({
       price: { type: Number, required: true },
       quantity: { type: Number, required: true },
       unit: { type: String, required: true },
-      image: { type: String, required: true }
+      image: { type: String, required: true },
+      vendorId: { type: String, default: null },
+      vendorName: { type: String, default: null },
+      vendorAddress: { type: String, default: null },
+      vendorApproved: { type: Boolean, default: false }
     }
   ],
   totalAmount: {
@@ -47,8 +51,16 @@ const OrderSchema = new mongoose.Schema({
   status: {
     type: String,
     required: true,
-    enum: ['Pending', 'Packing', 'Out for Delivery', 'Delivered'],
-    default: 'Pending'
+    enum: [
+      'Pending Admin Validation',
+      'Pending Vendor Approval',
+      'Pending Driver Assignment',
+      'Pending Driver Acceptance',
+      'Accepted',
+      'Picked Up',
+      'Delivered'
+    ],
+    default: 'Pending Admin Validation'
   },
   assignedDriverId: {
     type: String,
@@ -60,8 +72,16 @@ const OrderSchema = new mongoose.Schema({
   },
   deliveryStatus: {
     type: String,
-    enum: ['Pending Assignment', 'Accepted', 'Picked Up', 'Delivered'],
-    default: 'Pending Assignment'
+    enum: [
+      'Pending Admin Validation',
+      'Pending Vendor Approval',
+      'Pending Driver Assignment',
+      'Pending Driver Acceptance',
+      'Accepted',
+      'Picked Up',
+      'Delivered'
+    ],
+    default: 'Pending Admin Validation'
   },
   couponCode: {
     type: String,

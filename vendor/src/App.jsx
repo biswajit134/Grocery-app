@@ -22,11 +22,14 @@ import {
 
 const AUTH_URL = import.meta.env.VITE_AUTH_URL || 'http://localhost:5001/api/auth';
 const PRODUCT_URL = import.meta.env.VITE_PRODUCT_URL || 'http://localhost:5002/api/products';
+const ORDER_URL = import.meta.env.VITE_ORDER_URL || 'http://localhost:5003/api/orders';
 
 function App() {
   const [token, setToken] = useState(() => localStorage.getItem('vendorToken') || '');
   const [vendorUser, setVendorUser] = useState(null);
   const [products, setProducts] = useState([]);
+  const [activeTab, setActiveTab] = useState('catalog'); // 'catalog' or 'orders'
+  const [orders, setOrders] = useState([]);
   
   // Auth Form States
   const [isRegister, setIsRegister] = useState(false);
@@ -72,6 +75,7 @@ function App() {
         setVendorUser(data);
         if (data.isApproved) {
           fetchProducts(data._id, refreshedToken || authToken);
+          fetchOrders(refreshedToken || authToken);
         }
       } else {
         handleLogout();
@@ -94,6 +98,43 @@ function App() {
     }
   };
 
+  // Fetch Vendor Orders
+  const fetchOrders = async (authToken) => {
+    try {
+      const res = await fetch(`${ORDER_URL}/vendor/my-orders`, {
+        headers: { Authorization: `Bearer ${authToken}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setOrders(data);
+      }
+    } catch (err) {
+      console.error('Error fetching orders:', err);
+    }
+  };
+
+  // Approve vendor item request
+  const handleApproveOrder = async (orderId) => {
+    try {
+      const res = await fetch(`${ORDER_URL}/${orderId}/vendor-approve`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        fetchOrders(token);
+        alert('Item request approved successfully!');
+      } else {
+        const err = await res.json();
+        alert(err.message || 'Failed to approve item request');
+      }
+    } catch (error) {
+      console.error('Approve order error:', error);
+    }
+  };
+
   // Sync token and load info
   useEffect(() => {
     if (token) {
@@ -103,6 +144,7 @@ function App() {
       localStorage.removeItem('vendorToken');
       setVendorUser(null);
       setProducts([]);
+      setOrders([]);
     }
   }, [token]);
 
@@ -471,85 +513,244 @@ function App() {
 
                 </div>
 
-                {/* Main section bar */}
-                <div className="flex-between" style={{ marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-                  <h2 style={{ fontSize: '1.3rem', fontWeight: 800 }}>My Product Catalog</h2>
-                  <button onClick={openAddModal} className="btn btn-primary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
-                    <Plus size={16} /> Add Catalog Product
+                {/* Tabs Navigation */}
+                <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '24px' }}>
+                  <button 
+                    onClick={() => setActiveTab('catalog')} 
+                    className="tab-btn"
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: activeTab === 'catalog' ? 'var(--primary)' : 'var(--text-secondary)',
+                      padding: '12px 20px',
+                      fontSize: '0.95rem',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      position: 'relative',
+                      borderBottom: activeTab === 'catalog' ? '2px solid var(--primary)' : 'none'
+                    }}
+                  >
+                    My Product Catalog
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab('orders')} 
+                    className="tab-btn"
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: activeTab === 'orders' ? 'var(--primary)' : 'var(--text-secondary)',
+                      padding: '12px 20px',
+                      fontSize: '0.95rem',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      position: 'relative',
+                      borderBottom: activeTab === 'orders' ? '2px solid var(--primary)' : 'none'
+                    }}
+                  >
+                    Fulfillment Requests
+                    {orders.filter(o => o.status === 'Pending Vendor Approval' && o.items.some(item => item.vendorId === vendorUser._id && !item.vendorApproved)).length > 0 && (
+                      <span style={{ marginLeft: '8px', backgroundColor: 'var(--danger)', color: 'white', padding: '2px 8px', borderRadius: '99px', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                        {orders.filter(o => o.status === 'Pending Vendor Approval' && o.items.some(item => item.vendorId === vendorUser._id && !item.vendorApproved)).length}
+                      </span>
+                    )}
                   </button>
                 </div>
 
-                {/* Catalog Table */}
-                {products.length === 0 ? (
-                  <div className="glass-panel" style={{ padding: '48px 24px', borderRadius: '16px', textAlign: 'center', color: 'var(--text-secondary)' }}>
-                    <ShoppingBag size={36} style={{ color: 'var(--text-muted)', marginBottom: '12px', margin: '0 auto' }} />
-                    <h3>No Products Listed</h3>
-                    <p style={{ fontSize: '0.85rem', marginTop: '4px' }}>
-                      Your catalog is currently empty. Start publishing fresh organic items to attract shoppers.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="glass-panel" style={{ borderRadius: '16px', overflow: 'hidden' }}>
-                    <div style={{ overflowX: 'auto' }}>
-                      <table>
-                        <thead>
-                          <tr style={{ color: 'var(--text-secondary)', backgroundColor: 'rgba(255,255,255,0.01)', textAlign: 'left', borderBottom: '1px solid var(--border-color)', fontSize: '0.85rem' }}>
-                            <th style={{ padding: '16px 20px' }}>Product</th>
-                            <th style={{ padding: '16px 20px' }}>Category</th>
-                            <th style={{ padding: '16px 20px' }}>Unit Price</th>
-                            <th style={{ padding: '16px 20px' }}>Current Stock</th>
-                            <th style={{ padding: '16px 20px', textAlign: 'right' }}>Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {products.map((p) => {
-                            const isOut = p.stock <= 0;
-                            const isLow = p.stock <= 5;
-                            return (
-                              <tr key={p._id || p.id} className="table-row-hover" style={{ transition: 'background-color 0.2s', fontSize: '0.9rem' }}>
-                                <td style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 20px' }}>
-                                  <img src={p.image} alt={p.name} style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} />
-                                  <span style={{ fontWeight: '600' }}>{p.name}</span>
-                                </td>
-                                <td>
-                                  <span className={`category-badge ${p.category}`}>{p.category}</span>
-                                </td>
-                                <td style={{ fontWeight: '600' }}>
-                                  ${p.price.toFixed(2)} / {p.unit}
-                                </td>
-                                <td>
-                                  {isOut ? (
-                                    <span style={{ color: 'var(--danger)', fontWeight: '700', backgroundColor: 'rgba(239,68,68,0.1)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem' }}>OUT OF STOCK</span>
-                                  ) : isLow ? (
-                                    <span style={{ color: 'var(--danger)', fontWeight: '600', backgroundColor: 'rgba(239,68,68,0.05)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem' }}>LOW: {p.stock} left</span>
-                                  ) : (
-                                    <span style={{ color: 'var(--success)', fontWeight: '500' }}>{p.stock} units</span>
-                                  )}
-                                </td>
-                                <td style={{ textAlign: 'right' }}>
-                                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                                    <button 
-                                      onClick={() => openEditModal(p)}
-                                      style={{ padding: '6px', borderRadius: '8px', border: '1px solid var(--border-color)', cursor: 'pointer', display: 'flex', color: 'var(--primary)', backgroundColor: 'var(--bg-secondary)' }}
-                                      title="Edit Item"
-                                    >
-                                      <Edit size={16} />
-                                    </button>
-                                    <button 
-                                      onClick={() => handleDeleteProduct(p._id || p.id)}
-                                      style={{ padding: '6px', borderRadius: '8px', border: '1px solid var(--border-color)', cursor: 'pointer', display: 'flex', color: 'var(--danger)', backgroundColor: 'var(--bg-secondary)' }}
-                                      title="Delete Item"
-                                    >
-                                      <Trash2 size={16} />
-                                    </button>
-                                  </div>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
+                {activeTab === 'catalog' && (
+                  <div className="animate-fade-in">
+                    {/* Main section bar */}
+                    <div className="flex-between" style={{ marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                      <h2 style={{ fontSize: '1.3rem', fontWeight: 800 }}>My Product Catalog</h2>
+                      <button onClick={openAddModal} className="btn btn-primary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
+                        <Plus size={16} /> Add Catalog Product
+                      </button>
                     </div>
+
+                    {/* Catalog Table */}
+                    {products.length === 0 ? (
+                      <div className="glass-panel" style={{ padding: '48px 24px', borderRadius: '16px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                        <ShoppingBag size={36} style={{ color: 'var(--text-muted)', marginBottom: '12px', margin: '0 auto' }} />
+                        <h3>No Products Listed</h3>
+                        <p style={{ fontSize: '0.85rem', marginTop: '4px' }}>
+                          Your catalog is currently empty. Start publishing fresh organic items to attract shoppers.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="glass-panel" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+                        <div style={{ overflowX: 'auto' }}>
+                          <table>
+                            <thead>
+                              <tr style={{ color: 'var(--text-secondary)', backgroundColor: 'rgba(255,255,255,0.01)', textAlign: 'left', borderBottom: '1px solid var(--border-color)', fontSize: '0.85rem' }}>
+                                <th style={{ padding: '16px 20px' }}>Product</th>
+                                <th style={{ padding: '16px 20px' }}>Category</th>
+                                <th style={{ padding: '16px 20px' }}>Unit Price</th>
+                                <th style={{ padding: '16px 20px' }}>Current Stock</th>
+                                <th style={{ padding: '16px 20px', textAlign: 'right' }}>Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {products.map((p) => {
+                                const isOut = p.stock <= 0;
+                                const isLow = p.stock <= 5;
+                                return (
+                                  <tr key={p._id || p.id} className="table-row-hover" style={{ transition: 'background-color 0.2s', fontSize: '0.9rem' }}>
+                                    <td style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 20px' }}>
+                                      <img src={p.image} alt={p.name} style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} />
+                                      <span style={{ fontWeight: '600' }}>{p.name}</span>
+                                    </td>
+                                    <td>
+                                      <span className={`category-badge ${p.category}`}>{p.category}</span>
+                                    </td>
+                                    <td style={{ fontWeight: '600' }}>
+                                      ${p.price.toFixed(2)} / {p.unit}
+                                    </td>
+                                    <td>
+                                      {isOut ? (
+                                        <span style={{ color: 'var(--danger)', fontWeight: '700', backgroundColor: 'rgba(239,68,68,0.1)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem' }}>OUT OF STOCK</span>
+                                      ) : isLow ? (
+                                        <span style={{ color: 'var(--danger)', fontWeight: '600', backgroundColor: 'rgba(239,68,68,0.05)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem' }}>LOW: {p.stock} left</span>
+                                      ) : (
+                                        <span style={{ color: 'var(--success)', fontWeight: '500' }}>{p.stock} units</span>
+                                      )}
+                                    </td>
+                                    <td style={{ textAlign: 'right' }}>
+                                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                                        <button 
+                                          onClick={() => openEditModal(p)}
+                                          style={{ padding: '6px', borderRadius: '8px', border: '1px solid var(--border-color)', cursor: 'pointer', display: 'flex', color: 'var(--primary)', backgroundColor: 'var(--bg-secondary)' }}
+                                          title="Edit Item"
+                                        >
+                                          <Edit size={16} />
+                                        </button>
+                                        <button 
+                                          onClick={() => handleDeleteProduct(p._id || p.id)}
+                                          style={{ padding: '6px', borderRadius: '8px', border: '1px solid var(--border-color)', cursor: 'pointer', display: 'flex', color: 'var(--danger)', backgroundColor: 'var(--bg-secondary)' }}
+                                          title="Delete Item"
+                                        >
+                                          <Trash2 size={16} />
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {activeTab === 'orders' && (
+                  <div className="animate-fade-in">
+                    <div className="flex-between" style={{ marginBottom: '16px' }}>
+                      <h2 style={{ fontSize: '1.3rem', fontWeight: 800 }}>Fulfillment & Item Requests</h2>
+                      <button onClick={() => fetchOrders(token)} className="btn btn-secondary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
+                        <RefreshCw size={14} /> Refresh
+                      </button>
+                    </div>
+
+                    {orders.length === 0 ? (
+                      <div className="glass-panel" style={{ padding: '48px 24px', borderRadius: '16px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                        <ShoppingBag size={36} style={{ color: 'var(--text-muted)', marginBottom: '12px', margin: '0 auto' }} />
+                        <h3>No Fulfillment Requests</h3>
+                        <p style={{ fontSize: '0.85rem', marginTop: '4px' }}>
+                          There are currently no orders containing items from your catalog.
+                        </p>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        {orders.map((order) => {
+                          const vendorItems = (order.items || []).filter(item => item.vendorId === vendorUser._id);
+                          if (vendorItems.length === 0) return null;
+
+                          const orderId = order._id?.toString() || order.id?.toString() || '';
+                          const shortId = orderId ? orderId.slice(-8) : 'N/A';
+                          
+                          const isVendorApproved = vendorItems.every(item => item.vendorApproved);
+
+                          return (
+                            <div key={orderId} className="glass-panel animate-scale-up" style={{ padding: '24px', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
+                              {/* Header */}
+                              <div className="flex-between" style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '14px', marginBottom: '14px' }}>
+                                <div>
+                                  <div style={{ fontWeight: '700', fontFamily: 'monospace' }}>ORDER REQUEST #{shortId}</div>
+                                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                                    Placed on {order.createdAt ? new Date(order.createdAt).toLocaleString() : 'N/A'}
+                                  </div>
+                                </div>
+                                <div>
+                                  <span style={{
+                                    padding: '4px 12px',
+                                    borderRadius: '20px',
+                                    fontSize: '0.75rem',
+                                    fontWeight: '600',
+                                    backgroundColor: isVendorApproved ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)',
+                                    color: isVendorApproved ? '#10b981' : '#f59e0b'
+                                  }}>
+                                    {isVendorApproved ? 'Approved by You' : 'Approval Pending'}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Details */}
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
+                                <div>
+                                  <h4 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>Pickup Location (Your Store)</h4>
+                                  <div style={{ fontSize: '0.85rem', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <MapPin size={14} style={{ color: 'var(--primary)' }} /> {vendorUser.address || 'Address not configured'}
+                                  </div>
+
+                                  <h4 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '16px', marginBottom: '8px' }}>Delivery Address (Customer)</h4>
+                                  <div style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>
+                                    <div style={{ fontWeight: '600' }}>{order.shippingDetails?.name}</div>
+                                    <div style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>{order.shippingDetails?.address}</div>
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <h4 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>Requested Items from Your Store</h4>
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                    {vendorItems.map((item, idx) => (
+                                      <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                          <img src={item.image} alt={item.name} style={{ width: '32px', height: '32px', borderRadius: '6px', objectFit: 'cover' }} />
+                                          <div>
+                                            <div style={{ fontWeight: '500' }}>{item.name}</div>
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.quantity} x {item.unit}</div>
+                                          </div>
+                                        </div>
+                                        <span style={{ fontWeight: '600' }}>${(item.price * item.quantity).toFixed(2)}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Action Footer */}
+                              {!isVendorApproved && (
+                                <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end' }}>
+                                  {order.status === 'Pending Vendor Approval' ? (
+                                    <button
+                                      onClick={() => handleApproveOrder(order._id)}
+                                      className="btn btn-primary"
+                                      style={{ padding: '8px 16px', fontSize: '0.85rem' }}
+                                    >
+                                      Approve Item Request
+                                    </button>
+                                  ) : (
+                                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                                      Waiting for Admin Validation...
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
               </>

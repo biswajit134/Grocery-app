@@ -149,6 +149,27 @@ function App() {
     }
   };
 
+  // Accept a delivery request
+  const handleAcceptDelivery = async (orderId) => {
+    try {
+      const res = await fetch(`${ORDER_URL}/${orderId}/driver-accept`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        fetchDeliveries(token);
+      } else {
+        const err = await res.json();
+        alert(err.message || 'Failed to accept delivery request');
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   // Stats helper variables
   const activeDeliveries = deliveries.filter(d => d.deliveryStatus !== 'Delivered');
   const completedDeliveries = deliveries.filter(d => d.deliveryStatus === 'Delivered');
@@ -394,6 +415,19 @@ function App() {
                       {/* Recipient Details & Items list */}
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '16px' }}>
                         <div>
+                          {/* Pick Up Addresses */}
+                          <h4 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>Pick Up Address(es)</h4>
+                          <div style={{ fontSize: '0.85rem', lineHeight: '1.4', display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '16px' }}>
+                            {Array.from(new Set((order.items || []).map(i => i.vendorAddress).filter(Boolean))).map((addr, idx) => (
+                              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-primary)' }}>
+                                <MapPin size={14} style={{ color: 'var(--primary)' }} /> {addr}
+                              </div>
+                            ))}
+                            {Array.from(new Set((order.items || []).map(i => i.vendorAddress).filter(Boolean))).length === 0 && (
+                              <div style={{ color: 'var(--text-muted)' }}>No pick up address recorded.</div>
+                            )}
+                          </div>
+
                           <h4 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>Delivery Destination</h4>
                           <div style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>
                             <div style={{ fontWeight: '600' }}>{order.shippingDetails?.name || 'N/A'}</div>
@@ -430,7 +464,7 @@ function App() {
                       </div>
 
                       {/* Map/Transit Tracker simulation widget */}
-                      {!isDelivered && (
+                      {!isDelivered && order.deliveryStatus !== 'Pending Driver Acceptance' && (
                         <div style={{ margin: '20px 0' }}>
                           <h4 style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '6px' }}>Transit Progress Map</h4>
                           <div className="road-container">
@@ -468,7 +502,15 @@ function App() {
                       {/* Interactive Logistics Driver Buttons */}
                       {!isDelivered && (
                         <div style={{ display: 'flex', gap: '10px', marginTop: '16px', borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
-                          {order.deliveryStatus === 'Accepted' ? (
+                          {order.deliveryStatus === 'Pending Driver Acceptance' ? (
+                            <button 
+                              onClick={() => handleAcceptDelivery(orderId)}
+                              className="btn btn-primary"
+                              style={{ flex: 1, padding: '10px', backgroundColor: 'var(--primary)' }}
+                            >
+                              Accept Delivery Request
+                            </button>
+                          ) : order.deliveryStatus === 'Accepted' ? (
                             <button 
                               onClick={() => handleUpdateStatus(orderId, 'Picked Up')}
                               className="btn btn-primary"

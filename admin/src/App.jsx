@@ -365,6 +365,26 @@ export default function App() {
     }
   };
 
+  const validateOrder = async (orderId) => {
+    setError('');
+    setSuccess('');
+    try {
+      const res = await fetch(`${ORDER_URL}/${orderId}/validate`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!res.ok) throw new Error('Failed to validate order');
+      setSuccess('Order validated successfully!');
+      fetchData();
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   const updateOrderStatus = async (orderId, status) => {
     setError('');
     setSuccess('');
@@ -807,17 +827,13 @@ export default function App() {
                           )}
                         </td>
                         <td>
-                          {order.assignedDriverId ? (
-                            <div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem' }}>
-                                <Truck size={14} color="var(--primary)" />
-                                <span>{order.assignedDriverName}</span>
-                              </div>
-                              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                                Status: {order.deliveryStatus || 'Pending'}
-                              </span>
-                            </div>
-                          ) : (
+                          {order.status === 'Pending Admin Validation' && (
+                            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Admin Validation Pending</span>
+                          )}
+                          {order.status === 'Pending Vendor Approval' && (
+                            <span style={{ fontSize: '0.85rem', color: 'var(--accent)' }}>Waiting for Vendor Approval</span>
+                          )}
+                          {order.status === 'Pending Driver Assignment' && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                               <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Assign a driver:</span>
                               <select 
@@ -840,19 +856,38 @@ export default function App() {
                               </select>
                             </div>
                           )}
+                          {order.status === 'Pending Driver Acceptance' && (
+                            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                              <div>🚚 Assigned: <strong>{order.assignedDriverName}</strong></div>
+                              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>Waiting for acceptance...</div>
+                            </div>
+                          )}
+                          {['Accepted', 'Picked Up', 'Delivered'].includes(order.status) && (
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem' }}>
+                                <Truck size={14} color="var(--primary)" />
+                                <span>{order.assignedDriverName}</span>
+                              </div>
+                              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                Status: {order.deliveryStatus || 'Pending'}
+                              </span>
+                            </div>
+                          )}
                         </td>
                         <td>
-                          <select
-                            className="form-control"
-                            style={{ padding: '6px', fontSize: '0.85rem', width: '150px' }}
-                            value={order.status}
-                            onChange={(e) => updateOrderStatus(order._id, e.target.value)}
-                          >
-                            <option value="Pending">Pending</option>
-                            <option value="Packing">Packing</option>
-                            <option value="Out for Delivery">Out for Delivery</option>
-                            <option value="Delivered">Delivered</option>
-                          </select>
+                          {order.status === 'Pending Admin Validation' ? (
+                            <button
+                              onClick={() => validateOrder(order._id)}
+                              className="btn btn-primary"
+                              style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+                            >
+                              Validate Request
+                            </button>
+                          ) : (
+                            <span className={`status-badge ${order.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                              {order.status}
+                            </span>
+                          )}
                         </td>
                       </tr>
                     ))}

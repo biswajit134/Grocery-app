@@ -13,6 +13,7 @@ const PORT = process.env.PORT || 5003;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/grocery_orders';
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwtkeyforgroceryhub';
 const PRODUCT_SERVICE_URL = process.env.PRODUCT_SERVICE_URL || 'http://product-service:5002';
+const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://auth-service:5001';
 
 // Middleware
 app.use(express.json());
@@ -95,13 +96,29 @@ app.post('/api/orders', authMiddleware, async (req, res) => {
         // Use discountPrice if active
         const unitPrice = (product.discountPrice !== null && product.discountPrice !== undefined) ? product.discountPrice : product.price;
 
+        let vendorAddress = 'N/A';
+        if (product.vendorId) {
+          try {
+            const authRes = await axios.get(`${AUTH_SERVICE_URL}/api/auth/users/${product.vendorId}`);
+            if (authRes.data && authRes.data.address) {
+              vendorAddress = authRes.data.address;
+            }
+          } catch (authErr) {
+            console.error(`Failed to fetch vendor address for vendorId ${product.vendorId}:`, authErr.message);
+          }
+        }
+
         updatedItems.push({
           productId: item.productId,
           name: item.name,
           price: unitPrice,
           quantity: item.quantity,
           unit: item.unit,
-          image: item.image
+          image: item.image,
+          vendorId: product.vendorId || null,
+          vendorName: product.vendorName || null,
+          vendorAddress: vendorAddress,
+          vendorApproved: false
         });
 
       } catch (productErr) {
@@ -152,7 +169,8 @@ app.post('/api/orders', authMiddleware, async (req, res) => {
       discountAmount,
       paymentMethod,
       paymentStatus: paymentMethod === 'card' ? 'Paid' : 'Pending',
-      status: 'Pending'
+      status: 'Pending Admin Validation',
+      deliveryStatus: 'Pending Admin Validation'
     });
 
     await newOrder.save();
@@ -194,7 +212,15 @@ app.put('/api/orders/:id/status', authMiddleware, adminMiddleware, async (req, r
       return res.status(400).json({ message: 'Status is required' });
     }
 
-    const validStatuses = ['Pending', 'Packing', 'Out for Delivery', 'Delivered'];
+    const validStatuses = [
+      'Pending Admin Validation',
+      'Pending Vendor Approval',
+      'Pending Driver Assignment',
+      'Pending Driver Acceptance',
+      'Accepted',
+      'Picked Up',
+      'Delivered'
+    ];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: 'Invalid order status' });
     }
@@ -225,6 +251,92 @@ app.put('/api/orders/:id/status', authMiddleware, adminMiddleware, async (req, r
   }
 });
 
+// 5b. Admin validates request (Admin only)
+app.put('/api/orders/:id/validate', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const order = await Order.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: {
+          status: 'Pending Vendor Approval',
+          deliveryStatus: 'Pending Vendor Approval'
+        }
+      },
+      { new: true }
+    );
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    res.json(order);
+  } catch (error) {
+    console.error('Validate order error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// 5c. Vendor views their item requests (Vendor only)
+app.get('/api/orders/vendor/my-orders', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== 'vendor') {
+      return res.status(403).json({ message: 'Access denied. Vendors only.' });
+    }
+
+    // Find orders that contain at least one item owned by this vendor
+    const orders = await Order.find({
+      'items.vendorId': req.user.id
+    }).sort({ createdAt: -1 });
+
+    res.json(orders);
+  } catch (error) {
+    console.error('Get vendor orders error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// 5d. Vendor approves their items (Vendor only)
+app.put('/api/orders/:id/vendor-approve', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== 'vendor') {
+      return res.status(403).json({ message: 'Access denied. Vendors only.' });
+    }
+
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    let updatedAny = false;
+    order.items.forEach(item => {
+      if (item.vendorId === req.user.id) {
+        item.vendorApproved = true;
+        updatedAny = true;
+      }
+    });
+
+    if (!updatedAny) {
+      return res.status(400).json({ message: 'No items in this order belong to you.' });
+    }
+
+    // Check if ALL items in the order are approved
+    const allApproved = order.items.every(item => item.vendorApproved === true);
+    if (allApproved) {
+      order.status = 'Pending Driver Assignment';
+      order.deliveryStatus = 'Pending Driver Assignment';
+    } else {
+      order.status = 'Pending Vendor Approval';
+      order.deliveryStatus = 'Pending Vendor Approval';
+    }
+
+    await order.save();
+    res.json(order);
+  } catch (error) {
+    console.error('Vendor approve order error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
 // 6. Assign driver to order (Admin only)
 app.put('/api/orders/:id/assign', authMiddleware, adminMiddleware, async (req, res) => {
   try {
@@ -239,8 +351,8 @@ app.put('/api/orders/:id/assign', authMiddleware, adminMiddleware, async (req, r
         $set: {
           assignedDriverId: driverId,
           assignedDriverName: driverName,
-          deliveryStatus: 'Accepted',
-          status: 'Packing'
+          deliveryStatus: 'Pending Driver Acceptance',
+          status: 'Pending Driver Acceptance'
         }
       },
       { new: true }
@@ -253,6 +365,33 @@ app.put('/api/orders/:id/assign', authMiddleware, adminMiddleware, async (req, r
     res.json(order);
   } catch (error) {
     console.error('Assign driver error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// 6b. Driver accepts delivery request (Driver only)
+app.put('/api/orders/:id/driver-accept', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== 'driver') {
+      return res.status(403).json({ message: 'Access denied. Drivers only.' });
+    }
+
+    const order = await Order.findOne({
+      _id: req.params.id,
+      assignedDriverId: req.user.id
+    });
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found or not assigned to this driver' });
+    }
+
+    order.status = 'Accepted';
+    order.deliveryStatus = 'Accepted';
+    await order.save();
+
+    res.json(order);
+  } catch (error) {
+    console.error('Driver accept order error:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
@@ -286,7 +425,7 @@ app.put('/api/orders/:id/driver-status', authMiddleware, async (req, res) => {
 
     const updateFields = { deliveryStatus };
     if (deliveryStatus === 'Picked Up') {
-      updateFields.status = 'Out for Delivery';
+      updateFields.status = 'Picked Up';
     } else if (deliveryStatus === 'Delivered') {
       updateFields.status = 'Delivered';
       

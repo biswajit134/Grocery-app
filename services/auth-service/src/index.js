@@ -227,6 +227,20 @@ app.get('/api/auth/me', async (req, res) => {
   }
 });
 
+// Get user details by ID (internal or service lookup)
+app.get('/api/auth/users/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error('Get user by ID error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
 // 5. Get registered drivers (Admin only)
 app.get('/api/auth/drivers', async (req, res) => {
   try {

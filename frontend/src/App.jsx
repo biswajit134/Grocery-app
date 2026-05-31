@@ -608,47 +608,67 @@ function App() {
                         <span style={{ fontSize: '0.65rem', color: 'var(--primary)', marginTop: '4px', fontWeight: '600' }}>Placed</span>
                       </div>
 
-                      {/* State 2: Packing */}
+                      {/* State 2: Validated */}
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2, flex: 1 }}>
                         <div style={{
                           width: '20px',
                           height: '20px',
                           borderRadius: '50%',
-                          backgroundColor: ['Packing', 'Out for Delivery', 'Delivered'].includes(order.status) ? 'var(--primary)' : 'var(--bg-surface)',
+                          backgroundColor: !['Pending Admin Validation'].includes(order.status) ? 'var(--primary)' : 'var(--bg-surface)',
                           border: '2px solid',
-                          borderColor: ['Packing', 'Out for Delivery', 'Delivered'].includes(order.status) ? 'var(--primary)' : 'var(--border-color)',
+                          borderColor: !['Pending Admin Validation'].includes(order.status) ? 'var(--primary)' : 'var(--border-color)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           color: 'white',
                           fontSize: '0.65rem'
                         }}>
-                          {['Packing', 'Out for Delivery', 'Delivered'].includes(order.status) ? '✓' : ''}
+                          {!['Pending Admin Validation'].includes(order.status) ? '✓' : ''}
                         </div>
-                        <span style={{ fontSize: '0.65rem', color: ['Packing', 'Out for Delivery', 'Delivered'].includes(order.status) ? 'var(--text-primary)' : 'var(--text-muted)', marginTop: '4px' }}>Packing</span>
+                        <span style={{ fontSize: '0.65rem', color: !['Pending Admin Validation'].includes(order.status) ? 'var(--text-primary)' : 'var(--text-muted)', marginTop: '4px' }}>Validated</span>
                       </div>
 
-                      {/* State 3: Out for Delivery */}
+                      {/* State 3: Prepared */}
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2, flex: 1 }}>
                         <div style={{
                           width: '20px',
                           height: '20px',
                           borderRadius: '50%',
-                          backgroundColor: ['Out for Delivery', 'Delivered'].includes(order.status) ? 'var(--primary)' : 'var(--bg-surface)',
+                          backgroundColor: !['Pending Admin Validation', 'Pending Vendor Approval'].includes(order.status) ? 'var(--primary)' : 'var(--bg-surface)',
                           border: '2px solid',
-                          borderColor: ['Out for Delivery', 'Delivered'].includes(order.status) ? 'var(--primary)' : 'var(--border-color)',
+                          borderColor: !['Pending Admin Validation', 'Pending Vendor Approval'].includes(order.status) ? 'var(--primary)' : 'var(--border-color)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           color: 'white',
                           fontSize: '0.65rem'
                         }}>
-                          {['Out for Delivery', 'Delivered'].includes(order.status) ? '✓' : ''}
+                          {!['Pending Admin Validation', 'Pending Vendor Approval'].includes(order.status) ? '✓' : ''}
                         </div>
-                        <span style={{ fontSize: '0.65rem', color: ['Out for Delivery', 'Delivered'].includes(order.status) ? 'var(--text-primary)' : 'var(--text-muted)', marginTop: '4px' }}>Transit</span>
+                        <span style={{ fontSize: '0.65rem', color: !['Pending Admin Validation', 'Pending Vendor Approval'].includes(order.status) ? 'var(--text-primary)' : 'var(--text-muted)', marginTop: '4px' }}>Prepared</span>
                       </div>
 
-                      {/* State 4: Delivered */}
+                      {/* State 4: Transit */}
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2, flex: 1 }}>
+                        <div style={{
+                          width: '20px',
+                          height: '20px',
+                          borderRadius: '50%',
+                          backgroundColor: ['Picked Up', 'Delivered'].includes(order.status) ? 'var(--primary)' : 'var(--bg-surface)',
+                          border: '2px solid',
+                          borderColor: ['Picked Up', 'Delivered'].includes(order.status) ? 'var(--primary)' : 'var(--border-color)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white',
+                          fontSize: '0.65rem'
+                        }}>
+                          {['Picked Up', 'Delivered'].includes(order.status) ? '✓' : ''}
+                        </div>
+                        <span style={{ fontSize: '0.65rem', color: ['Picked Up', 'Delivered'].includes(order.status) ? 'var(--text-primary)' : 'var(--text-muted)', marginTop: '4px' }}>Transit</span>
+                      </div>
+
+                      {/* State 5: Delivered */}
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2, flex: 1 }}>
                         <div style={{
                           width: '20px',
@@ -674,7 +694,7 @@ function App() {
                       <div className="flex-between" style={{ marginBottom: '8px' }}>
                         <span style={{ fontSize: '0.85rem', fontWeight: '700' }}>Live Delivery Progress Tracker</span>
                         <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--primary)' }}>
-                          {order.assignedDriverName ? `Assigned Driver: ${order.assignedDriverName}` : 'Assigning Delivery Partner...'}
+                          {order.assignedDriverName ? `Assigned Driver: ${order.assignedDriverName}` : order.status === 'Pending Admin Validation' ? 'Awaiting Validation...' : order.status === 'Pending Vendor Approval' ? 'Awaiting Vendor Preparation...' : 'Assigning Delivery Partner...'}
                         </span>
                       </div>
                       
@@ -686,14 +706,14 @@ function App() {
                         <div 
                           className="pulse-indicator"
                           style={{ 
-                            left: !order.deliveryStatus || order.deliveryStatus === 'Pending Assignment' 
+                            left: ['Pending Admin Validation', 'Pending Vendor Approval', 'Pending Driver Assignment'].includes(order.status)
                               ? '10%' 
-                              : order.deliveryStatus === 'Accepted' 
-                                ? '35%' 
-                                : order.deliveryStatus === 'Picked Up' 
-                                  ? '70%' 
+                              : ['Pending Driver Acceptance', 'Accepted'].includes(order.status)
+                                ? '45%' 
+                                : order.status === 'Picked Up' 
+                                  ? '75%' 
                                   : '100%',
-                            display: order.deliveryStatus === 'Delivered' ? 'none' : 'block'
+                            display: order.status === 'Delivered' ? 'none' : 'block'
                           }}
                         ></div>
 
@@ -701,14 +721,14 @@ function App() {
                         <div 
                           className="motorcycle-icon"
                           style={{ 
-                            left: !order.deliveryStatus || order.deliveryStatus === 'Pending Assignment' 
+                            left: ['Pending Admin Validation', 'Pending Vendor Approval', 'Pending Driver Assignment'].includes(order.status)
                               ? '10%' 
-                              : order.deliveryStatus === 'Accepted' 
-                                ? '35%' 
-                                : order.deliveryStatus === 'Picked Up' 
-                                  ? '70%' 
+                              : ['Pending Driver Acceptance', 'Accepted'].includes(order.status)
+                                ? '45%' 
+                                : order.status === 'Picked Up' 
+                                  ? '75%' 
                                   : '100%',
-                            color: order.deliveryStatus === 'Delivered' ? 'var(--success)' : 'var(--primary)'
+                            color: order.status === 'Delivered' ? 'var(--success)' : 'var(--primary)'
                           }}
                         >
                           <Navigation size={18} style={{ transform: 'rotate(90deg)' }} />
@@ -719,7 +739,7 @@ function App() {
                       <div className="flex-between" style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
                         <span>Warehouse</span>
                         <span>Accepted</span>
-                        <span>Out for Delivery</span>
+                        <span>In Transit</span>
                         <span>Delivered</span>
                       </div>
                     </div>
