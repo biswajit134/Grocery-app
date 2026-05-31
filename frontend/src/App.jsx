@@ -47,6 +47,65 @@ function App() {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
+  // Carousel State
+  const [carouselIndex, setCarouselIndex] = useState(0);
+
+  const carouselItems = [
+    {
+      title: "Organic Harvest Vegetables",
+      subtitle: "FRESH & PESTICIDE FREE",
+      desc: "Vetted to meet strict organic standards. Hand-picked at dawn, delivered directly to your doorstep by evening to preserve nutrients and crisp freshness.",
+      img: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&q=80&w=1200",
+      category: "vegetables"
+    },
+    {
+      title: "Sweet Summer Fruits Selection",
+      subtitle: "100% ORGANIC & SUN-RIPENED",
+      desc: "Succulent honeycrisp apples, wild blueberries, and fresh organic citrus fruits packed with antioxidants. Pure nature's candy.",
+      img: "https://images.unsplash.com/photo-1619546813926-a78fa6372cd2?auto=format&fit=crop&q=80&w=1200",
+      category: "fruits"
+    },
+    {
+      title: "Artisanal Spices & Herbs",
+      subtitle: "FRAGRANT & EXOTIC",
+      desc: "Elevate your home cooking with premium whole turmeric, hand-selected cardamom pods, and crushed black pepper sourced from heritage spice gardens.",
+      img: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&q=80&w=1200",
+      category: "spices"
+    },
+    {
+      title: "Premium Pasture Meat Cuts",
+      subtitle: "CERTIFIED FRESH & DELICATED",
+      desc: "Exquisite cuts of grass-fed Angus ribeye, organic chicken breasts, and farm-fresh deli meats. Properly aged and temperature-controlled.",
+      img: "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&q=80&w=1200",
+      category: "meat"
+    }
+  ];
+
+  // Auto-advance hero carousel
+  useEffect(() => {
+    if (activeView === 'home') {
+      const timer = setInterval(() => {
+        setCarouselIndex((prev) => (prev + 1) % carouselItems.length);
+      }, 5000);
+      return () => clearInterval(timer);
+    }
+  }, [activeView]);
+
+  // Reset category filters when navigating home to ensure rails load correctly
+  useEffect(() => {
+    if (activeView === 'home') {
+      setSelectedCategory('all');
+      setSearchQuery('');
+    }
+  }, [activeView]);
+
+  // Group products by category in-memory for the home rails
+  const vegProducts = products.filter(p => p.category === 'vegetables');
+  const fruitProducts = products.filter(p => p.category === 'fruits');
+  const spiceProducts = products.filter(p => p.category === 'spices');
+  const meatProducts = products.filter(p => p.category === 'meat');
+  const bakeryProducts = products.filter(p => p.category === 'bakery');
+
   // Sync theme
   useEffect(() => {
     if (theme === 'light') {
@@ -285,9 +344,9 @@ function App() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <div className="app-container">
       
-      {/* HEADER NAVBAR */}
+      {/* IMMERSIVE SIDEBAR NAVBAR */}
       <Header 
         theme={theme}
         toggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -305,196 +364,429 @@ function App() {
       />
 
       {/* MAIN BODY CONTENTS */}
-      <main style={{ flexGrow: 1 }}>
-        
-        {/* VIEW 1: LANDING / HOME PAGE */}
-        {activeView === 'home' && (
-          <div className="animate-fade-in">
-            {/* Hero Section */}
-            <section style={{
-              background: 'linear-gradient(135deg, var(--bg-secondary) 0%, rgba(var(--primary-rgb), 0.03) 100%)',
-              padding: '80px 24px',
-              textAlign: 'center',
-              borderBottom: '1px solid var(--border-color)',
-              position: 'relative',
-              overflow: 'hidden'
-            }}>
-              {/* Decorative glows */}
-              <div style={{
-                position: 'absolute',
-                top: '-10%',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                width: '400px',
-                height: '400px',
-                background: 'radial-gradient(circle, var(--card-glow) 0%, transparent 70%)',
-                zIndex: 0,
-                pointerEvents: 'none'
-              }}></div>
-
-              <div className="container" style={{ position: 'relative', zIndex: 1 }}>
-                <span className="category-badge vegetables" style={{ marginBottom: '20px', fontSize: '0.8rem' }}>
-                  <Sparkles size={12} style={{ marginRight: '4px', verticalAlign: 'middle' }} /> Fresh Organic Food
-                </span>
-                
-                <h1 style={{
-                  fontSize: 'clamp(2.2rem, 5vw, 3.8rem)',
-                  fontWeight: 800,
-                  lineHeight: '1.15',
-                  maxWidth: '850px',
-                  margin: '0 auto 20px auto',
-                  fontFamily: 'var(--font-heading)',
-                  letterSpacing: '-0.03em'
-                }}>
-                  Fresh Groceries Delivered <br />
-                  <span style={{
-                    background: 'linear-gradient(to right, var(--primary), var(--accent))',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent'
-                  }}>
-                    Straight To Your Door
-                  </span>
-                </h1>
-
-                <p style={{
-                  color: 'var(--text-secondary)',
-                  fontSize: 'clamp(0.95rem, 2vw, 1.15rem)',
-                  maxWidth: '600px',
-                  margin: '0 auto 32px auto',
-                  lineHeight: '1.6'
-                }}>
-                  GroceryHub sells fresh vegetables, fruits, spices, and premium meat. We harvest at dawn and ship to you by evening.
-                </p>
-
-                <button 
-                  onClick={() => { setSelectedCategory('all'); setActiveView('shop'); }}
-                  className="btn btn-primary"
-                  style={{ padding: '14px 28px', borderRadius: '14px', fontSize: '1.05rem', boxShadow: '0 8px 24px rgba(var(--primary-rgb), 0.15)' }}
-                >
-                  Shop Fresh Now <ArrowRight size={20} />
-                </button>
-              </div>
-            </section>
-
-            {/* Categories Section */}
-            <section style={{ padding: '60px 24px' }}>
-              <div className="container">
-                <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                  <h2 style={{ fontSize: '1.75rem', fontWeight: '800' }}>Explore Fresh Categories</h2>
-                  <p style={{ color: 'var(--text-secondary)', marginTop: '8px' }}>Hand-picked daily with organic validation</p>
-                </div>
-
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                  gap: '20px'
-                }}>
-                  {[
-                    { id: 'vegetables', title: 'Fresh Vegetables', color: '#10b981', img: 'https://images.unsplash.com/photo-1597362925123-77861d3fbac7?auto=format&fit=crop&q=80&w=600', desc: 'Spinach, broccoli, roma tomatoes and carrots.' },
-                    { id: 'fruits', title: 'Sweet Fruits', color: '#f59e0b', img: 'https://images.unsplash.com/photo-1619546813926-a78fa6372cd2?auto=format&fit=crop&q=80&w=600', desc: 'Honeycrisp apples, bananas, fresh blueberries.' },
-                    { id: 'spices', title: 'Fragrant Spices', color: '#ef4444', img: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&q=80&w=600', desc: 'Earthy turmeric, cardamom, black pepper.' },
-                    { id: 'meat', title: 'Premium Meat', color: '#a855f7', img: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&q=80&w=600', desc: 'Angus ribeye, chicken breast, ground turkey.' },
-                    { id: 'bakery', title: 'Oven Fresh Bakery', color: '#d97706', img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80&w=600', desc: 'Artisanal sourdough bread, chocolate croissants, muffins.' }
-                  ].map((cat) => (
-                    <div 
-                      key={cat.id} 
-                      onClick={() => { setSelectedCategory(cat.id); setActiveView('shop'); }}
-                      className="glass-panel card-glow-hover"
-                      style={{
-                        borderRadius: '20px',
-                        overflow: 'hidden',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        border: '1px solid var(--border-color)'
-                      }}
-                    >
-                      <div style={{ height: '140px', width: '100%', overflow: 'hidden' }}>
-                        <img src={cat.img} alt={cat.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      </div>
-                      <div style={{ padding: '20px', flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                        <div>
-                          <h3 style={{ fontSize: '1.15rem', fontWeight: '700', marginBottom: '8px' }}>{cat.title}</h3>
-                          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>{cat.desc}</p>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '14px', fontSize: '0.85rem', fontWeight: '600', color: 'var(--primary)' }}>
-                          Browse Category <ChevronRight size={14} />
-                        </div>
+      <div className="main-content">
+        <main style={{ flexGrow: 1 }}>
+          
+          {/* VIEW 1: LANDING / HOME PAGE */}
+          {activeView === 'home' && (
+            <div className="animate-fade-in">
+              {/* Cinematic Hero Carousel Banner */}
+              <section className="hero-carousel">
+                {carouselItems.map((item, idx) => (
+                  <div 
+                    key={idx}
+                    className={`carousel-slide ${idx === carouselIndex ? 'active' : ''}`}
+                    style={{ backgroundImage: `url(${item.img})` }}
+                  >
+                    <div className="carousel-overlay"></div>
+                    <div className="carousel-content animate-fade-in">
+                      <span className="category-badge vegetables" style={{ marginBottom: '16px', fontSize: '0.75rem', letterSpacing: '0.08em' }}>
+                        {item.subtitle}
+                      </span>
+                      <h1 style={{
+                        fontSize: 'clamp(1.8rem, 4vw, 3rem)',
+                        fontWeight: 850,
+                        lineHeight: '1.2',
+                        marginBottom: '14px',
+                        fontFamily: 'var(--font-heading)',
+                        letterSpacing: '-0.02em',
+                        textShadow: '0 4px 12px rgba(0,0,0,0.5)'
+                      }}>
+                        {item.title}
+                      </h1>
+                      <p style={{
+                        color: '#cbd5e1',
+                        fontSize: 'clamp(0.85rem, 1.8vw, 1rem)',
+                        marginBottom: '24px',
+                        lineHeight: '1.5',
+                        maxWidth: '480px',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.6)'
+                      }}>
+                        {item.desc}
+                      </p>
+                      <div style={{ display: 'flex', gap: '12px' }}>
+                        <button 
+                          onClick={() => { setSelectedCategory(item.category); setActiveView('shop'); }}
+                          className="btn btn-primary"
+                          style={{ padding: '10px 20px', borderRadius: '12px', boxShadow: '0 8px 24px rgba(0, 210, 255, 0.25)', fontSize: '0.9rem' }}
+                        >
+                          Shop Collection <ArrowRight size={16} />
+                        </button>
+                        <button 
+                          onClick={() => { setSelectedCategory('all'); setActiveView('shop'); }}
+                          className="btn btn-secondary"
+                          style={{ padding: '10px 20px', borderRadius: '12px', color: '#ffffff', borderColor: 'rgba(255,255,255,0.2)', backgroundColor: 'rgba(255,255,255,0.08)', fontSize: '0.9rem' }}
+                        >
+                          View All
+                        </button>
                       </div>
                     </div>
+                  </div>
+                ))}
+                <div className="carousel-indicators">
+                  {carouselItems.map((_, idx) => (
+                    <div 
+                      key={idx}
+                      onClick={() => setCarouselIndex(idx)}
+                      className={`carousel-indicator ${idx === carouselIndex ? 'active' : ''}`}
+                    ></div>
                   ))}
                 </div>
-              </div>
-            </section>
+              </section>
 
-            {/* Testimonials or Trust section */}
-            <section style={{
-              background: 'var(--bg-secondary)',
-              padding: '60px 24px',
-              borderTop: '1px solid var(--border-color)',
-              borderBottom: '1px solid var(--border-color)'
-            }}>
-              <div className="container" style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                gap: '40px'
+              {/* Horizontal Category Trays (Rails) */}
+              <section style={{ paddingBottom: '40px' }}>
+                
+                {/* 1. Vegetables Tray */}
+                {vegProducts.length > 0 && (
+                  <div className="tray-section">
+                    <h2 className="tray-title">
+                      <Sparkles size={18} style={{ color: 'var(--primary)', verticalAlign: 'middle' }} /> Fresh Vegetables
+                    </h2>
+                    <button 
+                      className="tray-nav-btn left"
+                      onClick={(e) => {
+                        const rail = e.currentTarget.closest('.tray-section').querySelector('.tray-rail');
+                        rail.scrollLeft -= 320;
+                      }}
+                    >
+                      ‹
+                    </button>
+                    <button 
+                      className="tray-nav-btn right"
+                      onClick={(e) => {
+                        const rail = e.currentTarget.closest('.tray-section').querySelector('.tray-rail');
+                        rail.scrollLeft += 320;
+                      }}
+                    >
+                      ›
+                    </button>
+                    <div className="tray-rail">
+                      {vegProducts.map(product => (
+                        <div key={product._id || product.id} className="tray-card-wrapper">
+                          <ProductCard 
+                            product={product}
+                            onAddToCart={handleAddToCart}
+                            onViewDetails={setSelectedProduct}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. Fruits Tray */}
+                {fruitProducts.length > 0 && (
+                  <div className="tray-section">
+                    <h2 className="tray-title">
+                      <Sparkles size={18} style={{ color: 'var(--primary)', verticalAlign: 'middle' }} /> Organic Fruits
+                    </h2>
+                    <button 
+                      className="tray-nav-btn left"
+                      onClick={(e) => {
+                        const rail = e.currentTarget.closest('.tray-section').querySelector('.tray-rail');
+                        rail.scrollLeft -= 320;
+                      }}
+                    >
+                      ‹
+                    </button>
+                    <button 
+                      className="tray-nav-btn right"
+                      onClick={(e) => {
+                        const rail = e.currentTarget.closest('.tray-section').querySelector('.tray-rail');
+                        rail.scrollLeft += 320;
+                      }}
+                    >
+                      ›
+                    </button>
+                    <div className="tray-rail">
+                      {fruitProducts.map(product => (
+                        <div key={product._id || product.id} className="tray-card-wrapper">
+                          <ProductCard 
+                            product={product}
+                            onAddToCart={handleAddToCart}
+                            onViewDetails={setSelectedProduct}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. Spices Tray */}
+                {spiceProducts.length > 0 && (
+                  <div className="tray-section">
+                    <h2 className="tray-title">
+                      <Sparkles size={18} style={{ color: 'var(--primary)', verticalAlign: 'middle' }} /> Fragrant Spices
+                    </h2>
+                    <button 
+                      className="tray-nav-btn left"
+                      onClick={(e) => {
+                        const rail = e.currentTarget.closest('.tray-section').querySelector('.tray-rail');
+                        rail.scrollLeft -= 320;
+                      }}
+                    >
+                      ‹
+                    </button>
+                    <button 
+                      className="tray-nav-btn right"
+                      onClick={(e) => {
+                        const rail = e.currentTarget.closest('.tray-section').querySelector('.tray-rail');
+                        rail.scrollLeft += 320;
+                      }}
+                    >
+                      ›
+                    </button>
+                    <div className="tray-rail">
+                      {spiceProducts.map(product => (
+                        <div key={product._id || product.id} className="tray-card-wrapper">
+                          <ProductCard 
+                            product={product}
+                            onAddToCart={handleAddToCart}
+                            onViewDetails={setSelectedProduct}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. Meat Tray */}
+                {meatProducts.length > 0 && (
+                  <div className="tray-section">
+                    <h2 className="tray-title">
+                      <Sparkles size={18} style={{ color: 'var(--primary)', verticalAlign: 'middle' }} /> Premium Fresh Meats
+                    </h2>
+                    <button 
+                      className="tray-nav-btn left"
+                      onClick={(e) => {
+                        const rail = e.currentTarget.closest('.tray-section').querySelector('.tray-rail');
+                        rail.scrollLeft -= 320;
+                      }}
+                    >
+                      ‹
+                    </button>
+                    <button 
+                      className="tray-nav-btn right"
+                      onClick={(e) => {
+                        const rail = e.currentTarget.closest('.tray-section').querySelector('.tray-rail');
+                        rail.scrollLeft += 320;
+                      }}
+                    >
+                      ›
+                    </button>
+                    <div className="tray-rail">
+                      {meatProducts.map(product => (
+                        <div key={product._id || product.id} className="tray-card-wrapper">
+                          <ProductCard 
+                            product={product}
+                            onAddToCart={handleAddToCart}
+                            onViewDetails={setSelectedProduct}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 5. Bakery Tray */}
+                {bakeryProducts.length > 0 && (
+                  <div className="tray-section">
+                    <h2 className="tray-title">
+                      <Sparkles size={18} style={{ color: 'var(--primary)', verticalAlign: 'middle' }} /> Oven Fresh Bakery
+                    </h2>
+                    <button 
+                      className="tray-nav-btn left"
+                      onClick={(e) => {
+                        const rail = e.currentTarget.closest('.tray-section').querySelector('.tray-rail');
+                        rail.scrollLeft -= 320;
+                      }}
+                    >
+                      ‹
+                    </button>
+                    <button 
+                      className="tray-nav-btn right"
+                      onClick={(e) => {
+                        const rail = e.currentTarget.closest('.tray-section').querySelector('.tray-rail');
+                        rail.scrollLeft += 320;
+                      }}
+                    >
+                      ›
+                    </button>
+                    <div className="tray-rail">
+                      {bakeryProducts.map(product => (
+                        <div key={product._id || product.id} className="tray-card-wrapper">
+                          <ProductCard 
+                            product={product}
+                            onAddToCart={handleAddToCart}
+                            onViewDetails={setSelectedProduct}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Categories Fast Browse */}
+                <div style={{ marginTop: '40px', padding: '0 24px' }}>
+                  <div style={{ marginBottom: '24px' }}>
+                    <h2 style={{ fontSize: '1.4rem', fontWeight: '800' }}>Browse Categories</h2>
+                    <p style={{ color: 'var(--text-secondary)', marginTop: '4px', fontSize: '0.85rem' }}>Jump directly into fresh catalogs</p>
+                  </div>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: '16px'
+                  }}>
+                    {[
+                      { id: 'vegetables', title: 'Fresh Vegetables', img: 'https://images.unsplash.com/photo-1597362925123-77861d3fbac7?auto=format&fit=crop&q=80&w=300', desc: 'Spinach, romaine, fresh tomatoes.' },
+                      { id: 'fruits', title: 'Sweet Fruits', img: 'https://images.unsplash.com/photo-1619546813926-a78fa6372cd2?auto=format&fit=crop&q=80&w=300', desc: 'Apples, ripe bananas, wild berries.' },
+                      { id: 'spices', title: 'Fragrant Spices', img: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&q=80&w=300', desc: 'Exotic turmeric, whole cardamom.' },
+                      { id: 'meat', title: 'Premium Meat', img: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&q=80&w=300', desc: 'Angus ribeye, fresh poultry cuts.' }
+                    ].map((cat) => (
+                      <div 
+                        key={cat.id} 
+                        onClick={() => { setSelectedCategory(cat.id); setActiveView('shop'); }}
+                        className="glass-panel card-glow-hover"
+                        style={{
+                          borderRadius: '16px',
+                          overflow: 'hidden',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          border: '1px solid var(--border-color)'
+                        }}
+                      >
+                        <div style={{ height: '110px', width: '100%', overflow: 'hidden' }}>
+                          <img src={cat.img} alt={cat.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                        <div style={{ padding: '12px', flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                          <div>
+                            <h3 style={{ fontSize: '0.95rem', fontWeight: '700', marginBottom: '4px' }}>{cat.title}</h3>
+                            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: '1.3' }}>{cat.desc}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+              </section>
+
+              {/* Trust badges footer */}
+              <section style={{
+                background: 'var(--bg-secondary)',
+                padding: '40px 24px',
+                borderTop: '1px solid var(--border-color)',
+                borderBottom: '1px solid var(--border-color)'
               }}>
-                <div style={{ display: 'flex', gap: '16px' }}>
-                  <div style={{ color: 'var(--primary)', backgroundColor: 'rgba(var(--primary-rgb), 0.05)', padding: '12px', borderRadius: '12px', height: 'fit-content' }}>
-                    <Leaf size={24} />
+                <div className="container" style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                  gap: '30px'
+                }}>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <div style={{ color: 'var(--primary)', backgroundColor: 'rgba(var(--primary-rgb), 0.05)', padding: '10px', borderRadius: '10px', height: 'fit-content' }}>
+                      <Leaf size={20} />
+                    </div>
+                    <div>
+                      <h4 style={{ fontSize: '0.95rem', fontWeight: '700', marginBottom: '4px' }}>100% Organic & Fresh</h4>
+                      <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                        All items are vetted to meet organic farming regulations. We support sustainable farms.
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 style={{ fontWeight: '700', marginBottom: '8px' }}>100% Organic & Fresh</h4>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-                      All items are vetted to meet organic farming regulations. We support sustainable farms.
-                    </p>
+
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <div style={{ color: 'var(--primary)', backgroundColor: 'rgba(var(--primary-rgb), 0.05)', padding: '10px', borderRadius: '10px', height: 'fit-content' }}>
+                      <Truck size={20} />
+                    </div>
+                    <div>
+                      <h4 style={{ fontSize: '0.95rem', fontWeight: '700', marginBottom: '4px' }}>Express Logistics</h4>
+                      <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                        Delivered in temperature-controlled boxes. Free delivery for all orders exceeding $30!
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <div style={{ color: 'var(--primary)', backgroundColor: 'rgba(var(--primary-rgb), 0.05)', padding: '10px', borderRadius: '10px', height: 'fit-content' }}>
+                      <Heart size={20} />
+                    </div>
+                    <div>
+                      <h4 style={{ fontSize: '0.95rem', fontWeight: '700', marginBottom: '4px' }}>Satisfaction Vow</h4>
+                      <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                        Not satisfied with freshness? Reach out to support within 24 hours for instant refund processing.
+                      </p>
+                    </div>
                   </div>
                 </div>
+              </section>
 
-                <div style={{ display: 'flex', gap: '16px' }}>
-                  <div style={{ color: 'var(--primary)', backgroundColor: 'rgba(var(--primary-rgb), 0.05)', padding: '12px', borderRadius: '12px', height: 'fit-content' }}>
-                    <Truck size={24} />
-                  </div>
-                  <div>
-                    <h4 style={{ fontWeight: '700', marginBottom: '8px' }}>Express Logistics</h4>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-                      Delivered in temperature-controlled boxes. Free delivery for all orders exceeding $30!
-                    </p>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', gap: '16px' }}>
-                  <div style={{ color: 'var(--primary)', backgroundColor: 'rgba(var(--primary-rgb), 0.05)', padding: '12px', borderRadius: '12px', height: 'fit-content' }}>
-                    <Heart size={24} />
-                  </div>
-                  <div>
-                    <h4 style={{ fontWeight: '700', marginBottom: '8px' }}>Satisfaction Vow</h4>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-                      Not satisfied with freshness? Reach out to support within 24 hours for instant refund processing.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-          </div>
-        )}
-
-        {/* VIEW 2: PRODUCT LISTING / SHOP PAGE */}
-        {activeView === 'shop' && (
-          <div className="container animate-fade-in" style={{ padding: '40px 24px' }}>
-            
-            {/* Header info */}
-            <div style={{ marginBottom: '32px' }}>
-              <h1 style={{ fontSize: '1.8rem', fontWeight: '800', textTransform: 'capitalize' }}>
-                {selectedCategory === 'all' ? 'Fresh Catalog' : selectedCategory}
-              </h1>
-              {searchQuery && (
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '6px' }}>
-                  Showing matches for "{searchQuery}"
-                </p>
-              )}
             </div>
+          )}
+
+          {/* VIEW 2: PRODUCT LISTING / SHOP PAGE */}
+          {activeView === 'shop' && (
+            <div className="container animate-fade-in" style={{ padding: '40px 24px' }}>
+              
+              {/* Header info */}
+              <div style={{ marginBottom: '24px' }}>
+                <h1 style={{ fontSize: '1.8rem', fontWeight: '800', textTransform: 'capitalize' }}>
+                  {selectedCategory === 'all' ? 'Fresh Catalog' : selectedCategory}
+                </h1>
+                {searchQuery && (
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '6px' }}>
+                    Showing matches for "{searchQuery}"
+                  </p>
+                )}
+              </div>
+
+              {/* Catalog Categories Navigation */}
+              <div style={{
+                marginBottom: '32px',
+                paddingBottom: '16px',
+                borderBottom: '1px solid var(--border-color)',
+                overflowX: 'auto',
+                display: 'flex',
+                gap: '12px',
+                scrollbarWidth: 'none'
+              }} className="categories-scrollbar">
+                {[
+                  { id: 'all', label: 'All Items' },
+                  { id: 'vegetables', label: 'Vegetables' },
+                  { id: 'fruits', label: 'Fruits' },
+                  { id: 'spices', label: 'Spices' },
+                  { id: 'meat', label: 'Meat' },
+                  { id: 'bakery', label: 'Bakery' }
+                ].map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedCategory(cat.id)}
+                    style={{
+                      padding: '8px 18px',
+                      borderRadius: '20px',
+                      fontSize: '0.85rem',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.25s',
+                      backgroundColor: selectedCategory === cat.id 
+                        ? 'var(--primary)' 
+                        : 'var(--bg-secondary)',
+                      color: selectedCategory === cat.id
+                        ? '#030b17'
+                        : 'var(--text-secondary)',
+                      border: selectedCategory === cat.id
+                        ? '1px solid var(--primary)'
+                        : '1px solid var(--border-color)',
+                      boxShadow: selectedCategory === cat.id ? '0 0 10px rgba(0, 210, 255, 0.3)' : 'none'
+                    }}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
 
             {/* Grid listing */}
             {products.length === 0 ? (
@@ -911,6 +1203,7 @@ Thank you for shopping at GroceryHub!
           </div>
         </div>
       </footer>
+      </div>
 
       {/* DRAWERS AND OVERLAY MODALS */}
       

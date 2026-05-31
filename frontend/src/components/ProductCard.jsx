@@ -206,7 +206,7 @@ export default function ProductCard({ product, onAddToCart, onViewDetails }) {
       </div>
 
       <style dangerouslySetInnerHTML={{__html: `
-        .product-img-hover:hover {
+        .card-glow-hover:hover .product-img-hover {
           transform: scale(1.08);
         }
       `}} />
