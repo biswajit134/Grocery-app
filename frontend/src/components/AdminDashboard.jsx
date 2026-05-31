@@ -360,33 +360,36 @@ export default function AdminDashboard({
                   </tr>
                 ) : (
                   orders.map((order) => {
+                    if (!order) return null;
+                    const orderId = order._id?.toString() || order.id?.toString() || '';
+                    const shortId = orderId ? orderId.slice(-8) : 'N/A';
                     const nextStat = getNextStatus(order.status);
                     return (
-                      <tr key={order._id || order.id} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background-color 0.2s' }} className="table-row-hover">
+                      <tr key={orderId} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background-color 0.2s' }} className="table-row-hover">
                         {/* ID & Date */}
                         <td style={{ padding: '16px 20px' }}>
-                          <div style={{ fontWeight: '700', fontFamily: 'monospace' }}>#{order._id ? order._id.slice(-8) : order.id?.slice(-8) || order.id}</div>
+                          <div style={{ fontWeight: '700', fontFamily: 'monospace' }}>#{shortId}</div>
                           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                            {new Date(order.createdAt).toLocaleString()}
+                            {order.createdAt ? new Date(order.createdAt).toLocaleString() : 'N/A'}
                           </div>
                         </td>
 
                         {/* Recipient & address */}
                         <td style={{ padding: '16px 20px' }}>
-                          <div style={{ fontWeight: '600' }}>{order.shippingDetails.name}</div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{order.shippingDetails.phone}</div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={order.shippingDetails.address}>
-                            {order.shippingDetails.address}
+                          <div style={{ fontWeight: '600' }}>{order.shippingDetails?.name || 'N/A'}</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{order.shippingDetails?.phone || 'N/A'}</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={order.shippingDetails?.address || ''}>
+                            {order.shippingDetails?.address || 'N/A'}
                           </div>
                           <div style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: '500', marginTop: '2px' }}>
-                            🕒 {order.shippingDetails.deliverySlot}
+                            🕒 {order.shippingDetails?.deliverySlot || 'N/A'}
                           </div>
                         </td>
 
                         {/* Items */}
                         <td style={{ padding: '16px 20px' }}>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            {order.items.map((item, idx) => (
+                            {(order.items || []).map((item, idx) => (
                               <div key={idx} style={{ fontSize: '0.75rem' }}>
                                 • {item.name} <span style={{ color: 'var(--text-muted)' }}>({item.quantity} x {item.unit})</span>
                               </div>
@@ -397,10 +400,10 @@ export default function AdminDashboard({
                         {/* Total & Payment Mode */}
                         <td style={{ padding: '16px 20px' }}>
                           <div style={{ fontWeight: '700', color: 'var(--primary)', fontSize: '0.95rem' }}>
-                            ${order.totalAmount.toFixed(2)}
+                            ${(order.totalAmount || 0).toFixed(2)}
                           </div>
                           <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 'bold', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                            {order.paymentMethod} • <span style={{ color: order.paymentStatus === 'Paid' ? 'var(--primary)' : 'var(--accent)' }}>{order.paymentStatus}</span>
+                            {order.paymentMethod || 'N/A'} • <span style={{ color: order.paymentStatus === 'Paid' ? 'var(--primary)' : 'var(--accent)' }}>{order.paymentStatus || 'N/A'}</span>
                           </div>
                         </td>
 
@@ -415,7 +418,7 @@ export default function AdminDashboard({
                             color: getOrderStatusTextColor(order.status),
                             display: 'inline-block'
                           }}>
-                            {order.status}
+                            {order.status || 'N/A'}
                           </span>
                         </td>
 
@@ -423,7 +426,7 @@ export default function AdminDashboard({
                         <td style={{ padding: '16px 20px', textAlign: 'right' }}>
                           {nextStat ? (
                             <button
-                              onClick={() => onUpdateOrderStatus(order._id || order.id, nextStat)}
+                              onClick={() => onUpdateOrderStatus(orderId, nextStat)}
                               className="btn btn-primary"
                               style={{
                                 padding: '6px 12px',

@@ -630,17 +630,21 @@ function App() {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                {orders.map((order) => (
-                  <div key={order._id || order.id} className="glass-panel animate-fade-in" style={{ borderRadius: '16px', padding: '24px' }}>
-                    
-                    {/* Top Row: ID & Status */}
-                    <div className="flex-between" style={{ flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px', marginBottom: '16px' }}>
-                      <div>
-                        <div style={{ fontWeight: '700', fontFamily: 'monospace' }}>ORDER #{order._id ? order._id.slice(-8) : order.id?.slice(-8)}</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                          Placed on {new Date(order.createdAt).toLocaleString()}
+                {orders.map((order) => {
+                  if (!order) return null;
+                  const orderId = order._id?.toString() || order.id?.toString() || '';
+                  const shortId = orderId ? orderId.slice(-8) : 'N/A';
+                  return (
+                    <div key={orderId} className="glass-panel animate-fade-in" style={{ borderRadius: '16px', padding: '24px' }}>
+                      
+                      {/* Top Row: ID & Status */}
+                      <div className="flex-between" style={{ flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px', marginBottom: '16px' }}>
+                        <div>
+                          <div style={{ fontWeight: '700', fontFamily: 'monospace' }}>ORDER #{shortId}</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                            Placed on {order.createdAt ? new Date(order.createdAt).toLocaleString() : 'N/A'}
+                          </div>
                         </div>
-                      </div>
 
                       <div>
                         <span style={{
@@ -750,10 +754,10 @@ function App() {
                       <div>
                         <h4 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '8px', fontWeight: '600' }}>Items ordered</h4>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                          {order.items.map((item, idx) => (
+                          {(order.items || []).map((item, idx) => (
                             <div key={idx} style={{ fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between' }}>
                               <span>{item.name} <span style={{ color: 'var(--text-muted)' }}>({item.quantity} x {item.unit})</span></span>
-                              <span style={{ fontWeight: '500' }}>${(item.price * item.quantity).toFixed(2)}</span>
+                              <span style={{ fontWeight: '500' }}>${((item.price || 0) * (item.quantity || 0)).toFixed(2)}</span>
                             </div>
                           ))}
                         </div>
@@ -762,9 +766,9 @@ function App() {
                       <div>
                         <h4 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '8px', fontWeight: '600' }}>Delivery Information</h4>
                         <div style={{ fontSize: '0.85rem', lineHeight: '1.4', color: 'var(--text-secondary)' }}>
-                          <div style={{ color: 'var(--text-primary)', fontWeight: '600' }}>{order.shippingDetails.name}</div>
-                          <div>Address: {order.shippingDetails.address}</div>
-                          <div style={{ color: 'var(--accent)', fontWeight: '500', marginTop: '4px' }}>🕒 Slot: {order.shippingDetails.deliverySlot}</div>
+                          <div style={{ color: 'var(--text-primary)', fontWeight: '600' }}>{order.shippingDetails?.name || 'N/A'}</div>
+                          <div>Address: {order.shippingDetails?.address || 'N/A'}</div>
+                          <div style={{ color: 'var(--accent)', fontWeight: '500', marginTop: '4px' }}>🕒 Slot: {order.shippingDetails?.deliverySlot || 'N/A'}</div>
                         </div>
                       </div>
                     </div>
@@ -782,10 +786,10 @@ function App() {
                       <div>
                         <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Amount Paid:</span>
                         <span style={{ fontSize: '1.15rem', fontWeight: '800', color: 'var(--primary)', marginLeft: '8px' }}>
-                          ${order.totalAmount.toFixed(2)}
+                          ${(order.totalAmount || 0).toFixed(2)}
                         </span>
                         <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: '8px', textTransform: 'uppercase', fontWeight: 'bold' }}>
-                          ({order.paymentMethod} • {order.paymentStatus})
+                          ({order.paymentMethod || 'N/A'} • {order.paymentStatus || 'N/A'})
                         </span>
                       </div>
 
@@ -796,25 +800,25 @@ function App() {
 ========================================
              GROCERYHUB RECEIPT         
 ========================================
-Order ID: ${order._id || order.id}
-Date: ${new Date(order.createdAt).toLocaleString()}
-Customer: ${order.customerName}
-Email: ${order.customerEmail}
+Order ID: ${orderId}
+Date: ${order.createdAt ? new Date(order.createdAt).toLocaleString() : 'N/A'}
+Customer: ${order.customerName || 'N/A'}
+Email: ${order.customerEmail || 'N/A'}
 
 SHIPPING DETAILS:
-Name: ${order.shippingDetails.name}
-Phone: ${order.shippingDetails.phone}
-Address: ${order.shippingDetails.address}
-Delivery Slot: ${order.shippingDetails.deliverySlot}
+Name: ${order.shippingDetails?.name || 'N/A'}
+Phone: ${order.shippingDetails?.phone || 'N/A'}
+Address: ${order.shippingDetails?.address || 'N/A'}
+Delivery Slot: ${order.shippingDetails?.deliverySlot || 'N/A'}
 
 ITEMS ORDERED:
-${order.items.map(item => `- ${item.name} (${item.quantity} x {item.unit}) : $${(item.price * item.quantity).toFixed(2)}`).join('\n')}
+${(order.items || []).map(item => `- ${item.name} (${item.quantity} x ${item.unit}) : $${((item.price || 0) * (item.quantity || 0)).toFixed(2)}`).join('\n')}
 
 SUMMARY:
-Total Amount Paid: $${order.totalAmount.toFixed(2)}
-Payment Method: ${order.paymentMethod.toUpperCase()}
-Payment Status: ${order.paymentStatus}
-Order Status: ${order.status}
+Total Amount Paid: $${(order.totalAmount || 0).toFixed(2)}
+Payment Method: ${(order.paymentMethod || '').toUpperCase()}
+Payment Status: ${order.paymentStatus || 'N/A'}
+Order Status: ${order.status || 'N/A'}
 
 Thank you for shopping at GroceryHub!
 ========================================
@@ -822,7 +826,7 @@ Thank you for shopping at GroceryHub!
                           const element = document.createElement("a");
                           const file = new Blob([receiptText], { type: 'text/plain' });
                           element.href = URL.createObjectURL(file);
-                          element.download = `GroceryHub_Receipt_${order._id || 'order'}.txt`;
+                          element.download = `GroceryHub_Receipt_${orderId || 'order'}.txt`;
                           document.body.appendChild(element);
                           element.click();
                           document.body.removeChild(element);
@@ -835,7 +839,8 @@ Thank you for shopping at GroceryHub!
                     </div>
 
                   </div>
-                ))}
+                );
+              })}
               </div>
             )}
           </div>
