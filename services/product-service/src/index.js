@@ -58,12 +58,31 @@ let redisConnected = false;
 })();
 
 // Database connection & Seeding
-mongoose.connect(MONGO_URI)
-  .then(async () => {
-    console.log('Product Service connected to MongoDB');
+async function connectDB() {
+  try {
+    console.log('Attempting to connect to MongoDB with credentials...');
+    await mongoose.connect(MONGO_URI);
+    console.log('Product Service connected to MongoDB successfully.');
     await seedDefaultProducts();
-  })
-  .catch(err => console.error('MongoDB connection error in Product Service:', err));
+  } catch (err) {
+    console.warn('MongoDB connection with credentials failed:', err.message);
+    if (MONGO_URI.includes('@')) {
+      const hostPart = MONGO_URI.split('@')[1];
+      const fallbackURI = `mongodb://${hostPart.split('?')[0]}`;
+      console.log(`Attempting fallback to connection string without credentials: ${fallbackURI}`);
+      try {
+        await mongoose.connect(fallbackURI);
+        console.log('Connected to MongoDB via fallback (no credentials).');
+        await seedDefaultProducts();
+      } catch (fallbackErr) {
+        console.error('MongoDB fallback connection also failed:', fallbackErr.message);
+      }
+    } else {
+      console.error('Database connection completely unreachable.');
+    }
+  }
+}
+connectDB();
 
 const DEFAULT_PRODUCTS = [
   // Vegetables

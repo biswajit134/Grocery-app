@@ -20,9 +20,29 @@ app.use(express.json());
 app.use(cors());
 
 // Database connection
-mongoose.connect(MONGO_URI)
-  .then(() => console.log('Order Service connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error in Order Service:', err));
+async function connectDB() {
+  try {
+    console.log('Attempting to connect to MongoDB with credentials...');
+    await mongoose.connect(MONGO_URI);
+    console.log('Order Service connected to MongoDB successfully.');
+  } catch (err) {
+    console.warn('MongoDB connection with credentials failed:', err.message);
+    if (MONGO_URI.includes('@')) {
+      const hostPart = MONGO_URI.split('@')[1];
+      const fallbackURI = `mongodb://${hostPart.split('?')[0]}`;
+      console.log(`Attempting fallback to connection string without credentials: ${fallbackURI}`);
+      try {
+        await mongoose.connect(fallbackURI);
+        console.log('Connected to MongoDB via fallback (no credentials).');
+      } catch (fallbackErr) {
+        console.error('MongoDB fallback connection also failed:', fallbackErr.message);
+      }
+    } else {
+      console.error('Database connection completely unreachable.');
+    }
+  }
+}
+connectDB();
 
 // Auth Middleware
 const authMiddleware = (req, res, next) => {
