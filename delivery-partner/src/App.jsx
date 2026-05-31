@@ -196,7 +196,7 @@ function App() {
                       required
                       value={name}
                       onChange={e => setName(e.target.value)}
-                      style={{ width: '100%', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '12px 14px 12px 42px', fontSize: '0.9rem' }}
+                      style={{ width: '100%', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '12px 14px 12px 42px', fontSize: '0.9rem' }}
                     />
                     <User size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                   </div>
@@ -207,7 +207,7 @@ function App() {
                       required
                       value={email}
                       onChange={e => setEmail(e.target.value)}
-                      style={{ width: '100%', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '12px 14px 12px 42px', fontSize: '0.9rem' }}
+                      style={{ width: '100%', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '12px 14px 12px 42px', fontSize: '0.9rem' }}
                     />
                     <Mail size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                   </div>
@@ -218,7 +218,7 @@ function App() {
                       required
                       value={phone}
                       onChange={e => setPhone(e.target.value)}
-                      style={{ width: '100%', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '12px 14px 12px 42px', fontSize: '0.9rem' }}
+                      style={{ width: '100%', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '12px 14px 12px 42px', fontSize: '0.9rem' }}
                     />
                     <Phone size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                   </div>
@@ -229,7 +229,7 @@ function App() {
                       required
                       value={address}
                       onChange={e => setAddress(e.target.value)}
-                      style={{ width: '100%', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '12px 14px 12px 42px', fontSize: '0.9rem' }}
+                      style={{ width: '100%', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '12px 14px 12px 42px', fontSize: '0.9rem' }}
                     />
                     <MapPin size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                   </div>
@@ -243,7 +243,7 @@ function App() {
                   required
                   value={username}
                   onChange={e => setUsername(e.target.value)}
-                  style={{ width: '100%', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '12px 14px 12px 42px', fontSize: '0.9rem' }}
+                  style={{ width: '100%', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '12px 14px 12px 42px', fontSize: '0.9rem' }}
                 />
                 <User size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               </div>
@@ -255,7 +255,7 @@ function App() {
                   required
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  style={{ width: '100%', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '12px 14px 12px 42px', fontSize: '0.9rem' }}
+                  style={{ width: '100%', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '12px 14px 12px 42px', fontSize: '0.9rem' }}
                 />
                 <Lock size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               </div>

@@ -35,6 +35,14 @@
   font-family: var(--font-body);
 }
 
+input, select, textarea {
+  color: var(--text-primary) !important;
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--text-muted);
+}
+
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
