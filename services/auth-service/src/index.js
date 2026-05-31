@@ -8,7 +8,7 @@ const User = require('./models/User');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/grocery_auth';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://root:admin@localhost:27017/grocery_auth?authSource=admin';
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwtkeyforgroceryhub';
 
 // Middleware

@@ -10,7 +10,7 @@ const Coupon = require('./models/Coupon');
 
 const app = express();
 const PORT = process.env.PORT || 5003;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/grocery_orders';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://root:admin@localhost:27017/grocery_orders?authSource=admin';
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwtkeyforgroceryhub';
 const PRODUCT_SERVICE_URL = process.env.PRODUCT_SERVICE_URL || 'http://product-service:5002';
 const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://auth-service:5001';

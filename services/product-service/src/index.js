@@ -29,7 +29,7 @@ const authMiddleware = (req, res, next) => {
 
 const app = express();
 const PORT = process.env.PORT || 5002;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/grocery_products';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://root:admin@localhost:27017/grocery_products?authSource=admin';
 const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
 
 // Middleware
