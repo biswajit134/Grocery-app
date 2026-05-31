@@ -59,27 +59,31 @@ let redisConnected = false;
 
 // Database connection & Seeding
 async function connectDB() {
-  try {
-    console.log('Attempting to connect to MongoDB with credentials...');
-    await mongoose.connect(MONGO_URI);
-    console.log('Product Service connected to MongoDB successfully.');
-    await seedDefaultProducts();
-  } catch (err) {
-    console.warn('MongoDB connection with credentials failed:', err.message);
-    if (MONGO_URI.includes('@')) {
-      const hostPart = MONGO_URI.split('@')[1];
-      const fallbackURI = `mongodb://${hostPart.split('?')[0]}`;
-      console.log(`Attempting fallback to connection string without credentials: ${fallbackURI}`);
-      try {
-        await mongoose.connect(fallbackURI);
-        console.log('Connected to MongoDB via fallback (no credentials).');
-        await seedDefaultProducts();
-      } catch (fallbackErr) {
-        console.error('MongoDB fallback connection also failed:', fallbackErr.message);
-      }
-    } else {
-      console.error('Database connection completely unreachable.');
+  const connectionStrings = [
+    MONGO_URI,
+    MONGO_URI.replace('mongodb://mongodb:', 'mongodb://localhost:'),
+    MONGO_URI.includes('@') ? `mongodb://${MONGO_URI.split('@')[1].split('?')[0]}` : null,
+    MONGO_URI.includes('@') ? `mongodb://${MONGO_URI.split('@')[1].split('?')[0]}`.replace('mongodb://mongodb:', 'mongodb://localhost:') : null
+  ].filter(Boolean);
+
+  let connected = false;
+  for (const uri of connectionStrings) {
+    try {
+      const sanitizedURI = uri.replace(/:[^@]+@/, ':****@');
+      console.log(`Attempting to connect to MongoDB: ${sanitizedURI}`);
+      await mongoose.connect(uri, { serverSelectionTimeoutMS: 2000 });
+      console.log('Product Service connected to MongoDB successfully!');
+      connected = true;
+      break;
+    } catch (err) {
+      console.warn(`Connection attempt failed for ${uri.split('@')[1] || uri}:`, err.message);
     }
+  }
+
+  if (connected) {
+    await seedDefaultProducts();
+  } else {
+    console.error('All database connection strategies failed in Product Service.');
   }
 }
 connectDB();
