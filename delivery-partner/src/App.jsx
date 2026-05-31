@@ -82,6 +82,16 @@ function App() {
     }
   }, [token]);
 
+  // Poll driver deliveries in background
+  useEffect(() => {
+    if (token && driverUser) {
+      const interval = setInterval(() => {
+        fetchDeliveries(token);
+      }, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [token, driverUser]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setErrorMsg('');

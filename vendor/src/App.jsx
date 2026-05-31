@@ -148,6 +148,16 @@ function App() {
     }
   }, [token]);
 
+  // Poll orders list in background
+  useEffect(() => {
+    if (token && vendorUser && vendorUser.isApproved) {
+      const interval = setInterval(() => {
+        fetchOrders(token);
+      }, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [token, vendorUser]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setErrorMsg('');

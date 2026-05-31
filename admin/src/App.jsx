@@ -69,9 +69,36 @@ export default function App() {
     isActive: true
   });
 
+  const pollActiveData = async () => {
+    if (!token) return;
+    try {
+      const headers = { 'Authorization': `Bearer ${token}` };
+      
+      // Fetch Orders
+      const orderRes = await fetch(ORDER_URL, { headers });
+      if (orderRes.ok) {
+        const orderData = await orderRes.json();
+        setOrders(orderData);
+      }
+
+      // Fetch Vendors
+      const vendorRes = await fetch(`${AUTH_URL}/vendors`, { headers });
+      if (vendorRes.ok) {
+        const vendorData = await vendorRes.json();
+        setVendors(vendorData);
+      }
+    } catch (err) {
+      console.error('Error polling data:', err);
+    }
+  };
+
   useEffect(() => {
     if (token) {
       fetchData();
+      const interval = setInterval(() => {
+        pollActiveData();
+      }, 3000);
+      return () => clearInterval(interval);
     }
   }, [token]);
 

@@ -78,12 +78,16 @@ function App() {
     fetchProducts();
   }, [selectedCategory, searchQuery]);
 
-  // Load orders when active view is orders or admin
+  // Load and poll orders when user is authenticated
   useEffect(() => {
-    if (currentUser) {
+    if (currentUser && token) {
       fetchOrders();
+      const interval = setInterval(() => {
+        fetchOrders();
+      }, 3000);
+      return () => clearInterval(interval);
     }
-  }, [currentUser, activeView, token]);
+  }, [currentUser, token]);
 
   // API Call: Fetch User Profile
   const fetchUserProfile = async () => {
