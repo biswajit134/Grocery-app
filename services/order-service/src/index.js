@@ -190,6 +190,95 @@ app.put('/api/orders/:id/status', authMiddleware, adminMiddleware, async (req, r
   }
 });
 
+// 6. Assign driver to order (Admin only)
+app.put('/api/orders/:id/assign', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { driverId, driverName } = req.body;
+    if (!driverId || !driverName) {
+      return res.status(400).json({ message: 'Driver details (driverId, driverName) are required' });
+    }
+
+    const order = await Order.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: {
+          assignedDriverId: driverId,
+          assignedDriverName: driverName,
+          deliveryStatus: 'Accepted',
+          status: 'Packing'
+        }
+      },
+      { new: true }
+    );
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    res.json(order);
+  } catch (error) {
+    console.error('Assign driver error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// 7. Get driver assigned deliveries (Driver only)
+app.get('/api/orders/driver/my-deliveries', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== 'driver') {
+      return res.status(403).json({ message: 'Access denied. Drivers only.' });
+    }
+
+    const orders = await Order.find({ assignedDriverId: req.user.id }).sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (error) {
+    console.error('Get driver deliveries error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// 8. Update delivery status by driver (Driver only)
+app.put('/api/orders/:id/driver-status', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== 'driver') {
+      return res.status(403).json({ message: 'Access denied. Drivers only.' });
+    }
+
+    const { deliveryStatus } = req.body;
+    if (!['Picked Up', 'Delivered'].includes(deliveryStatus)) {
+      return res.status(400).json({ message: 'Invalid delivery status. Must be "Picked Up" or "Delivered".' });
+    }
+
+    const updateFields = { deliveryStatus };
+    if (deliveryStatus === 'Picked Up') {
+      updateFields.status = 'Out for Delivery';
+    } else if (deliveryStatus === 'Delivered') {
+      updateFields.status = 'Delivered';
+      
+      // If payment method is COD, mark payment status as Paid upon delivery
+      const orderCheck = await Order.findById(req.params.id);
+      if (orderCheck && orderCheck.paymentMethod === 'cod') {
+        updateFields.paymentStatus = 'Paid';
+      }
+    }
+
+    const order = await Order.findOneAndUpdate(
+      { _id: req.params.id, assignedDriverId: req.user.id },
+      { $set: updateFields },
+      { new: true }
+    );
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found or not assigned to this driver' });
+    }
+
+    res.json(order);
+  } catch (error) {
+    console.error('Update driver status error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Order Service running on port ${PORT}`);
 });

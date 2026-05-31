@@ -18,7 +18,8 @@ import {
   TrendingUp,
   Truck,
   Heart,
-  Download
+  Download,
+  Navigation
 } from 'lucide-react';
 
 const AUTH_URL = import.meta.env.VITE_AUTH_URL || 'http://localhost:5001/api/auth';
@@ -750,6 +751,61 @@ function App() {
                           {order.status === 'Delivered' ? '✓' : ''}
                         </div>
                         <span style={{ fontSize: '0.65rem', color: order.status === 'Delivered' ? 'var(--text-primary)' : 'var(--text-muted)', marginTop: '4px' }}>Delivered</span>
+                      </div>
+                    </div>
+
+                    {/* Live Transit Tracker simulation widget */}
+                    <div style={{ marginBottom: '24px', padding: '16px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-color)' }}>
+                      <div className="flex-between" style={{ marginBottom: '8px' }}>
+                        <span style={{ fontSize: '0.85rem', fontWeight: '700' }}>Live Delivery Progress Tracker</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--primary)' }}>
+                          {order.assignedDriverName ? `Assigned Driver: ${order.assignedDriverName}` : 'Assigning Delivery Partner...'}
+                        </span>
+                      </div>
+                      
+                      <div className="road-container">
+                        <div className="road-line"></div>
+                        <div className="road-dot start"></div>
+                        
+                        {/* Pulse indicator behind the motorcycle */}
+                        <div 
+                          className="pulse-indicator"
+                          style={{ 
+                            left: !order.deliveryStatus || order.deliveryStatus === 'Pending Assignment' 
+                              ? '10%' 
+                              : order.deliveryStatus === 'Accepted' 
+                                ? '35%' 
+                                : order.deliveryStatus === 'Picked Up' 
+                                  ? '70%' 
+                                  : '100%',
+                            display: order.deliveryStatus === 'Delivered' ? 'none' : 'block'
+                          }}
+                        ></div>
+
+                        {/* Active Driver motorcycle icon */}
+                        <div 
+                          className="motorcycle-icon"
+                          style={{ 
+                            left: !order.deliveryStatus || order.deliveryStatus === 'Pending Assignment' 
+                              ? '10%' 
+                              : order.deliveryStatus === 'Accepted' 
+                                ? '35%' 
+                                : order.deliveryStatus === 'Picked Up' 
+                                  ? '70%' 
+                                  : '100%',
+                            color: order.deliveryStatus === 'Delivered' ? 'var(--success)' : 'var(--primary)'
+                          }}
+                        >
+                          <Navigation size={18} style={{ transform: 'rotate(90deg)' }} />
+                        </div>
+
+                        <div className="road-dot end"></div>
+                      </div>
+                      <div className="flex-between" style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                        <span>Warehouse</span>
+                        <span>Accepted</span>
+                        <span>Out for Delivery</span>
+                        <span>Delivered</span>
                       </div>
                     </div>
 

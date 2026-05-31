@@ -18,6 +18,7 @@ export default function AuthModal({ isOpen, onClose, onLogin, onRegister }) {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
+  const [role, setRole] = useState('user');
 
   const handleTabChange = (isLogin) => {
     setIsLoginTab(isLogin);
@@ -44,7 +45,7 @@ export default function AuthModal({ isOpen, onClose, onLogin, onRegister }) {
           setLoading(false);
           return;
         }
-        await onRegister({ username, password, name, email, phone, address });
+        await onRegister({ username, password, name, email, phone, address, role });
         onClose();
       }
     } catch (err) {
@@ -299,6 +300,28 @@ export default function AuthModal({ isOpen, onClose, onLogin, onRegister }) {
                       />
                       <MapPin size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                     </div>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '500', marginBottom: '6px', color: 'var(--text-secondary)' }}>
+                      Account Type *
+                    </label>
+                    <select
+                      value={role}
+                      onChange={(e) => setRole(e.target.value)}
+                      style={{
+                        width: '100%',
+                        backgroundColor: 'var(--bg-secondary)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '10px',
+                        padding: '10px 14px',
+                        fontSize: '0.9rem',
+                        color: 'var(--text-primary)',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <option value="user">Customer</option>
+                      <option value="driver">Delivery Driver</option>
+                    </select>
                   </div>
                 </>
               )}

@@ -50,6 +50,19 @@ const OrderSchema = new mongoose.Schema({
     enum: ['Pending', 'Packing', 'Out for Delivery', 'Delivered'],
     default: 'Pending'
   },
+  assignedDriverId: {
+    type: String,
+    default: null
+  },
+  assignedDriverName: {
+    type: String,
+    default: null
+  },
+  deliveryStatus: {
+    type: String,
+    enum: ['Pending Assignment', 'Accepted', 'Picked Up', 'Delivered'],
+    default: 'Pending Assignment'
+  },
   createdAt: {
     type: Date,
     default: Date.now

@@ -55,7 +55,7 @@ app.get('/health', (req, res) => {
 // 2. Register User
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { username, email, password, name, phone, address } = req.body;
+    const { username, email, password, name, phone, address, role } = req.body;
 
     if (!username || !email || !password || !name) {
       return res.status(400).json({ message: 'Please enter all required fields' });
@@ -77,7 +77,7 @@ app.post('/api/auth/register', async (req, res) => {
       name,
       phone: phone || '',
       address: address || '',
-      role: 'user' // Default role is user
+      role: (role === 'driver' || role === 'user') ? role : 'user'
     });
 
     await newUser.save();
@@ -211,6 +211,28 @@ app.get('/api/auth/me', async (req, res) => {
   } catch (error) {
     console.error('Verify token error:', error);
     res.status(401).json({ message: 'Token is not valid' });
+  }
+});
+
+// 5. Get registered drivers (Admin only)
+app.get('/api/auth/drivers', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'No token, authorization denied' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied. Admins only.' });
+    }
+
+    const drivers = await User.find({ role: 'driver' }).select('-password');
+    res.json(drivers);
+  } catch (error) {
+    console.error('Fetch drivers error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 });
 

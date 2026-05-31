@@ -24,6 +24,28 @@ export default function AdminDashboard({
   const [activeTab, setActiveTab] = useState('products'); // 'products' or 'orders'
   const [editingProduct, setEditingProduct] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [drivers, setDrivers] = useState([]);
+  
+  React.useEffect(() => {
+    const fetchDrivers = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const res = await fetch('http://localhost:5001/api/auth/drivers', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setDrivers(data);
+        }
+      } catch (error) {
+        console.error('Error fetching drivers in admin dashboard:', error);
+      }
+    };
+    if (activeTab === 'orders') {
+      fetchDrivers();
+    }
+  }, [activeTab]);
 
   // Form states for Add/Edit
   const [prodName, setProdName] = useState('');
@@ -407,7 +429,7 @@ export default function AdminDashboard({
                           </div>
                         </td>
 
-                        {/* Status Badge */}
+                        {/* Logistics Status & Driver Assignment */}
                         <td style={{ padding: '16px 20px' }}>
                           <span style={{
                             padding: '4px 10px',
@@ -416,10 +438,71 @@ export default function AdminDashboard({
                             fontWeight: '600',
                             backgroundColor: getOrderStatusColor(order.status),
                             color: getOrderStatusTextColor(order.status),
-                            display: 'inline-block'
+                            display: 'inline-block',
+                            marginBottom: '6px'
                           }}>
                             {order.status || 'N/A'}
                           </span>
+
+                          {order.status !== 'Delivered' && (
+                            <div style={{ marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              {order.assignedDriverName ? (
+                                <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                                  Driver: <span style={{ color: 'var(--primary)', fontWeight: '600' }}>{order.assignedDriverName}</span>
+                                </div>
+                              ) : (
+                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                                  Unassigned
+                                </div>
+                              )}
+
+                              <select
+                                onChange={async (e) => {
+                                  const val = e.target.value;
+                                  if (!val) return;
+                                  const [dId, dName] = val.split('|');
+
+                                  try {
+                                    const token = localStorage.getItem('token');
+                                    const res = await fetch(`http://localhost:5003/api/orders/${orderId}/assign`, {
+                                      method: 'PUT',
+                                      headers: {
+                                        'Content-Type': 'application/json',
+                                        Authorization: `Bearer ${token}`
+                                      },
+                                      body: JSON.stringify({ driverId: dId, driverName: dName })
+                                    });
+                                    if (res.ok) {
+                                      onUpdateOrderStatus(orderId, order.status);
+                                    } else {
+                                      const err = await res.json();
+                                      alert(err.message || 'Assignment failed');
+                                    }
+                                  } catch (err) {
+                                    console.error(err);
+                                  }
+                                }}
+                                defaultValue=""
+                                style={{
+                                  backgroundColor: 'var(--bg-secondary)',
+                                  border: '1px solid var(--border-color)',
+                                  borderRadius: '6px',
+                                  padding: '4px 6px',
+                                  fontSize: '0.75rem',
+                                  color: 'var(--text-secondary)',
+                                  cursor: 'pointer',
+                                  maxWidth: '140px'
+                                }}
+                              >
+                                <option value="" disabled>Assign Driver...</option>
+                                {drivers.map(d => (
+                                  <option key={d._id || d.id} value={`${d._id || d.id}|${d.name}`}>
+                                    {d.name}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          )}
                         </td>
 
                         {/* Logistics Updates */}
@@ -555,6 +638,7 @@ export default function AdminDashboard({
                         <option value="fruits">Fruits</option>
                         <option value="spices">Spices</option>
                         <option value="meat">Meat</option>
+                        <option value="bakery">Bakery</option>
                       </select>
                     </div>
 

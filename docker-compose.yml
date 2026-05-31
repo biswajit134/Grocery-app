@@ -68,6 +68,17 @@ services:
     networks:
       - grocery-network
 
+  delivery-partner:
+    build: ./delivery-partner
+    container_name: grocery-delivery-partner
+    ports:
+      - "3001:3001"
+    depends_on:
+      - auth-service
+      - order-service
+    networks:
+      - grocery-network
+
 volumes:
   mongodb_data:
   redis_data:
