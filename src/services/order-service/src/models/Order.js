@@ -58,7 +58,12 @@ const OrderSchema = new mongoose.Schema({
       'Pending Driver Acceptance',
       'Accepted',
       'Picked Up',
-      'Delivered'
+      'Delivered',
+      'Rejected by Admin',
+      'Rejected by Vendor',
+      'Return Requested',
+      'Returned',
+      'Cancelled'
     ],
     default: 'Pending Admin Validation'
   },
@@ -79,7 +84,12 @@ const OrderSchema = new mongoose.Schema({
       'Pending Driver Acceptance',
       'Accepted',
       'Picked Up',
-      'Delivered'
+      'Delivered',
+      'Rejected by Admin',
+      'Rejected by Vendor',
+      'Return Requested',
+      'Returned',
+      'Cancelled'
     ],
     default: 'Pending Admin Validation'
   },

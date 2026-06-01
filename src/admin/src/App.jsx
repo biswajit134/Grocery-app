@@ -446,6 +446,69 @@ export default function App() {
     }
   };
 
+  const rejectOrder = async (orderId) => {
+    if (!confirm('Are you sure you want to reject this order request?')) return;
+    setError('');
+    setSuccess('');
+    try {
+      const res = await fetch(`${ORDER_URL}/${orderId}/reject-admin`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!res.ok) throw new Error('Failed to reject order');
+      setSuccess('Order rejected successfully!');
+      fetchData();
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const approveReturn = async (orderId) => {
+    if (!confirm('Are you sure you want to approve this return request? Items will be restocked.')) return;
+    setError('');
+    setSuccess('');
+    try {
+      const res = await fetch(`${ORDER_URL}/${orderId}/return-approve`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!res.ok) throw new Error('Failed to approve return');
+      setSuccess('Return approved and items restocked!');
+      fetchData();
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const rejectReturn = async (orderId) => {
+    if (!confirm('Are you sure you want to reject this return request?')) return;
+    setError('');
+    setSuccess('');
+    try {
+      const res = await fetch(`${ORDER_URL}/${orderId}/return-reject`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!res.ok) throw new Error('Failed to reject return');
+      setSuccess('Return request rejected.');
+      fetchData();
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   const updateOrderStatus = async (orderId, status) => {
     setError('');
     setSuccess('');
@@ -956,13 +1019,39 @@ export default function App() {
                         </td>
                         <td>
                           {order.status === 'Pending Admin Validation' ? (
-                            <button
-                              onClick={() => validateOrder(order._id)}
-                              className="btn btn-primary"
-                              style={{ padding: '6px 12px', fontSize: '0.8rem' }}
-                            >
-                              Validate Request
-                            </button>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <button
+                                onClick={() => validateOrder(order._id)}
+                                className="btn btn-primary"
+                                style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+                              >
+                                Validate
+                              </button>
+                              <button
+                                onClick={() => rejectOrder(order._id)}
+                                className="btn btn-danger"
+                                style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+                              >
+                                Reject
+                              </button>
+                            </div>
+                          ) : order.status === 'Return Requested' ? (
+                            <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
+                              <button
+                                onClick={() => approveReturn(order._id)}
+                                className="btn btn-primary"
+                                style={{ padding: '6px 12px', fontSize: '0.8rem', backgroundColor: 'var(--success)', borderColor: 'var(--success)' }}
+                              >
+                                Approve Return
+                              </button>
+                              <button
+                                onClick={() => rejectReturn(order._id)}
+                                className="btn btn-danger"
+                                style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+                              >
+                                Reject Return
+                              </button>
+                            </div>
                           ) : (
                             <span className={`status-badge ${order.status.toLowerCase().replace(/\s+/g, '-')}`}>
                               {order.status}

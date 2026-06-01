@@ -181,6 +181,29 @@ function App() {
     }
   };
 
+  // Reject a delivery request
+  const handleRejectDelivery = async (orderId) => {
+    if (!window.confirm('Are you sure you want to reject this delivery request?')) return;
+    try {
+      const res = await fetch(`${ORDER_URL}/${orderId}/driver-reject`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        fetchDeliveries(token);
+        alert('Delivery request rejected successfully!');
+      } else {
+        const err = await res.json();
+        alert(err.message || 'Failed to reject delivery request');
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   // Stats helper variables
   const activeDeliveries = deliveries.filter(d => d.deliveryStatus !== 'Delivered');
   const completedDeliveries = deliveries.filter(d => d.deliveryStatus === 'Delivered');
@@ -514,13 +537,22 @@ function App() {
                       {!isDelivered && (
                         <div style={{ display: 'flex', gap: '10px', marginTop: '16px', borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
                           {order.deliveryStatus === 'Pending Driver Acceptance' ? (
-                            <button 
-                              onClick={() => handleAcceptDelivery(orderId)}
-                              className="btn btn-primary"
-                              style={{ flex: 1, padding: '10px', backgroundColor: 'var(--primary)' }}
-                            >
-                              Accept Delivery Request
-                            </button>
+                            <>
+                              <button 
+                                onClick={() => handleAcceptDelivery(orderId)}
+                                className="btn btn-primary"
+                                style={{ flex: 1, padding: '10px', backgroundColor: 'var(--primary)' }}
+                              >
+                                Accept Request
+                              </button>
+                              <button 
+                                onClick={() => handleRejectDelivery(orderId)}
+                                className="btn"
+                                style={{ flex: 1, padding: '10px', backgroundColor: 'var(--danger)', color: 'white', border: '1px solid var(--danger)' }}
+                              >
+                                Reject Request
+                              </button>
+                            </>
                           ) : order.deliveryStatus === 'Accepted' ? (
                             <button 
                               onClick={() => handleUpdateStatus(orderId, 'Picked Up')}

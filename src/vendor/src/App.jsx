@@ -135,6 +135,29 @@ function App() {
     }
   };
 
+  // Reject vendor item request
+  const handleRejectOrder = async (orderId) => {
+    if (!window.confirm('Are you sure you want to reject this order request?')) return;
+    try {
+      const res = await fetch(`${ORDER_URL}/${orderId}/vendor-reject`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        fetchOrders(token);
+        alert('Order request rejected successfully!');
+      } else {
+        const err = await res.json();
+        alert(err.message || 'Failed to reject order request');
+      }
+    } catch (error) {
+      console.error('Reject order error:', error);
+    }
+  };
+
   // Sync token and load info
   useEffect(() => {
     if (token) {
@@ -740,15 +763,24 @@ function App() {
 
                               {/* Action Footer */}
                               {!isVendorApproved && (
-                                <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end' }}>
+                                <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
                                   {order.status === 'Pending Vendor Approval' ? (
-                                    <button
-                                      onClick={() => handleApproveOrder(order._id)}
-                                      className="btn btn-primary"
-                                      style={{ padding: '8px 16px', fontSize: '0.85rem' }}
-                                    >
-                                      Approve Item Request
-                                    </button>
+                                    <>
+                                      <button
+                                        onClick={() => handleApproveOrder(order._id)}
+                                        className="btn btn-primary"
+                                        style={{ padding: '8px 16px', fontSize: '0.85rem' }}
+                                      >
+                                        Approve Item Request
+                                      </button>
+                                      <button
+                                        onClick={() => handleRejectOrder(order._id)}
+                                        className="btn"
+                                        style={{ padding: '8px 16px', fontSize: '0.85rem', backgroundColor: 'var(--danger)', color: 'white', border: '1px solid var(--danger)' }}
+                                      >
+                                        Reject Request
+                                      </button>
+                                    </>
                                   ) : (
                                     <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                                       Waiting for Admin Validation...

@@ -240,7 +240,12 @@ app.put('/api/orders/:id/status', authMiddleware, adminMiddleware, async (req, r
       'Pending Driver Acceptance',
       'Accepted',
       'Picked Up',
-      'Delivered'
+      'Delivered',
+      'Rejected by Admin',
+      'Rejected by Vendor',
+      'Return Requested',
+      'Returned',
+      'Cancelled'
     ];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: 'Invalid order status' });
@@ -272,6 +277,24 @@ app.put('/api/orders/:id/status', authMiddleware, adminMiddleware, async (req, r
   }
 });
 
+// Helper function to restock items
+async function restockOrderItems(order) {
+  for (const item of order.items) {
+    try {
+      const response = await axios.get(`${PRODUCT_SERVICE_URL}/api/products/${item.productId}`);
+      const product = response.data;
+      if (product) {
+        await axios.put(`${PRODUCT_SERVICE_URL}/api/products/${item.productId}`, {
+          stock: product.stock + item.quantity
+        });
+        console.log(`Successfully restocked product ${item.productId} by ${item.quantity}`);
+      }
+    } catch (err) {
+      console.error(`Failed to restock product ${item.productId}:`, err.message);
+    }
+  }
+}
+
 // 5b. Admin validates request (Admin only)
 app.put('/api/orders/:id/validate', authMiddleware, adminMiddleware, async (req, res) => {
   try {
@@ -293,6 +316,193 @@ app.put('/api/orders/:id/validate', authMiddleware, adminMiddleware, async (req,
     res.json(order);
   } catch (error) {
     console.error('Validate order error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// 5b-1. Admin rejects request (Admin only)
+app.put('/api/orders/:id/reject-admin', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const order = await Order.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: {
+          status: 'Rejected by Admin',
+          deliveryStatus: 'Rejected by Admin'
+        }
+      },
+      { new: true }
+    );
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    res.json(order);
+  } catch (error) {
+    console.error('Reject admin order error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// 5b-2. Vendor rejects request (Vendor only)
+app.put('/api/orders/:id/vendor-reject', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== 'vendor') {
+      return res.status(403).json({ message: 'Access denied. Vendors only.' });
+    }
+
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    order.status = 'Rejected by Vendor';
+    order.deliveryStatus = 'Rejected by Vendor';
+    await order.save();
+
+    res.json(order);
+  } catch (error) {
+    console.error('Vendor reject order error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// 5b-3. Driver rejects delivery request (Driver only)
+app.put('/api/orders/:id/driver-reject', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== 'driver') {
+      return res.status(403).json({ message: 'Access denied. Drivers only.' });
+    }
+
+    const order = await Order.findOne({
+      _id: req.params.id,
+      assignedDriverId: req.user.id
+    });
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found or not assigned to this driver' });
+    }
+
+    order.status = 'Pending Driver Assignment';
+    order.deliveryStatus = 'Pending Driver Assignment';
+    order.assignedDriverId = null;
+    order.assignedDriverName = null;
+    await order.save();
+
+    res.json(order);
+  } catch (error) {
+    console.error('Driver reject order error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// 5b-4. Customer requests return (Customer only)
+app.put('/api/orders/:id/return-request', authMiddleware, async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    // Verify it is user's own order
+    if (order.userId !== req.user.id) {
+      return res.status(403).json({ message: 'Access denied. You can only return your own orders.' });
+    }
+
+    // Verify order is delivered
+    if (order.status !== 'Delivered') {
+      return res.status(400).json({ message: 'Order must be delivered to request a return.' });
+    }
+
+    order.status = 'Return Requested';
+    order.deliveryStatus = 'Return Requested';
+    await order.save();
+
+    res.json(order);
+  } catch (error) {
+    console.error('Customer return request error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// 5b-5. Admin approves return (Admin only)
+app.put('/api/orders/:id/return-approve', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    if (order.status !== 'Return Requested') {
+      return res.status(400).json({ message: 'Order must be in Return Requested status.' });
+    }
+
+    order.status = 'Returned';
+    order.deliveryStatus = 'Returned';
+    await order.save();
+
+    // Restock the items
+    await restockOrderItems(order);
+
+    res.json(order);
+  } catch (error) {
+    console.error('Admin return approve error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// 5b-6. Admin rejects return (Admin only)
+app.put('/api/orders/:id/return-reject', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    if (order.status !== 'Return Requested') {
+      return res.status(400).json({ message: 'Order must be in Return Requested status.' });
+    }
+
+    order.status = 'Delivered';
+    order.deliveryStatus = 'Delivered';
+    await order.save();
+
+    res.json(order);
+  } catch (error) {
+    console.error('Admin return reject error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// 5b-7. Customer cancels order (Customer only)
+app.put('/api/orders/:id/cancel', authMiddleware, async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    // Verify it is user's own order
+    if (order.userId !== req.user.id) {
+      return res.status(403).json({ message: 'Access denied. You can only cancel your own orders.' });
+    }
+
+    // Verify order can be cancelled (only if Pending Admin Validation)
+    if (order.status !== 'Pending Admin Validation') {
+      return res.status(400).json({ message: 'Order can only be cancelled before it is validated.' });
+    }
+
+    order.status = 'Cancelled';
+    order.deliveryStatus = 'Cancelled';
+    await order.save();
+
+    // Restock the items
+    await restockOrderItems(order);
+
+    res.json(order);
+  } catch (error) {
+    console.error('Customer cancel order error:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });

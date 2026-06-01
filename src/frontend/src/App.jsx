@@ -332,6 +332,50 @@ function App() {
     }
   };
 
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm('Are you sure you want to cancel this order? Placed items will be restocked.')) return;
+    try {
+      const res = await fetch(`${ORDER_URL}/${orderId}/cancel`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        fetchOrders();
+        alert('Order cancelled successfully!');
+      } else {
+        const err = await res.json();
+        alert(err.message || 'Failed to cancel order.');
+      }
+    } catch (err) {
+      console.error('Cancel order error:', err);
+    }
+  };
+
+  const handleRequestReturn = async (orderId) => {
+    if (!window.confirm('Are you sure you want to request a return for this order?')) return;
+    try {
+      const res = await fetch(`${ORDER_URL}/${orderId}/return-request`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        fetchOrders();
+        alert('Return request submitted successfully!');
+      } else {
+        const err = await res.json();
+        alert(err.message || 'Failed to request return.');
+      }
+    } catch (err) {
+      console.error('Return request error:', err);
+    }
+  };
+
   // Auth Operations
   const handleLogin = async (username, password) => {
     const res = await fetch(`${AUTH_URL}/login`, {
@@ -1008,177 +1052,204 @@ function App() {
                           borderRadius: '20px',
                           fontSize: '0.75rem',
                           fontWeight: '600',
-                          backgroundColor: order.status === 'Delivered' ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)',
-                          color: order.status === 'Delivered' ? '#10b981' : '#f59e0b'
+                          backgroundColor: order.status.startsWith('Rejected') || order.status === 'Cancelled'
+                            ? 'rgba(239, 68, 68, 0.15)'
+                            : (order.status === 'Returned' ? 'rgba(59, 130, 246, 0.15)' : (order.status === 'Delivered' ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)')),
+                          color: order.status.startsWith('Rejected') || order.status === 'Cancelled'
+                            ? '#ef4444'
+                            : (order.status === 'Returned' ? '#3b82f6' : (order.status === 'Delivered' ? '#10b981' : '#f59e0b'))
                         }}>
                           {order.status}
                         </span>
                       </div>
                     </div>
 
-                    {/* Timeline Tracker */}
-                    <div style={{ marginBottom: '24px', position: 'relative', display: 'flex', justifyContent: 'space-between', padding: '0 10px' }}>
-                      <div style={{
-                        position: 'absolute',
-                        top: '10px',
-                        left: '8px',
-                        right: '8px',
-                        height: '2px',
-                        backgroundColor: 'var(--border-color)',
-                        zIndex: 1
-                      }}></div>
+                     {/* Timeline & Transit Trackers */}
+                     {!['Rejected by Admin', 'Rejected by Vendor', 'Cancelled', 'Return Requested', 'Returned'].includes(order.status) ? (
+                       <>
+                        {/* Timeline Tracker */}
+                        <div style={{ marginBottom: '24px', position: 'relative', display: 'flex', justifyContent: 'space-between', padding: '0 10px' }}>
+                          <div style={{
+                            position: 'absolute',
+                            top: '10px',
+                            left: '8px',
+                            right: '8px',
+                            height: '2px',
+                            backgroundColor: 'var(--border-color)',
+                            zIndex: 1
+                          }}></div>
 
-                      {/* State 1: Placed */}
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2, flex: 1 }}>
-                        <div style={{
-                          width: '20px',
-                          height: '20px',
-                          borderRadius: '50%',
-                          backgroundColor: 'var(--primary)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'white',
-                          fontSize: '0.65rem'
-                        }}>✓</div>
-                        <span style={{ fontSize: '0.65rem', color: 'var(--primary)', marginTop: '4px', fontWeight: '600' }}>Placed</span>
-                      </div>
+                          {/* State 1: Placed */}
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2, flex: 1 }}>
+                            <div style={{
+                              width: '20px',
+                              height: '20px',
+                              borderRadius: '50%',
+                              backgroundColor: 'var(--primary)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: 'white',
+                              fontSize: '0.65rem'
+                            }}>✓</div>
+                            <span style={{ fontSize: '0.65rem', color: 'var(--primary)', marginTop: '4px', fontWeight: '600' }}>Placed</span>
+                          </div>
 
-                      {/* State 2: Validated */}
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2, flex: 1 }}>
-                        <div style={{
-                          width: '20px',
-                          height: '20px',
-                          borderRadius: '50%',
-                          backgroundColor: !['Pending Admin Validation'].includes(order.status) ? 'var(--primary)' : 'var(--bg-surface)',
-                          border: '2px solid',
-                          borderColor: !['Pending Admin Validation'].includes(order.status) ? 'var(--primary)' : 'var(--border-color)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'white',
-                          fontSize: '0.65rem'
-                        }}>
-                          {!['Pending Admin Validation'].includes(order.status) ? '✓' : ''}
-                        </div>
-                        <span style={{ fontSize: '0.65rem', color: !['Pending Admin Validation'].includes(order.status) ? 'var(--text-primary)' : 'var(--text-muted)', marginTop: '4px' }}>Validated</span>
-                      </div>
+                          {/* State 2: Validated */}
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2, flex: 1 }}>
+                            <div style={{
+                              width: '20px',
+                              height: '20px',
+                              borderRadius: '50%',
+                              backgroundColor: !['Pending Admin Validation'].includes(order.status) ? 'var(--primary)' : 'var(--bg-surface)',
+                              border: '2px solid',
+                              borderColor: !['Pending Admin Validation'].includes(order.status) ? 'var(--primary)' : 'var(--border-color)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: 'white',
+                              fontSize: '0.65rem'
+                            }}>
+                              {!['Pending Admin Validation'].includes(order.status) ? '✓' : ''}
+                            </div>
+                            <span style={{ fontSize: '0.65rem', color: !['Pending Admin Validation'].includes(order.status) ? 'var(--text-primary)' : 'var(--text-muted)', marginTop: '4px' }}>Validated</span>
+                          </div>
 
-                      {/* State 3: Prepared */}
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2, flex: 1 }}>
-                        <div style={{
-                          width: '20px',
-                          height: '20px',
-                          borderRadius: '50%',
-                          backgroundColor: !['Pending Admin Validation', 'Pending Vendor Approval'].includes(order.status) ? 'var(--primary)' : 'var(--bg-surface)',
-                          border: '2px solid',
-                          borderColor: !['Pending Admin Validation', 'Pending Vendor Approval'].includes(order.status) ? 'var(--primary)' : 'var(--border-color)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'white',
-                          fontSize: '0.65rem'
-                        }}>
-                          {!['Pending Admin Validation', 'Pending Vendor Approval'].includes(order.status) ? '✓' : ''}
-                        </div>
-                        <span style={{ fontSize: '0.65rem', color: !['Pending Admin Validation', 'Pending Vendor Approval'].includes(order.status) ? 'var(--text-primary)' : 'var(--text-muted)', marginTop: '4px' }}>Prepared</span>
-                      </div>
+                          {/* State 3: Prepared */}
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2, flex: 1 }}>
+                            <div style={{
+                              width: '20px',
+                              height: '20px',
+                              borderRadius: '50%',
+                              backgroundColor: !['Pending Admin Validation', 'Pending Vendor Approval'].includes(order.status) ? 'var(--primary)' : 'var(--bg-surface)',
+                              border: '2px solid',
+                              borderColor: !['Pending Admin Validation', 'Pending Vendor Approval'].includes(order.status) ? 'var(--primary)' : 'var(--border-color)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: 'white',
+                              fontSize: '0.65rem'
+                            }}>
+                              {!['Pending Admin Validation', 'Pending Vendor Approval'].includes(order.status) ? '✓' : ''}
+                            </div>
+                            <span style={{ fontSize: '0.65rem', color: !['Pending Admin Validation', 'Pending Vendor Approval'].includes(order.status) ? 'var(--text-primary)' : 'var(--text-muted)', marginTop: '4px' }}>Prepared</span>
+                          </div>
 
-                      {/* State 4: Transit */}
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2, flex: 1 }}>
-                        <div style={{
-                          width: '20px',
-                          height: '20px',
-                          borderRadius: '50%',
-                          backgroundColor: ['Picked Up', 'Delivered'].includes(order.status) ? 'var(--primary)' : 'var(--bg-surface)',
-                          border: '2px solid',
-                          borderColor: ['Picked Up', 'Delivered'].includes(order.status) ? 'var(--primary)' : 'var(--border-color)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'white',
-                          fontSize: '0.65rem'
-                        }}>
-                          {['Picked Up', 'Delivered'].includes(order.status) ? '✓' : ''}
-                        </div>
-                        <span style={{ fontSize: '0.65rem', color: ['Picked Up', 'Delivered'].includes(order.status) ? 'var(--text-primary)' : 'var(--text-muted)', marginTop: '4px' }}>Transit</span>
-                      </div>
+                          {/* State 4: Transit */}
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2, flex: 1 }}>
+                            <div style={{
+                              width: '20px',
+                              height: '20px',
+                              borderRadius: '50%',
+                              backgroundColor: ['Picked Up', 'Delivered'].includes(order.status) ? 'var(--primary)' : 'var(--bg-surface)',
+                              border: '2px solid',
+                              borderColor: ['Picked Up', 'Delivered'].includes(order.status) ? 'var(--primary)' : 'var(--border-color)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: 'white',
+                              fontSize: '0.65rem'
+                            }}>
+                              {['Picked Up', 'Delivered'].includes(order.status) ? '✓' : ''}
+                            </div>
+                            <span style={{ fontSize: '0.65rem', color: ['Picked Up', 'Delivered'].includes(order.status) ? 'var(--text-primary)' : 'var(--text-muted)', marginTop: '4px' }}>Transit</span>
+                          </div>
 
-                      {/* State 5: Delivered */}
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2, flex: 1 }}>
-                        <div style={{
-                          width: '20px',
-                          height: '20px',
-                          borderRadius: '50%',
-                          backgroundColor: order.status === 'Delivered' ? 'var(--primary)' : 'var(--bg-surface)',
-                          border: '2px solid',
-                          borderColor: order.status === 'Delivered' ? 'var(--primary)' : 'var(--border-color)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'white',
-                          fontSize: '0.65rem'
-                        }}>
-                          {order.status === 'Delivered' ? '✓' : ''}
-                        </div>
-                        <span style={{ fontSize: '0.65rem', color: order.status === 'Delivered' ? 'var(--text-primary)' : 'var(--text-muted)', marginTop: '4px' }}>Delivered</span>
-                      </div>
-                    </div>
-
-                    {/* Live Transit Tracker simulation widget */}
-                    <div style={{ marginBottom: '24px', padding: '16px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-color)' }}>
-                      <div className="flex-between" style={{ marginBottom: '8px' }}>
-                        <span style={{ fontSize: '0.85rem', fontWeight: '700' }}>Live Delivery Progress Tracker</span>
-                        <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--primary)' }}>
-                          {order.assignedDriverName ? `Assigned Driver: ${order.assignedDriverName}` : order.status === 'Pending Admin Validation' ? 'Awaiting Validation...' : order.status === 'Pending Vendor Approval' ? 'Awaiting Vendor Preparation...' : 'Assigning Delivery Partner...'}
-                        </span>
-                      </div>
-                      
-                      <div className="road-container">
-                        <div className="road-line"></div>
-                        <div className="road-dot start"></div>
-                        
-                        {/* Pulse indicator behind the motorcycle */}
-                        <div 
-                          className="pulse-indicator"
-                          style={{ 
-                            left: ['Pending Admin Validation', 'Pending Vendor Approval', 'Pending Driver Assignment'].includes(order.status)
-                              ? '10%' 
-                              : ['Pending Driver Acceptance', 'Accepted'].includes(order.status)
-                                ? '45%' 
-                                : order.status === 'Picked Up' 
-                                  ? '75%' 
-                                  : '100%',
-                            display: order.status === 'Delivered' ? 'none' : 'block'
-                          }}
-                        ></div>
-
-                        {/* Active Driver motorcycle icon */}
-                        <div 
-                          className="motorcycle-icon"
-                          style={{ 
-                            left: ['Pending Admin Validation', 'Pending Vendor Approval', 'Pending Driver Assignment'].includes(order.status)
-                              ? '10%' 
-                              : ['Pending Driver Acceptance', 'Accepted'].includes(order.status)
-                                ? '45%' 
-                                : order.status === 'Picked Up' 
-                                  ? '75%' 
-                                  : '100%',
-                            color: order.status === 'Delivered' ? 'var(--success)' : 'var(--primary)'
-                          }}
-                        >
-                          <Navigation size={18} style={{ transform: 'rotate(90deg)' }} />
+                          {/* State 5: Delivered */}
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2, flex: 1 }}>
+                            <div style={{
+                              width: '20px',
+                              height: '20px',
+                              borderRadius: '50%',
+                              backgroundColor: order.status === 'Delivered' ? 'var(--primary)' : 'var(--bg-surface)',
+                              border: '2px solid',
+                              borderColor: order.status === 'Delivered' ? 'var(--primary)' : 'var(--border-color)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: 'white',
+                              fontSize: '0.65rem'
+                            }}>
+                              {order.status === 'Delivered' ? '✓' : ''}
+                            </div>
+                            <span style={{ fontSize: '0.65rem', color: order.status === 'Delivered' ? 'var(--text-primary)' : 'var(--text-muted)', marginTop: '4px' }}>Delivered</span>
+                          </div>
                         </div>
 
-                        <div className="road-dot end"></div>
-                      </div>
-                      <div className="flex-between" style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
-                        <span>Warehouse</span>
-                        <span>Accepted</span>
-                        <span>In Transit</span>
-                        <span>Delivered</span>
-                      </div>
-                    </div>
+                        {/* Live Transit Tracker simulation widget */}
+                        <div style={{ marginBottom: '24px', padding: '16px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-color)' }}>
+                          <div className="flex-between" style={{ marginBottom: '8px' }}>
+                            <span style={{ fontSize: '0.85rem', fontWeight: '700' }}>Live Delivery Progress Tracker</span>
+                            <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--primary)' }}>
+                              {order.assignedDriverName ? `Assigned Driver: ${order.assignedDriverName}` : order.status === 'Pending Admin Validation' ? 'Awaiting Validation...' : order.status === 'Pending Vendor Approval' ? 'Awaiting Vendor Preparation...' : 'Assigning Delivery Partner...'}
+                            </span>
+                          </div>
+                          
+                          <div className="road-container">
+                            <div className="road-line"></div>
+                            <div className="road-dot start"></div>
+                            
+                            {/* Pulse indicator behind the motorcycle */}
+                            <div 
+                              className="pulse-indicator"
+                              style={{ 
+                                left: ['Pending Admin Validation', 'Pending Vendor Approval', 'Pending Driver Assignment'].includes(order.status)
+                                  ? '10%' 
+                                  : ['Pending Driver Acceptance', 'Accepted'].includes(order.status)
+                                    ? '45%' 
+                                    : order.status === 'Picked Up' 
+                                      ? '75%' 
+                                      : '100%',
+                                display: order.status === 'Delivered' ? 'none' : 'block'
+                              }}
+                            ></div>
+
+                            {/* Active Driver motorcycle icon */}
+                            <div 
+                              className="motorcycle-icon"
+                              style={{ 
+                                left: ['Pending Admin Validation', 'Pending Vendor Approval', 'Pending Driver Assignment'].includes(order.status)
+                                  ? '10%' 
+                                  : ['Pending Driver Acceptance', 'Accepted'].includes(order.status)
+                                    ? '45%' 
+                                    : order.status === 'Picked Up' 
+                                      ? '75%' 
+                                      : '100%',
+                                color: order.status === 'Delivered' ? 'var(--success)' : 'var(--primary)'
+                              }}
+                            >
+                              <Navigation size={18} style={{ transform: 'rotate(90deg)' }} />
+                            </div>
+
+                            <div className="road-dot end"></div>
+                          </div>
+                          <div className="flex-between" style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                            <span>Warehouse</span>
+                            <span>Accepted</span>
+                            <span>In Transit</span>
+                            <span>Delivered</span>
+                          </div>
+                        </div>
+                       </>
+                     ) : (
+                       <div style={{ 
+                         marginBottom: '24px', 
+                         padding: '16px', 
+                         borderRadius: '12px', 
+                         backgroundColor: order.status === 'Returned' || order.status === 'Return Requested' ? 'rgba(59, 130, 246, 0.05)' : 'rgba(239, 68, 68, 0.05)', 
+                         border: order.status === 'Returned' || order.status === 'Return Requested' ? '1px solid rgba(59, 130, 246, 0.2)' : '1px solid rgba(239, 68, 68, 0.2)',
+                         textAlign: 'center',
+                         color: order.status === 'Returned' || order.status === 'Return Requested' ? '#3b82f6' : '#ef4444',
+                         fontSize: '0.9rem',
+                         fontWeight: '600'
+                       }}>
+                         {order.status === 'Cancelled' && '🛑 This order has been cancelled by you.'}
+                         {order.status === 'Rejected by Admin' && '🛑 This order was rejected by our administration.'}
+                         {order.status === 'Rejected by Vendor' && '🛑 This order was rejected by the food vendor.'}
+                         {order.status === 'Return Requested' && '🔄 Return requested. Awaiting administrator approval.'}
+                         {order.status === 'Returned' && '🔄 Order returned successfully. Refund processed to original payment method.'}
+                       </div>
+                     )}
 
                     {/* Driver Review Section (Delivered orders with assigned drivers only) */}
                     {order.status === 'Delivered' && order.assignedDriverId && (
@@ -1273,10 +1344,29 @@ function App() {
                         </span>
                       </div>
 
-                      {/* Download Receipt Simulation button */}
-                      <button
-                        onClick={() => {
-                          const receiptText = `
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        {order.status === 'Pending Admin Validation' && (
+                          <button
+                            onClick={() => handleCancelOrder(orderId)}
+                            className="btn"
+                            style={{ padding: '8px 12px', fontSize: '0.8rem', borderRadius: '8px', backgroundColor: 'var(--danger)', color: 'white', border: '1px solid var(--danger)' }}
+                          >
+                            Cancel Order
+                          </button>
+                        )}
+                        {order.status === 'Delivered' && (
+                          <button
+                            onClick={() => handleRequestReturn(orderId)}
+                            className="btn"
+                            style={{ padding: '8px 12px', fontSize: '0.8rem', borderRadius: '8px', backgroundColor: 'var(--primary)', color: '#030b17', border: '1px solid var(--primary)', fontWeight: '600' }}
+                          >
+                            Request Return
+                          </button>
+                        )}
+                        {/* Download Receipt Simulation button */}
+                        <button
+                          onClick={() => {
+                            const receiptText = `
 ========================================
              GROCERYHUB RECEIPT         
 ========================================
@@ -1302,20 +1392,21 @@ Order Status: ${order.status || 'N/A'}
 
 Thank you for shopping at GroceryHub!
 ========================================
-                          `;
-                          const element = document.createElement("a");
-                          const file = new Blob([receiptText], { type: 'text/plain' });
-                          element.href = URL.createObjectURL(file);
-                          element.download = `GroceryHub_Receipt_${orderId || 'order'}.txt`;
-                          document.body.appendChild(element);
-                          element.click();
-                          document.body.removeChild(element);
-                        }}
-                        className="btn btn-secondary"
-                        style={{ padding: '8px 12px', fontSize: '0.8rem', borderRadius: '8px' }}
-                      >
-                        <Download size={14} /> Download Receipt
-                      </button>
+                            `;
+                            const element = document.createElement("a");
+                            const file = new Blob([receiptText], { type: 'text/plain' });
+                            element.href = URL.createObjectURL(file);
+                            element.download = `GroceryHub_Receipt_${orderId || 'order'}.txt`;
+                            document.body.appendChild(element);
+                            element.click();
+                            document.body.removeChild(element);
+                          }}
+                          className="btn btn-secondary"
+                          style={{ padding: '8px 12px', fontSize: '0.8rem', borderRadius: '8px' }}
+                        >
+                          <Download size={14} /> Download Receipt
+                        </button>
+                      </div>
                     </div>
 
                   </div>
