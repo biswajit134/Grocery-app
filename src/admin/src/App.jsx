@@ -73,6 +73,14 @@ export default function App() {
     isActive: true
   });
 
+  const handleLogout = () => {
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_user');
+    setToken(null);
+    setUser(null);
+    setActiveTab('dashboard');
+  };
+
   const pollActiveData = async () => {
     if (!token) return;
     try {
@@ -80,6 +88,7 @@ export default function App() {
       
       // Fetch Orders
       const orderRes = await fetch(ORDER_URL, { headers });
+      if (orderRes.status === 401) { handleLogout(); return; }
       if (orderRes.ok) {
         const orderData = await orderRes.json();
         setOrders(orderData);
@@ -87,6 +96,7 @@ export default function App() {
 
       // Fetch Vendors
       const vendorRes = await fetch(`${AUTH_URL}/vendors`, { headers });
+      if (vendorRes.status === 401) { handleLogout(); return; }
       if (vendorRes.ok) {
         const vendorData = await vendorRes.json();
         setVendors(vendorData);
@@ -94,6 +104,7 @@ export default function App() {
 
       // Fetch Drivers
       const driverRes = await fetch(`${AUTH_URL}/drivers`, { headers });
+      if (driverRes.status === 401) { handleLogout(); return; }
       if (driverRes.ok) {
         const driverData = await driverRes.json();
         setDrivers(driverData);
@@ -147,6 +158,7 @@ export default function App() {
 
       // Fetch Orders
       const orderRes = await fetch(ORDER_URL, { headers });
+      if (orderRes.status === 401) { handleLogout(); return; }
       if (orderRes.ok) {
         const orderData = await orderRes.json();
         setOrders(orderData);
@@ -154,6 +166,7 @@ export default function App() {
 
       // Fetch Drivers
       const driverRes = await fetch(`${AUTH_URL}/drivers`, { headers });
+      if (driverRes.status === 401) { handleLogout(); return; }
       if (driverRes.ok) {
         const driverData = await driverRes.json();
         setDrivers(driverData);
@@ -165,6 +178,7 @@ export default function App() {
 
       // Fetch Vendors
       const vendorRes = await fetch(`${AUTH_URL}/vendors`, { headers });
+      if (vendorRes.status === 401) { handleLogout(); return; }
       if (vendorRes.ok) {
         const vendorData = await vendorRes.json();
         setVendors(vendorData);
@@ -172,6 +186,7 @@ export default function App() {
 
       // Fetch Coupons
       const couponRes = await fetch(`${ORDER_URL}/coupons`, { headers });
+      if (couponRes.status === 401) { handleLogout(); return; }
       if (couponRes.ok) {
         const couponData = await couponRes.json();
         setCoupons(couponData);
@@ -212,14 +227,6 @@ export default function App() {
     } catch (err) {
       setError(err.message);
     }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('admin_user');
-    setToken(null);
-    setUser(null);
-    setActiveTab('dashboard');
   };
 
   // Vendor actions

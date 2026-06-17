@@ -105,8 +105,7 @@ app.post('/api/auth/register', async (req, res) => {
     // Create JWT Token
     const token = jwt.sign(
       { id: newUser._id, username: newUser.username, role: newUser.role, isApproved: newUser.isApproved },
-      JWT_SECRET,
-      { expiresIn: '24h' }
+      JWT_SECRET
     );
 
     res.status(201).json({
@@ -156,8 +155,7 @@ app.post('/api/auth/login', async (req, res) => {
 
       const token = jwt.sign(
         { id: adminUser._id, username: 'admin', role: 'admin' },
-        JWT_SECRET,
-        { expiresIn: '24h' }
+        JWT_SECRET
       );
 
       return res.json({
@@ -189,8 +187,7 @@ app.post('/api/auth/login', async (req, res) => {
     // Create JWT Token
     const token = jwt.sign(
       { id: user._id, username: user.username, role: user.role, isApproved: user.isApproved },
-      JWT_SECRET,
-      { expiresIn: '24h' }
+      JWT_SECRET
     );
 
     res.json({
@@ -233,8 +230,7 @@ app.get('/api/auth/me', async (req, res) => {
     if (decoded.isApproved !== user.isApproved) {
       const newToken = jwt.sign(
         { id: user._id, username: user.username, role: user.role, isApproved: user.isApproved },
-        JWT_SECRET,
-        { expiresIn: '24h' }
+        JWT_SECRET
       );
       res.setHeader('X-New-Token', newToken);
       res.setHeader('Access-Control-Expose-Headers', 'X-New-Token');
@@ -279,6 +275,9 @@ app.get('/api/auth/drivers', async (req, res) => {
     res.json(drivers);
   } catch (error) {
     console.error('Fetch drivers error:', error);
+    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: 'Token is not valid' });
+    }
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
@@ -301,6 +300,9 @@ app.get('/api/auth/vendors', async (req, res) => {
     res.json(vendors);
   } catch (error) {
     console.error('Fetch vendors error:', error);
+    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: 'Token is not valid' });
+    }
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
@@ -332,6 +334,9 @@ app.put('/api/auth/vendors/:id/approve', async (req, res) => {
     res.json(vendor);
   } catch (error) {
     console.error('Approve vendor error:', error);
+    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: 'Token is not valid' });
+    }
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });

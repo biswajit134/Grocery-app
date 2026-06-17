@@ -36,6 +36,44 @@ export default function CheckoutModal({ isOpen, onClose, cartItems, currentUser,
   // Check if vendor/driver is pending approval
   const isPendingApproval = (currentUser?.role === 'vendor' || currentUser?.role === 'driver') && !currentUser?.isApproved;
 
+  const [unapprovedVendors, setUnapprovedVendors] = useState([]);
+  const [checkingVendors, setCheckingVendors] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen || cartItems.length === 0) {
+      setUnapprovedVendors([]);
+      return;
+    }
+
+    const checkVendorApprovals = async () => {
+      setCheckingVendors(true);
+      const uniqueVendorIds = Array.from(new Set(cartItems.map(item => item.vendorId).filter(Boolean)));
+      const AUTH_URL = import.meta.env.VITE_AUTH_URL || 'http://localhost:5001/api/auth';
+      
+      const unapprovedList = [];
+      for (const vendorId of uniqueVendorIds) {
+        try {
+          const res = await fetch(`${AUTH_URL}/users/${vendorId}`);
+          if (res.ok) {
+            const vendorUser = await res.json();
+            if (vendorUser && vendorUser.role === 'vendor' && !vendorUser.isApproved) {
+              unapprovedList.push(vendorUser.name || vendorUser.username);
+            }
+          }
+        } catch (error) {
+          console.error(`Error checking approval for vendor ${vendorId}:`, error);
+        }
+      }
+      setUnapprovedVendors(unapprovedList);
+      setCheckingVendors(false);
+    };
+
+    checkVendorApprovals();
+  }, [cartItems, isOpen]);
+
+  const hasUnapprovedVendor = unapprovedVendors.length > 0;
+  const isCheckoutDisabled = isPendingApproval || hasUnapprovedVendor || checkingVendors;
+
   // Validate Coupon Code
   const handleValidateCoupon = async () => {
     if (!couponCode) return;
@@ -277,6 +315,21 @@ Thank you for shopping at GroceryHub!
                 Your account is pending administrator approval. Placing orders is restricted.
               </div>
             )}
+
+            {hasUnapprovedVendor && (
+              <div style={{
+                backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                border: '1px solid rgba(239, 68, 68, 0.2)',
+                borderRadius: '12px',
+                padding: '12px',
+                fontSize: '0.85rem',
+                color: 'var(--danger)',
+                marginBottom: '16px',
+                textAlign: 'center'
+              }}>
+                ⚠️ Cannot checkout: The following vendors are pending administrator approval: <strong>{unapprovedVendors.join(', ')}</strong>. Please remove their products from your cart to proceed.
+              </div>
+            )}
             
             {/* STEP 1: Delivery Details */}
             {step === 1 && (
@@ -452,7 +505,7 @@ Thank you for shopping at GroceryHub!
 
                 <button
                   type="submit"
-                  disabled={isPendingApproval}
+                  disabled={isCheckoutDisabled}
                   className="btn btn-primary"
                   style={{
                     width: '100%',
@@ -460,11 +513,14 @@ Thank you for shopping at GroceryHub!
                     borderRadius: '10px',
                     fontSize: '0.95rem',
                     marginTop: '10px',
-                    opacity: isPendingApproval ? 0.6 : 1,
-                    cursor: isPendingApproval ? 'not-allowed' : 'pointer'
+                    opacity: isCheckoutDisabled ? 0.6 : 1,
+                    cursor: isCheckoutDisabled ? 'not-allowed' : 'pointer'
                   }}
                 >
-                  {isPendingApproval ? 'Admin Approval Pending' : <>Continue to Payment <ArrowRight size={16} /></>}
+                  {checkingVendors ? 'Checking Vendors...' : 
+                   isPendingApproval ? 'Admin Approval Pending' : 
+                   hasUnapprovedVendor ? 'Unapproved Vendor Listings' : 
+                   <>Continue to Payment <ArrowRight size={16} /></>}
                 </button>
               </form>
             )}
@@ -723,17 +779,20 @@ Thank you for shopping at GroceryHub!
                   </button>
                   <button
                     type="submit"
-                    disabled={isPendingApproval}
+                    disabled={isCheckoutDisabled}
                     className="btn btn-primary"
                     style={{ 
                       flex: 2, 
                       padding: '12px',
-                      opacity: isPendingApproval ? 0.6 : 1,
-                      cursor: isPendingApproval ? 'not-allowed' : 'pointer',
-                      backgroundColor: isPendingApproval ? 'var(--text-muted)' : 'var(--primary)'
+                      opacity: isCheckoutDisabled ? 0.6 : 1,
+                      cursor: isCheckoutDisabled ? 'not-allowed' : 'pointer',
+                      backgroundColor: isCheckoutDisabled ? 'var(--text-muted)' : 'var(--primary)'
                     }}
                   >
-                    {isPendingApproval ? 'Admin Approval Pending' : `Place Order — $${totalAmount.toFixed(2)}`}
+                    {checkingVendors ? 'Checking Vendors...' :
+                     isPendingApproval ? 'Admin Approval Pending' :
+                     hasUnapprovedVendor ? 'Unapproved Vendor Listings' :
+                     `Place Order — $${totalAmount.toFixed(2)}`}
                   </button>
                 </div>
 

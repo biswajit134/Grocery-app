@@ -468,6 +468,9 @@ app.put('/api/products/:id', async (req, res) => {
     res.json(updatedProduct);
   } catch (error) {
     console.error('Update product error:', error);
+    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: 'Token is not valid' });
+    }
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
