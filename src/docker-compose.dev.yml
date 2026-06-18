@@ -24,8 +24,10 @@ services:
     container_name: grocery-auth-service
     ports:
       - "5001:5001"
-    env_file:
-      - ./services/auth-service/.env
+    environment:
+      - PORT=5001
+      - MONGO_URI=mongodb://mongodb:27017/grocery_auth
+      - JWT_SECRET=supersecretjwtkeyforgroceryhub
     depends_on:
       - mongodb
     networks:
@@ -36,8 +38,10 @@ services:
     container_name: grocery-product-service
     ports:
       - "5002:5002"
-    env_file:
-      - ./services/product-service/.env
+    environment:
+      - PORT=5002
+      - MONGO_URI=mongodb://mongodb:27017/grocery_products
+      - REDIS_URL=redis://redis:6379
     depends_on:
       - mongodb
       - redis
@@ -49,8 +53,11 @@ services:
     container_name: grocery-order-service
     ports:
       - "5003:5003"
-    env_file:
-      - ./services/order-service/.env
+    environment:
+      - PORT=5003
+      - MONGO_URI=mongodb://mongodb:27017/grocery_orders
+      - PRODUCT_SERVICE_URL=http://product-service:5002
+      - JWT_SECRET=supersecretjwtkeyforgroceryhub
     depends_on:
       - mongodb
     networks:
@@ -61,6 +68,10 @@ services:
     container_name: grocery-frontend
     ports:
       - "3000:3000"
+    environment:
+      - VITE_AUTH_URL=http://localhost:5001/api/auth
+      - VITE_PRODUCT_URL=http://localhost:5002/api/products
+      - VITE_ORDER_URL=http://localhost:5003/api/orders
     depends_on:
       - auth-service
       - product-service
@@ -73,6 +84,9 @@ services:
     container_name: grocery-delivery-partner
     ports:
       - "3001:3001"
+    environment:
+      - VITE_AUTH_URL=http://localhost:5001/api/auth
+      - VITE_ORDER_URL=http://localhost:5003/api/orders
     depends_on:
       - auth-service
       - order-service
@@ -84,6 +98,9 @@ services:
     container_name: grocery-vendor
     ports:
       - "3002:3002"
+    environment:
+      - VITE_AUTH_URL=http://localhost:5001/api/auth
+      - VITE_PRODUCT_URL=http://localhost:5002/api/products
     depends_on:
       - auth-service
       - product-service
@@ -95,6 +112,10 @@ services:
     container_name: grocery-admin
     ports:
       - "3003:3003"
+    environment:
+      - VITE_AUTH_URL=http://localhost:5001/api/auth
+      - VITE_PRODUCT_URL=http://localhost:5002/api/products
+      - VITE_ORDER_URL=http://localhost:5003/api/orders
     depends_on:
       - auth-service
       - product-service
