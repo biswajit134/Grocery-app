@@ -8,7 +8,6 @@ Welcome to **GroceryHub**, a premium, modern, multi-user Grocery Platform featur
 
 Here is the live animation showing page loading, category navigation transitions, and the logged-in admin dashboard:
 
-![GroceryHub Demo Walkthrough](assets/screenshots/groceryhub_walkthrough.webp)
 
 ---
 
