@@ -4,21 +4,46 @@ Welcome to **GroceryHub**, a premium, modern, multi-user Grocery Platform featur
 
 ---
 
-## 📸 Platform Portals
+## 🎬 Platform Walkthrough & Live Transitions
 
-Here is a look at the various portals within the GroceryHub platform:
+Here is the live animation showing page loading, category navigation transitions, and the logged-in admin dashboard:
+
+![GroceryHub Demo Walkthrough](assets/screenshots/groceryhub_walkthrough.webp)
+
+---
+
+## 📸 Portal Screenshots
 
 ### 🛒 Customer Storefront (Port 3000)
-A premium dark-mode shopping experience with glassmorphic item cards, discount tags, category tabs, and an order milestone tracker timeline.
-![Customer Storefront](assets/screenshots/groceryhub_storefront_1781803372269.png)
+Browse the catalog, filter categories, view discount pricing, and manage your cart.
+
+#### Storefront Landing Page
+![Customer Storefront Landing](assets/screenshots/storefront_landing_1781803620787.png)
+
+#### Category Navigation (e.g. Fruits Catalog)
+![Storefront Fruits Category](assets/screenshots/storefront_fruits_1781803648954.png)
+
+---
 
 ### 📊 Admin Portal (Port 3003)
-The command center containing analytics dashboards, product editors, logistics validation trackers, vendor approvals, and coupon managers.
-![Admin Dashboard](assets/screenshots/groceryhub_admin_1781803386611.png)
+The dashboard displays overall metrics, catalog listings, logistics tasks, vendor reviews, and active coupons.
+
+#### Admin Dashboard
+![Admin Dashboard](assets/screenshots/admin_dashboard_1781803663771.png)
+
+#### Catalog Manager
+![Admin Catalog Manager](assets/screenshots/admin_catalog_1781803674214.png)
+
+#### Logistics & Orders Tracker
+![Admin Logistics Tracker](assets/screenshots/admin_logistics_1781803683976.png)
+
+---
 
 ### 🚚 Delivery Partner App (Port 3001)
-A mobile-optimized queue tracking deliveries, picking up packages, map transit trackers, and completing handovers.
-![Delivery Partner Portal](assets/screenshots/groceryhub_delivery_1781803402919.png)
+Used by logistics drivers to accept orders and trace route transitions.
+
+#### Portal Login
+![Delivery Partner Portal](assets/screenshots/delivery_login_1781803694246.png)
 
 ---
 
@@ -86,7 +111,7 @@ All environment variables have been fully internalized into the Docker Compose c
 ### Run Local Development (Build from Source)
 To run and build all services dynamically from your local codebase directory:
 ```bash
-docker compose -f src/docker-compose.dev.yml up --build
+docker compose -f src/docker-compose.dev.yml up -d --build
 ```
 
 ### Run Production (Serve Built Registry Images)
