@@ -1,0 +1,202 @@
+# =============================================================================
+# Grocery-App Helm Chart — Production Values Override
+# =============================================================================
+# Usage:
+#   helm install grocery-app ./helm/grocery-app \
+#     -f ./helm/grocery-app/values-production.yaml \
+#     --set secrets.jwtSecret="<your-production-jwt-secret>" \
+#     --namespace grocery-app --create-namespace
+# =============================================================================
+
+global:
+  imagePullPolicy: IfNotPresent
+  domain: "grocery.yourdomain.com"
+
+# ---------------------------------------------------------------------------
+# Backend Services — Production Overrides
+# ---------------------------------------------------------------------------
+authService:
+  replicaCount: 3
+  image:
+    tag: "1.0.0"   # Pin to a specific version in production
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 15
+    targetCPUUtilizationPercentage: 65
+    targetMemoryUtilizationPercentage: 75
+  podDisruptionBudget:
+    minAvailable: 2
+  podAntiAffinity:
+    enabled: true
+
+productService:
+  replicaCount: 3
+  image:
+    tag: "1.0.0"
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 15
+    targetCPUUtilizationPercentage: 65
+    targetMemoryUtilizationPercentage: 75
+  podDisruptionBudget:
+    minAvailable: 2
+  podAntiAffinity:
+    enabled: true
+
+orderService:
+  replicaCount: 3
+  image:
+    tag: "1.0.0"
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 15
+    targetCPUUtilizationPercentage: 65
+    targetMemoryUtilizationPercentage: 75
+  podDisruptionBudget:
+    minAvailable: 2
+  podAntiAffinity:
+    enabled: true
+
+# ---------------------------------------------------------------------------
+# Frontend Apps — Production Overrides
+# ---------------------------------------------------------------------------
+frontend:
+  replicaCount: 3
+  image:
+    tag: "1.0.0"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+  podDisruptionBudget:
+    minAvailable: 2
+
+deliveryPartner:
+  replicaCount: 2
+  image:
+    tag: "1.0.0"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  autoscaling:
+    minReplicas: 2
+    maxReplicas: 8
+  podDisruptionBudget:
+    minAvailable: 1
+
+vendor:
+  replicaCount: 2
+  image:
+    tag: "1.0.0"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  autoscaling:
+    minReplicas: 2
+    maxReplicas: 8
+  podDisruptionBudget:
+    minAvailable: 1
+
+admin:
+  replicaCount: 2
+  image:
+    tag: "1.0.0"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  autoscaling:
+    minReplicas: 2
+    maxReplicas: 6
+  podDisruptionBudget:
+    minAvailable: 1
+
+# ---------------------------------------------------------------------------
+# Data Stores — Production Overrides
+# ---------------------------------------------------------------------------
+# For true production, disable these and use managed services:
+#   mongodb:
+#     enabled: false
+#   redis:
+#     enabled: false
+#   secrets:
+#     mongoUri:
+#       auth: "mongodb+srv://user:pass@cluster/grocery_auth"
+#       products: "mongodb+srv://user:pass@cluster/grocery_products"
+#       orders: "mongodb+srv://user:pass@cluster/grocery_orders"
+
+mongodb:
+  enabled: true
+  storage:
+    size: 50Gi
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: "2"
+      memory: 4Gi
+
+redis:
+  enabled: true
+  storage:
+    size: 5Gi
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+# ---------------------------------------------------------------------------
+# Security — Production Overrides
+# ---------------------------------------------------------------------------
+secrets:
+  jwtSecret: ""  # MUST be set via --set secrets.jwtSecret=...
+
+networkPolicy:
+  enabled: true

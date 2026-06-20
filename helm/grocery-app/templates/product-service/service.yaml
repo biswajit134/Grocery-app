@@ -1,0 +1,18 @@
+{{- if .Values.productService.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "grocery-app.componentName" (dict "context" . "component" "product-service") }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "grocery-app.componentLabels" (dict "context" . "component" "product-service") | nindent 4 }}
+spec:
+  type: {{ .Values.productService.service.type }}
+  ports:
+    - port: {{ .Values.productService.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http-product
+  selector:
+    {{- include "grocery-app.selectorLabels" (dict "context" . "component" "product-service") | nindent 4 }}
+{{- end }}

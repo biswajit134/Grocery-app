@@ -1,0 +1,54 @@
+===========================================================================
+  🛒  Grocery-App has been deployed!
+===========================================================================
+
+Release:    {{ .Release.Name }}
+Namespace:  {{ .Release.Namespace }}
+Chart:      {{ include "grocery-app.chart" . }}
+
+{{- if .Values.istio.enabled }}
+
+📡 Istio Ingress
+─────────────────
+To get the external IP of the Istio Ingress Gateway:
+
+  kubectl get svc istio-ingressgateway -n istio-system \
+    -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+
+Then configure DNS for "{{ .Values.global.domain }}" to point to that IP.
+
+Application URLs:
+  • Customer App:     http://{{ .Values.global.domain }}/
+  • Delivery Partner: http://{{ .Values.global.domain }}/delivery/
+  • Vendor Portal:    http://{{ .Values.global.domain }}/vendor/
+  • Admin Dashboard:  http://{{ .Values.global.domain }}/admin/
+
+API Endpoints:
+  • Auth API:         http://{{ .Values.global.domain }}/api/auth/
+  • Product API:      http://{{ .Values.global.domain }}/api/products/
+  • Order API:        http://{{ .Values.global.domain }}/api/orders/
+{{- end }}
+
+🔍 Verify Deployment
+─────────────────────
+Check all pods are running:
+
+  kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/part-of=grocery-app
+
+Check services:
+
+  kubectl get svc -n {{ .Release.Namespace }}
+
+{{- if .Values.mongodb.enabled }}
+
+🗄️  MongoDB is deployed as a StatefulSet within the cluster.
+   For production, consider using a managed service (e.g., MongoDB Atlas).
+{{- end }}
+
+{{- if .Values.redis.enabled }}
+
+⚡ Redis is deployed as a StatefulSet within the cluster.
+   For production, consider using a managed service (e.g., AWS ElastiCache).
+{{- end }}
+
+===========================================================================

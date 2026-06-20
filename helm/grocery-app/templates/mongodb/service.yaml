@@ -1,0 +1,19 @@
+{{- if .Values.mongodb.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "grocery-app.componentName" (dict "context" . "component" "mongodb") }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "grocery-app.componentLabels" (dict "context" . "component" "mongodb") | nindent 4 }}
+spec:
+  # Headless service for StatefulSet stable network identity
+  clusterIP: None
+  ports:
+    - port: {{ .Values.mongodb.port }}
+      targetPort: mongodb
+      protocol: TCP
+      name: tcp-mongodb
+  selector:
+    {{- include "grocery-app.selectorLabels" (dict "context" . "component" "mongodb") | nindent 4 }}
+{{- end }}

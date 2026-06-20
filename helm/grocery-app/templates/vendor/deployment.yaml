@@ -1,0 +1,79 @@
+{{- if .Values.vendor.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "grocery-app.componentName" (dict "context" . "component" "vendor") }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "grocery-app.componentLabels" (dict "context" . "component" "vendor") | nindent 4 }}
+spec:
+  {{- if not .Values.vendor.autoscaling.enabled }}
+  replicas: {{ .Values.vendor.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "grocery-app.selectorLabels" (dict "context" . "component" "vendor") | nindent 6 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        {{- include "grocery-app.componentLabels" (dict "context" . "component" "vendor") | nindent 8 }}
+      annotations:
+        sidecar.istio.io/inject: "true"
+    spec:
+      {{- include "grocery-app.imagePullSecrets" . | nindent 6 }}
+      terminationGracePeriodSeconds: 15
+      {{- include "grocery-app.frontendSecurityContext" . | nindent 6 }}
+      containers:
+        - name: vendor
+          image: "{{ .Values.vendor.image.repository }}:{{ .Values.vendor.image.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.vendor.port }}
+              protocol: TCP
+          env:
+            {{- range $key, $value := .Values.vendor.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.vendor.probes.liveness.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.vendor.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.vendor.probes.liveness.periodSeconds }}
+            timeoutSeconds: {{ .Values.vendor.probes.liveness.timeoutSeconds }}
+            failureThreshold: {{ .Values.vendor.probes.liveness.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.vendor.probes.readiness.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.vendor.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.vendor.probes.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.vendor.probes.readiness.timeoutSeconds }}
+            failureThreshold: {{ .Values.vendor.probes.readiness.failureThreshold }}
+          resources:
+            {{- toYaml .Values.vendor.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+      {{- if .Values.vendor.podAntiAffinity.enabled }}
+      {{- include "grocery-app.podAntiAffinity" (dict "component" "vendor") | nindent 6 }}
+      {{- end }}
+      {{- with .Values.vendor.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.vendor.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

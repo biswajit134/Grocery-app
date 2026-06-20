@@ -1,0 +1,73 @@
+{{- if .Values.mongodb.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "grocery-app.componentName" (dict "context" . "component" "mongodb") }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "grocery-app.componentLabels" (dict "context" . "component" "mongodb") | nindent 4 }}
+spec:
+  serviceName: {{ include "grocery-app.componentName" (dict "context" . "component" "mongodb") }}
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "grocery-app.selectorLabels" (dict "context" . "component" "mongodb") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "grocery-app.componentLabels" (dict "context" . "component" "mongodb") | nindent 8 }}
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      {{- include "grocery-app.imagePullSecrets" . | nindent 6 }}
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: mongodb
+          image: "{{ .Values.mongodb.image.repository }}:{{ .Values.mongodb.image.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - name: mongodb
+              containerPort: {{ .Values.mongodb.port }}
+              protocol: TCP
+          readinessProbe:
+            tcpSocket:
+              port: mongodb
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            tcpSocket:
+              port: mongodb
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.mongodb.resources | nindent 12 }}
+          volumeMounts:
+            - name: mongodb-data
+              mountPath: /data/db
+      {{- with .Values.mongodb.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.mongodb.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  volumeClaimTemplates:
+    - metadata:
+        name: mongodb-data
+        labels:
+          {{- include "grocery-app.componentLabels" (dict "context" . "component" "mongodb") | nindent 10 }}
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        {{- if .Values.mongodb.storage.storageClass }}
+        storageClassName: {{ .Values.mongodb.storage.storageClass | quote }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.mongodb.storage.size }}
+{{- end }}

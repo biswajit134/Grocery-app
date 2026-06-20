@@ -1,0 +1,14 @@
+{{- if .Values.admin.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "grocery-app.componentName" (dict "context" . "component" "admin") }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "grocery-app.componentLabels" (dict "context" . "component" "admin") | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.admin.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "grocery-app.selectorLabels" (dict "context" . "component" "admin") | nindent 6 }}
+{{- end }}
