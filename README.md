@@ -97,46 +97,6 @@ Used by logistics drivers to accept orders and trace route transitions.
 
 ---
 
-## ⚙️ System Architecture & Services
-
-GroceryHub is built as a set of decoupled microservices and independent frontend portals communicating via REST APIs:
-
-```mermaid
-graph TD
-    subgraph Client Portals
-        FE[Customer Storefront - Port 3000]
-        AD[Admin Portal - Port 3003]
-        VD[Vendor Hub - Port 3002]
-        DP[Delivery Partner - Port 3001]
-    end
-
-    subgraph Backend Microservices
-        AS[Auth Service - Port 5001]
-        PS[Product Service - Port 5002]
-        OS[Order Service - Port 5003]
-    end
-
-    subgraph Data Tier
-        MDB[(MongoDB Database)]
-        RDS[(Redis Cache)]
-    end
-
-    %% Client communicating with APIs
-    FE --> AS & PS & OS
-    AD --> AS & PS & OS
-    VD --> AS & PS & OS
-    DP --> AS & OS
-
-    %% Service to Service
-    OS --> PS
-    OS --> AS
-
-    %% DB Connections
-    AS --> MDB
-    PS --> MDB
-    PS --> RDS
-    OS --> MDB
-```
 
 ### Port Mapping & Purpose
 
