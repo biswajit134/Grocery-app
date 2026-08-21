@@ -118,6 +118,48 @@ Used by logistics drivers to accept orders and trace route transitions.
 
 All environment variables have been fully internalized into the Docker Compose configurations to enable immediate local orchestration without manually maintaining `.env` files across subdirectories.
 
+### ☸️ Kubernetes & Istio Architecture (Helm)
+The platform is fully deployable to Kubernetes using the included Helm chart, featuring Istio for traffic management, mutual TLS, and Horizontal Pod Autoscaling (HPA).
+
+```mermaid
+graph TD
+    %% External Traffic
+    User((User)) --> Ingress[Istio Ingress Gateway<br>grocery.example.com]
+    
+    %% VirtualService Routing
+    Ingress --> VS{VirtualService<br>Traffic Routing}
+    
+    %% Frontend Routes
+    VS -->|/admin| Admin[Admin App Service]
+    VS -->|/vendor| Vendor[Vendor App Service]
+    VS -->|/delivery| Delivery[Delivery App Service]
+    VS -->|/*| Frontend[Customer App Service]
+    
+    %% API Routes
+    VS -->|/api/*| API_GW[API Gateway Service]
+    
+    %% Backend Services
+    API_GW --> Auth[Auth Service]
+    API_GW --> Product[Product Service]
+    API_GW --> Order[Order Service]
+    
+    Order -.->|Inter-Service| Product
+    
+    %% Databases
+    Auth --> Mongo[(MongoDB)]
+    Product --> Mongo
+    Order --> Mongo
+    Product --> Redis[(Redis Cache)]
+    
+    classDef k8s fill:#326ce5,stroke:#fff,stroke-width:2px,color:#fff,rx:5px,ry:5px;
+    classDef istio fill:#466bb0,stroke:#fff,stroke-width:2px,color:#fff,rx:5px,ry:5px;
+    classDef db fill:#4caf50,stroke:#fff,stroke-width:2px,color:#fff,rx:5px,ry:5px;
+    
+    class Admin,Vendor,Delivery,Frontend,API_GW,Auth,Product,Order k8s;
+    class Ingress,VS istio;
+    class Mongo,Redis db;
+```
+
 ### Run Local Development (Build from Source)
 To run and build all services dynamically from your local codebase directory:
 ```bash

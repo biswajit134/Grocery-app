@@ -1,0 +1,14 @@
+{{- if .Values.apiGateway.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "grocery-app.componentName" (dict "context" . "component" "api-gateway") }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "grocery-app.componentLabels" (dict "context" . "component" "api-gateway") | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.apiGateway.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "grocery-app.selectorLabels" (dict "context" . "component" "api-gateway") | nindent 6 }}
+{{- end }}

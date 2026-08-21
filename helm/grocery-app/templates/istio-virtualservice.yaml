@@ -15,16 +15,16 @@ spec:
     # ─────────────────────────────────────────────
     # API Routes (must come before frontend routes)
     # ─────────────────────────────────────────────
-    {{- if .Values.authService.enabled }}
-    - name: auth-api
+    {{- if .Values.apiGateway.enabled }}
+    - name: api-gateway
       match:
         - uri:
-            prefix: /api/auth
+            prefix: /api/
       route:
         - destination:
-            host: {{ include "grocery-app.componentName" (dict "context" . "component" "auth-service") }}
+            host: {{ include "grocery-app.componentName" (dict "context" . "component" "api-gateway") }}
             port:
-              number: {{ .Values.authService.service.port }}
+              number: {{ .Values.apiGateway.service.port }}
       timeout: {{ .Values.istio.virtualService.timeout }}
       retries:
         attempts: {{ .Values.istio.virtualService.retries.attempts }}
@@ -40,40 +40,6 @@ spec:
         allowHeaders:
           {{- toYaml .Values.istio.virtualService.corsPolicy.allowHeaders | nindent 10 }}
         maxAge: {{ .Values.istio.virtualService.corsPolicy.maxAge | quote }}
-    {{- end }}
-
-    {{- if .Values.productService.enabled }}
-    - name: product-api
-      match:
-        - uri:
-            prefix: /api/products
-      route:
-        - destination:
-            host: {{ include "grocery-app.componentName" (dict "context" . "component" "product-service") }}
-            port:
-              number: {{ .Values.productService.service.port }}
-      timeout: {{ .Values.istio.virtualService.timeout }}
-      retries:
-        attempts: {{ .Values.istio.virtualService.retries.attempts }}
-        retryOn: {{ .Values.istio.virtualService.retries.retryOn | quote }}
-        perTryTimeout: {{ .Values.istio.virtualService.retries.perTryTimeout }}
-    {{- end }}
-
-    {{- if .Values.orderService.enabled }}
-    - name: order-api
-      match:
-        - uri:
-            prefix: /api/orders
-      route:
-        - destination:
-            host: {{ include "grocery-app.componentName" (dict "context" . "component" "order-service") }}
-            port:
-              number: {{ .Values.orderService.service.port }}
-      timeout: {{ .Values.istio.virtualService.timeout }}
-      retries:
-        attempts: {{ .Values.istio.virtualService.retries.attempts }}
-        retryOn: {{ .Values.istio.virtualService.retries.retryOn | quote }}
-        perTryTimeout: {{ .Values.istio.virtualService.retries.perTryTimeout }}
     {{- end }}
 
     # ─────────────────────────────────────────────

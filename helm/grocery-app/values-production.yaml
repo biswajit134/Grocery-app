@@ -15,6 +15,28 @@ global:
 # ---------------------------------------------------------------------------
 # Backend Services — Production Overrides
 # ---------------------------------------------------------------------------
+apiGateway:
+  replicaCount: 3
+  image:
+    tag: "1.0.0"
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 15
+    targetCPUUtilizationPercentage: 65
+    targetMemoryUtilizationPercentage: 75
+  podDisruptionBudget:
+    minAvailable: 2
+  podAntiAffinity:
+    enabled: true
+
 authService:
   replicaCount: 3
   image:
