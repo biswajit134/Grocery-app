@@ -64,10 +64,15 @@ services:
       - grocery-network
 
   api-gateway:
-    build: ./services/api-gateway
+    image: biswajit134/grocery-api-gateway:latest
     container_name: grocery-api-gateway
     ports:
       - "5000:5000"
+    environment:
+      - PORT=5000
+      - AUTH_SERVICE_URL=http://auth-service:5001
+      - PRODUCT_SERVICE_URL=http://product-service:5002
+      - ORDER_SERVICE_URL=http://order-service:5003
     depends_on:
       - auth-service
       - product-service
