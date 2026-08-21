@@ -123,40 +123,68 @@ The platform is fully deployable to Kubernetes using the included Helm chart, fe
 
 ```mermaid
 graph TD
+    subgraph Platform [grocery-platform chart]
+        Ingress[Istio Gateway<br>grocery.example.com]
+        VS{Istio VirtualService}
+        Secrets((Shared Secrets))
+        Ingress --> VS
+    end
+
+    subgraph Frontends [Frontend Charts]
+        Frontend[helm/frontend]
+        Admin[helm/admin]
+        Vendor[helm/vendor]
+        Delivery[helm/delivery-partner]
+    end
+
+    subgraph API [Gateway Chart]
+        API_GW[helm/api-gateway]
+    end
+
+    subgraph Backends [Microservice Charts]
+        Auth[helm/auth-service]
+        Product[helm/product-service]
+        Order[helm/order-service]
+    end
+
+    subgraph Data [Database Charts]
+        Mongo[(helm/mongodb)]
+        Redis[(helm/redis)]
+    end
+
     %% External Traffic
-    User((User)) --> Ingress[Istio Ingress Gateway<br>grocery.example.com]
-    
-    %% VirtualService Routing
-    Ingress --> VS{VirtualService<br>Traffic Routing}
-    
-    %% Frontend Routes
-    VS -->|/admin| Admin[Admin App Service]
-    VS -->|/vendor| Vendor[Vendor App Service]
-    VS -->|/delivery| Delivery[Delivery App Service]
-    VS -->|/*| Frontend[Customer App Service]
-    
-    %% API Routes
-    VS -->|/api/*| API_GW[API Gateway Service]
-    
-    %% Backend Services
-    API_GW --> Auth[Auth Service]
-    API_GW --> Product[Product Service]
-    API_GW --> Order[Order Service]
-    
+    User((User)) --> Ingress
+
+    %% Routing
+    VS -->|/*| Frontend
+    VS -->|/admin| Admin
+    VS -->|/vendor| Vendor
+    VS -->|/delivery| Delivery
+    VS -->|/api/*| API_GW
+
+    %% Microservices
+    API_GW --> Auth
+    API_GW --> Product
+    API_GW --> Order
     Order -.->|Inter-Service| Product
-    
+
     %% Databases
-    Auth --> Mongo[(MongoDB)]
+    Auth --> Mongo
     Product --> Mongo
     Order --> Mongo
-    Product --> Redis[(Redis Cache)]
-    
-    classDef k8s fill:#326ce5,stroke:#fff,stroke-width:2px,color:#fff,rx:5px,ry:5px;
-    classDef istio fill:#466bb0,stroke:#fff,stroke-width:2px,color:#fff,rx:5px,ry:5px;
+    Product --> Redis
+
+    %% Secrets mapping
+    Auth -.-> Secrets
+    API_GW -.-> Secrets
+    Order -.-> Secrets
+
+    classDef chart fill:#326ce5,stroke:#fff,stroke-width:2px,color:#fff,rx:5px,ry:5px;
+    classDef platform fill:#466bb0,stroke:#fff,stroke-width:2px,color:#fff,rx:5px,ry:5px;
     classDef db fill:#4caf50,stroke:#fff,stroke-width:2px,color:#fff,rx:5px,ry:5px;
-    
-    class Admin,Vendor,Delivery,Frontend,API_GW,Auth,Product,Order k8s;
-    class Ingress,VS istio;
+
+    class Frontend,Admin,Vendor,Delivery,API_GW,Auth,Product,Order chart;
+    class Ingress,VS,Secrets platform;
     class Mongo,Redis db;
 ```
 

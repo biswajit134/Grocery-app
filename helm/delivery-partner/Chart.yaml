@@ -1,0 +1,5 @@
+apiVersion: v2
+name: delivery-partner
+description: Helm chart for delivery-partner
+type: application
+version: 1.0.0

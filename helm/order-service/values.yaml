@@ -1,0 +1,56 @@
+global:
+  imagePullPolicy: IfNotPresent
+  domain: grocery.example.com
+
+
+enabled: true
+replicaCount: 2
+image:
+  repository: biswajit134/grocery-order-service
+  tag: latest
+port: 5003
+service:
+  type: ClusterIP
+  port: 5003
+env:
+  PORT: "5003"
+  PRODUCT_SERVICE_URL: "http://grocery-app-product-service:5002"
+  # -- MONGO_URI is injected from secrets
+  # -- JWT_SECRET is injected from secrets
+probes:
+  liveness:
+    path: /health
+    initialDelaySeconds: 15
+    periodSeconds: 20
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readiness:
+    path: /health
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+podDisruptionBudget:
+  minAvailable: 1
+nodeSelector: {}
+tolerations: []
+affinity: {}
+podAntiAffinity:
+  enabled: true
+
+# ---------------------------------------------------------------------------
+# Frontend (Customer App)
+# ---------------------------------------------------------------------------

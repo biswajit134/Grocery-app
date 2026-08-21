@@ -1,0 +1,54 @@
+global:
+  imagePullPolicy: IfNotPresent
+  domain: grocery.example.com
+
+
+enabled: true
+replicaCount: 2
+image:
+  repository: biswajit134/grocery-delivery-app
+  tag: latest
+port: 3001
+service:
+  type: ClusterIP
+  port: 3001
+env:
+  VITE_AUTH_URL: "/api/auth"
+  VITE_ORDER_URL: "/api/orders"
+probes:
+  liveness:
+    path: /
+    initialDelaySeconds: 10
+    periodSeconds: 15
+    timeoutSeconds: 3
+    failureThreshold: 3
+  readiness:
+    path: /
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 8
+  targetCPUUtilizationPercentage: 75
+  targetMemoryUtilizationPercentage: 80
+podDisruptionBudget:
+  minAvailable: 1
+nodeSelector: {}
+tolerations: []
+affinity: {}
+podAntiAffinity:
+  enabled: true
+
+# ---------------------------------------------------------------------------
+# Vendor App
+# ---------------------------------------------------------------------------
