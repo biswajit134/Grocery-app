@@ -60,3 +60,11 @@ jobs:
             push: true
             tags: ${{ secrets.DOCKER_USERNAME }}/grocery-order-service:latest
 
+
+      - name: Build api-gateway service and push Docker image
+        uses: docker/build-push-action@v7
+        with:
+            context: ./src/services/api-gateway
+            push: true
+            tags: ${{ secrets.DOCKER_USERNAME }}/grocery-api-gateway:latest
+

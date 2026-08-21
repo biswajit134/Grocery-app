@@ -63,15 +63,27 @@ services:
     networks:
       - grocery-network
 
+  api-gateway:
+    build: ./services/api-gateway
+    container_name: grocery-api-gateway
+    ports:
+      - "5000:5000"
+    depends_on:
+      - auth-service
+      - product-service
+      - order-service
+    networks:
+      - grocery-network
+
   frontend:
     build: ./frontend
     container_name: grocery-frontend
     ports:
       - "3000:3000"
     environment:
-      - VITE_AUTH_URL=http://localhost:5001/api/auth
-      - VITE_PRODUCT_URL=http://localhost:5002/api/products
-      - VITE_ORDER_URL=http://localhost:5003/api/orders
+      - VITE_AUTH_URL=http://localhost:5000/api/auth
+      - VITE_PRODUCT_URL=http://localhost:5000/api/products
+      - VITE_ORDER_URL=http://localhost:5000/api/orders
     depends_on:
       - auth-service
       - product-service
@@ -85,8 +97,8 @@ services:
     ports:
       - "3001:3001"
     environment:
-      - VITE_AUTH_URL=http://localhost:5001/api/auth
-      - VITE_ORDER_URL=http://localhost:5003/api/orders
+      - VITE_AUTH_URL=http://localhost:5000/api/auth
+      - VITE_ORDER_URL=http://localhost:5000/api/orders
     depends_on:
       - auth-service
       - order-service
@@ -99,8 +111,8 @@ services:
     ports:
       - "3002:3002"
     environment:
-      - VITE_AUTH_URL=http://localhost:5001/api/auth
-      - VITE_PRODUCT_URL=http://localhost:5002/api/products
+      - VITE_AUTH_URL=http://localhost:5000/api/auth
+      - VITE_PRODUCT_URL=http://localhost:5000/api/products
     depends_on:
       - auth-service
       - product-service
@@ -113,9 +125,9 @@ services:
     ports:
       - "3003:3003"
     environment:
-      - VITE_AUTH_URL=http://localhost:5001/api/auth
-      - VITE_PRODUCT_URL=http://localhost:5002/api/products
-      - VITE_ORDER_URL=http://localhost:5003/api/orders
+      - VITE_AUTH_URL=http://localhost:5000/api/auth
+      - VITE_PRODUCT_URL=http://localhost:5000/api/products
+      - VITE_ORDER_URL=http://localhost:5000/api/orders
     depends_on:
       - auth-service
       - product-service
