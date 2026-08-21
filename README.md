@@ -4,6 +4,57 @@ Welcome to **GroceryHub**, a premium, modern, multi-user Grocery Platform featur
 
 ---
 
+## 🏗 Architecture
+
+```mermaid
+graph TD
+    %% Frontend Applications
+    subgraph Client Portals
+        F(🛒 Customer Storefront<br>Port: 3000)
+        D(🚚 Delivery Partner<br>Port: 3001)
+        V(🏪 Vendor App<br>Port: 3002)
+        A(📊 Admin Portal<br>Port: 3003)
+    end
+
+    %% API Gateway
+    AG{API Gateway<br>Port: 5000}
+
+    %% Microservices
+    subgraph Backend Microservices
+        Auth(Auth Service<br>Port: 5001)
+        Product(Product Service<br>Port: 5002)
+        Order(Order Service<br>Port: 5003)
+    end
+
+    %% Databases
+    subgraph Databases
+        Mongo[(MongoDB)]
+        Redis[(Redis)]
+    end
+
+    %% Client to Gateway
+    F --> AG
+    D --> AG
+    V --> AG
+    A --> AG
+
+    %% Gateway to Services
+    AG --> Auth
+    AG --> Product
+    AG --> Order
+
+    %% Internal Service Communication
+    Order -.->|Verifies Products| Product
+
+    %% Services to Databases
+    Auth --> Mongo
+    Product --> Mongo
+    Order --> Mongo
+    Product --> Redis
+```
+
+---
+
 ## 🎬 Platform Walkthrough & Live Transitions
 
 Here is the live animation showing page loading, category navigation transitions, and the logged-in admin dashboard:
