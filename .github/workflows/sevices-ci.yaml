@@ -67,4 +67,3 @@ jobs:
             context: ./src/services/api-gateway
             push: true
             tags: ${{ secrets.DOCKER_USERNAME }}/grocery-api-gateway:latest
-

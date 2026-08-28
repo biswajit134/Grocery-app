@@ -171,6 +171,18 @@ services:
     networks:
       - grocery-network
 
+  gateway-dashboard:
+    image: biswajit134/grocery-gateway-dashboard:latest
+    container_name: grocery-gateway-dashboard
+    ports:
+      - "3004:3004"
+    environment:
+      - VITE_GATEWAY_URL=http://localhost:5000
+    depends_on:
+      - api-gateway
+    networks:
+      - grocery-network
+
 volumes:
   mongodb_data:
   redis_data:
