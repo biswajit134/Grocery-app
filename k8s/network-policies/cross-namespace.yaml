@@ -1,0 +1,121 @@
+# Allow backend namespace to access database namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-to-database
+  namespace: database
+  labels:
+    app.kubernetes.io/part-of: groceryhub
+spec:
+  podSelector: {} # Apply to all pods in database namespace
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              tier: backend
+      ports:
+        - protocol: TCP
+          port: 27017 # MongoDB
+        - protocol: TCP
+          port: 6379  # Redis
+---
+# Allow client namespace to access backend namespace (API Gateway only)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-client-to-api-gateway
+  namespace: backend
+  labels:
+    app.kubernetes.io/part-of: groceryhub
+spec:
+  podSelector:
+    matchLabels:
+      app: api-gateway
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              tier: client
+      ports:
+        - protocol: TCP
+          port: 5000
+---
+# Allow intra-backend communication
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-intra-backend
+  namespace: backend
+  labels:
+    app.kubernetes.io/part-of: groceryhub
+spec:
+  podSelector: {} # Apply to all pods in backend namespace
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              tier: backend
+      ports:
+        - protocol: TCP
+          port: 5000
+        - protocol: TCP
+          port: 5001
+        - protocol: TCP
+          port: 5002
+        - protocol: TCP
+          port: 5003
+---
+# Allow ingress controller to reach client and backend namespaces
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-client
+  namespace: client
+  labels:
+    app.kubernetes.io/part-of: groceryhub
+spec:
+  podSelector: {} # Apply to all pods in client namespace
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 3000
+        - protocol: TCP
+          port: 3001
+        - protocol: TCP
+          port: 3002
+        - protocol: TCP
+          port: 3003
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-api-gateway
+  namespace: backend
+  labels:
+    app.kubernetes.io/part-of: groceryhub
+spec:
+  podSelector:
+    matchLabels:
+      app: api-gateway
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 5000

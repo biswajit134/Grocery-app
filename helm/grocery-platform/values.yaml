@@ -1,8 +1,0 @@
-global:
-  domain: grocery.example.com
-istio:
-  enabled: true
-secrets:
-  jwtSecret: CHANGE_ME
-networkPolicy:
-  enabled: true

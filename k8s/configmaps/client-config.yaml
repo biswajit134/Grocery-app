@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: client-config
+  namespace: client
+  labels:
+    app.kubernetes.io/part-of: groceryhub
+data:
+  # API Gateway URL — update the host for your actual domain/IP
+  # For local development with port-forward: http://localhost:5000
+  # For production with Ingress: https://groceryhub.example.com
+  VITE_AUTH_URL: "http://groceryhub.local/api/auth"
+  VITE_PRODUCT_URL: "http://groceryhub.local/api/products"
+  VITE_ORDER_URL: "http://groceryhub.local/api/orders"

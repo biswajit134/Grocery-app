@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vendor
+  namespace: client
+  labels:
+    app: vendor
+    app.kubernetes.io/part-of: groceryhub
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: vendor
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: vendor
+        app.kubernetes.io/part-of: groceryhub
+    spec:
+      containers:
+        - name: vendor
+          image: biswajit134/grocery-vendor-app:latest
+          ports:
+            - containerPort: 3002
+              protocol: TCP
+          env:
+            - name: VITE_AUTH_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: client-config
+                  key: VITE_AUTH_URL
+            - name: VITE_PRODUCT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: client-config
+                  key: VITE_PRODUCT_URL
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 150m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vendor
+  namespace: client
+  labels:
+    app: vendor
+    app.kubernetes.io/part-of: groceryhub
+spec:
+  type: ClusterIP
+  selector:
+    app: vendor
+  ports:
+    - port: 3002
+      targetPort: 3002
+      protocol: TCP
+      name: http

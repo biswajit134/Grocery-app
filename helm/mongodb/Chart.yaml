@@ -1,5 +1,0 @@
-apiVersion: v2
-name: mongodb
-description: Helm chart for mongodb
-type: application
-version: 1.0.0

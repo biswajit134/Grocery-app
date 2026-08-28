@@ -1,5 +1,0 @@
-apiVersion: v2
-name: admin
-description: Helm chart for admin
-type: application
-version: 1.0.0

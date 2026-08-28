@@ -1,5 +1,0 @@
-apiVersion: v2
-name: vendor
-description: Helm chart for vendor
-type: application
-version: 1.0.0

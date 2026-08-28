@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+  namespace: backend
+  labels:
+    app: order-service
+    app.kubernetes.io/part-of: groceryhub
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: order-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: order-service
+        app.kubernetes.io/part-of: groceryhub
+    spec:
+      containers:
+        - name: order-service
+          image: biswajit134/grocery-order-service:latest
+          ports:
+            - containerPort: 5003
+              protocol: TCP
+          env:
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: ORDER_SERVICE_PORT
+            - name: MONGO_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: MONGO_URI_ORDERS
+            - name: PRODUCT_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: PRODUCT_SERVICE_URL
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: JWT_SECRET
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+  namespace: backend
+  labels:
+    app: order-service
+    app.kubernetes.io/part-of: groceryhub
+spec:
+  type: ClusterIP
+  selector:
+    app: order-service
+  ports:
+    - port: 5003
+      targetPort: 5003
+      protocol: TCP
+      name: http

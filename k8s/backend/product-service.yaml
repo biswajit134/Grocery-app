@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-service
+  namespace: backend
+  labels:
+    app: product-service
+    app.kubernetes.io/part-of: groceryhub
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: product-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: product-service
+        app.kubernetes.io/part-of: groceryhub
+    spec:
+      containers:
+        - name: product-service
+          image: biswajit134/grocery-product-service:latest
+          ports:
+            - containerPort: 5002
+              protocol: TCP
+          env:
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: PRODUCT_SERVICE_PORT
+            - name: MONGO_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: MONGO_URI_PRODUCTS
+            - name: REDIS_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: REDIS_URL
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service
+  namespace: backend
+  labels:
+    app: product-service
+    app.kubernetes.io/part-of: groceryhub
+spec:
+  type: ClusterIP
+  selector:
+    app: product-service
+  ports:
+    - port: 5002
+      targetPort: 5002
+      protocol: TCP
+      name: http

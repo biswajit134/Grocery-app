@@ -1,0 +1,77 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: groceryhub-ingress
+  namespace: client
+  labels:
+    app.kubernetes.io/part-of: groceryhub
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: groceryhub.local
+      http:
+        paths:
+          # Frontend customer app
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 3000
+          # Admin dashboard
+          - path: /admin
+            pathType: Prefix
+            backend:
+              service:
+                name: admin
+                port:
+                  number: 3003
+          # Vendor portal
+          - path: /vendor
+            pathType: Prefix
+            backend:
+              service:
+                name: vendor
+                port:
+                  number: 3002
+          # Delivery partner portal
+          - path: /delivery
+            pathType: Prefix
+            backend:
+              service:
+                name: delivery-partner
+                port:
+                  number: 3001
+---
+# Ingress for API Gateway (cross-namespace — backend namespace)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: groceryhub-api-ingress
+  namespace: backend
+  labels:
+    app.kubernetes.io/part-of: groceryhub
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: groceryhub.local
+      http:
+        paths:
+          # All API routes go through the gateway
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway
+                port:
+                  number: 5000

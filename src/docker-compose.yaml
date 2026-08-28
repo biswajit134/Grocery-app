@@ -4,8 +4,17 @@ services:
     container_name: grocery-mongodb
     ports:
       - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=adminpassword123
     volumes:
       - mongodb_data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     networks:
       - grocery-network
 
@@ -19,6 +28,24 @@ services:
     networks:
       - grocery-network
 
+  mongo-express:
+    image: mongo-express:1.0
+    container_name: grocery-mongo-dashboard
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=adminpassword123
+      - ME_CONFIG_MONGODB_URL=mongodb://admin:adminpassword123@mongodb:27017/
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=admin123
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - grocery-network
+
   auth-service:
     image: biswajit134/grocery-auth-service:latest
     container_name: grocery-auth-service
@@ -26,10 +53,11 @@ services:
       - "5001:5001"
     environment:
       - PORT=5001
-      - MONGO_URI=mongodb://mongodb:27017/grocery_auth
+      - MONGO_URI=mongodb://admin:adminpassword123@mongodb:27017/grocery_auth?authSource=admin
       - JWT_SECRET=supersecretjwtkeyforgroceryhub
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
     networks:
       - grocery-network
 
@@ -40,11 +68,13 @@ services:
       - "5002:5002"
     environment:
       - PORT=5002
-      - MONGO_URI=mongodb://mongodb:27017/grocery_products
+      - MONGO_URI=mongodb://admin:adminpassword123@mongodb:27017/grocery_products?authSource=admin
       - REDIS_URL=redis://redis:6379
     depends_on:
-      - mongodb
-      - redis
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - grocery-network
 
@@ -55,11 +85,12 @@ services:
       - "5003:5003"
     environment:
       - PORT=5003
-      - MONGO_URI=mongodb://mongodb:27017/grocery_orders
+      - MONGO_URI=mongodb://admin:adminpassword123@mongodb:27017/grocery_orders?authSource=admin
       - PRODUCT_SERVICE_URL=http://product-service:5002
       - JWT_SECRET=supersecretjwtkeyforgroceryhub
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
     networks:
       - grocery-network
 

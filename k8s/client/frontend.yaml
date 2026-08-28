@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: client
+  labels:
+    app: frontend
+    app.kubernetes.io/part-of: groceryhub
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: frontend
+        app.kubernetes.io/part-of: groceryhub
+    spec:
+      containers:
+        - name: frontend
+          image: biswajit134/grocery-frontend-app:latest
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          env:
+            - name: VITE_AUTH_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: client-config
+                  key: VITE_AUTH_URL
+            - name: VITE_PRODUCT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: client-config
+                  key: VITE_PRODUCT_URL
+            - name: VITE_ORDER_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: client-config
+                  key: VITE_ORDER_URL
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 150m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: client
+  labels:
+    app: frontend
+    app.kubernetes.io/part-of: groceryhub
+spec:
+  type: ClusterIP
+  selector:
+    app: frontend
+  ports:
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
+      name: http
