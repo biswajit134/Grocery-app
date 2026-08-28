@@ -209,12 +209,12 @@ body {
 
 /* Animations from Implementation Plan */
 @keyframes laserPulse {
-  0% { stroke-dashoffset: 200; opacity: 1; stroke-width: 3; }
-  100% { stroke-dashoffset: 0; opacity: 0; stroke-width: 1; }
+  0% { stroke-dashoffset: 60; opacity: 1; stroke-width: 4; }
+  100% { stroke-dashoffset: -800; opacity: 0.1; stroke-width: 2; }
 }
 .laser-beam {
   fill: none;
-  stroke-dasharray: 40 160;
+  stroke-dasharray: 60 800;
   animation: laserPulse linear forwards;
 }
 
@@ -240,8 +240,8 @@ body {
 }
 
 @keyframes dataPacket {
-  0% { stroke-dashoffset: 100; opacity: 1; }
-  100% { stroke-dashoffset: -100; opacity: 0.2; }
+  0% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: -800; opacity: 0; }
 }
 .data-packet {
   fill: none;

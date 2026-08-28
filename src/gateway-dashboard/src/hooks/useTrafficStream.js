@@ -5,6 +5,7 @@ const WS_URL = GATEWAY_URL.replace(/^http/, 'ws') + '/ws/traffic';
 
 export function useTrafficStream() {
   const [trafficBuffer, setTrafficBuffer] = useState([]);
+  const [latestEvent, setLatestEvent] = useState(null);
   const [stats, setStats] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const wsRef = useRef(null);
@@ -43,6 +44,8 @@ export function useTrafficStream() {
             setTrafficBuffer(msg.data);
           } else if (msg.type === 'traffic') {
             setTrafficBuffer((prev) => [msg.data, ...prev].slice(0, 500));
+          } else if (msg.type === 'traffic_start') {
+            setLatestEvent(msg.data);
           }
         } catch (err) {
           console.error('Error parsing WS message:', err);
@@ -60,5 +63,5 @@ export function useTrafficStream() {
     };
   }, [fetchStats]);
 
-  return { trafficBuffer, stats, isConnected };
+  return { trafficBuffer, latestEvent, stats, isConnected };
 }

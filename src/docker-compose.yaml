@@ -95,8 +95,11 @@ services:
       - grocery-network
 
   api-gateway:
-    image: biswajit134/grocery-api-gateway:latest
-    container_name: grocery-api-gateway
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    # image: biswajit134/grocery-api-gateway:latest
+    # container_name: grocery-api-gateway
     ports:
       - "5000:5000"
     environment:
@@ -172,8 +175,11 @@ services:
       - grocery-network
 
   gateway-dashboard:
-    image: biswajit134/grocery-gateway-dashboard:latest
-    container_name: grocery-gateway-dashboard
+    build:
+      context: ./gateway-dashboard
+      dockerfile: Dockerfile
+    # image: biswajit134/grocery-gateway-dashboard:latest
+    # container_name: grocery-gateway-dashboard
     ports:
       - "3004:3004"
     environment:

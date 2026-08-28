@@ -1,23 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { getServiceColor, getServiceName } from '../utils/serviceMapper';
 
-export const TopologyMap = ({ trafficBuffer }) => {
+export const TopologyMap = ({ latestEvent }) => {
   const [animations, setAnimations] = useState([]);
   const [nodeActivity, setNodeActivity] = useState({});
 
   useEffect(() => {
-    if (!trafficBuffer || trafficBuffer.length === 0) return;
+    if (!latestEvent) return;
     
-    // Get the latest request
-    const latest = trafficBuffer[0];
     const now = Date.now();
     
     // Add animation for this request
     const newAnim = {
-      id: latest.id,
-      client: latest.client,
-      target: latest.target,
-      duration: latest.duration,
+      id: latestEvent.id,
+      client: latestEvent.client,
+      target: latestEvent.target,
+      duration: 150, // default quick duration for immediate visual
       startTime: now
     };
     
@@ -26,12 +24,12 @@ export const TopologyMap = ({ trafficBuffer }) => {
     // Set node activity for glow effects
     setNodeActivity(prev => ({
       ...prev,
-      [latest.client]: now,
-      [latest.target]: now,
+      [latestEvent.client]: now,
+      [latestEvent.target]: now,
       gateway: now
     }));
 
-  }, [trafficBuffer]);
+  }, [latestEvent]);
 
   // Clean up old animations and node activities
   useEffect(() => {
@@ -63,7 +61,8 @@ export const TopologyMap = ({ trafficBuffer }) => {
     gateway: { x: 400, y: 200 },
     auth: { x: 700, y: 100 },
     products: { x: 700, y: 200 },
-    orders: { x: 700, y: 300 }
+    orders: { x: 700, y: 300 },
+    unknown: { x: 400, y: 350 } // Fallback for unknown traffic
   };
 
   const renderNode = (id, label, icon) => {

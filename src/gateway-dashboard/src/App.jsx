@@ -7,7 +7,7 @@ import { ResponseChart } from './components/ResponseChart';
 import { Server } from 'lucide-react';
 
 function App() {
-  const { trafficBuffer, stats, isConnected } = useTrafficStream();
+  const { trafficBuffer, latestEvent, stats, isConnected } = useTrafficStream();
 
   return (
     <div className="dashboard-container">
@@ -35,7 +35,7 @@ function App() {
       <MetricsBar stats={stats} />
 
       {/* Main Map */}
-      <TopologyMap trafficBuffer={trafficBuffer} />
+      <TopologyMap latestEvent={latestEvent} />
 
       {/* Traffic Log sidebar */}
       <TrafficFeed trafficBuffer={trafficBuffer} />

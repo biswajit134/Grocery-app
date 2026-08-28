@@ -28,8 +28,9 @@ wss.on('connection', (ws) => {
   ws.send(JSON.stringify({ type: 'init', data: trafficBuffer }));
 });
 
-const broadcastTraffic = (trafficData) => {
-  const message = JSON.stringify({ type: 'traffic', data: trafficData });
+const broadcastMessage = (msgObj) => {
+  console.log('Broadcasting message:', JSON.stringify(msgObj));
+  const message = JSON.stringify(msgObj);
   wss.clients.forEach((client) => {
     if (client.readyState === 1) { // OPEN
       client.send(message);
@@ -59,9 +60,16 @@ const trafficMiddleware = (req, res, next) => {
     return next();
   }
 
+  const id = Math.random().toString(36).substring(2, 11);
   const startTime = Date.now();
   const client = identifyClient(req);
   const target = identifyTargetService(req.path);
+
+  // Broadcast immediate start event for live animations
+  broadcastMessage({
+    type: 'traffic_start',
+    data: { id, client, target }
+  });
 
   // Hook into response finish
   res.on('finish', () => {
@@ -69,7 +77,7 @@ const trafficMiddleware = (req, res, next) => {
     const isError = res.statusCode >= 400;
     
     const trafficEntry = {
-      id: Math.random().toString(36).substring(2, 11),
+      id,
       timestamp: new Date().toISOString(),
       method: req.method,
       path: req.originalUrl || req.url,
@@ -93,8 +101,11 @@ const trafficMiddleware = (req, res, next) => {
       if (isError) serviceStats[target].errors++;
     }
 
-    // Broadcast real-time
-    broadcastTraffic(trafficEntry);
+    // Broadcast real-time completion
+    broadcastMessage({
+      type: 'traffic',
+      data: trafficEntry
+    });
   });
 
   next();
