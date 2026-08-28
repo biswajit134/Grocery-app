@@ -40,6 +40,6 @@ jobs:
       - name: Build gateway-dashboard service and push Docker image
         uses: docker/build-push-action@v7
         with:
-            context: ./src/services/api-gateway/src/gateway-dashboard
+            context: ./src/gateway-dashboard
             push: true
             tags: ${{ secrets.DOCKER_USERNAME }}/grocery-gateway-dashboard:latest
