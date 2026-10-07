@@ -20,9 +20,9 @@ import {
   PlusCircle
 } from 'lucide-react';
 
-const AUTH_URL = import.meta.env.VITE_AUTH_URL || 'http://api-gateway-svc.grocery-backend.svc.cluster.local:5000/api/auth';
-const PRODUCT_URL = import.meta.env.VITE_PRODUCT_URL || 'http://api-gateway-svc.grocery-backend.svc.cluster.local:5000/api/products';
-const ORDER_URL = import.meta.env.VITE_ORDER_URL || 'http://api-gateway-svc.grocery-backend.svc.cluster.local:5000/api/orders';
+const AUTH_URL = import.meta.env.VITE_AUTH_URL || '/api/auth';
+const PRODUCT_URL = import.meta.env.VITE_PRODUCT_URL || '/api/products';
+const ORDER_URL = import.meta.env.VITE_ORDER_URL || '/api/orders';
 
 function App() {
   const [token, setToken] = useState(() => localStorage.getItem('vendorToken') || '');

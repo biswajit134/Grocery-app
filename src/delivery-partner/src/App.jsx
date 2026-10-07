@@ -15,8 +15,8 @@ import {
   Star
 } from 'lucide-react';
 
-const AUTH_URL = import.meta.env.VITE_AUTH_URL || 'http://api-gateway-svc.grocery-backend.svc.cluster.local:5000/api/auth';
-const ORDER_URL = import.meta.env.VITE_ORDER_URL || 'http://api-gateway-svc.grocery-backend.svc.cluster.local:5000/api/orders';
+const AUTH_URL = import.meta.env.VITE_AUTH_URL || '/api/auth';
+const ORDER_URL = import.meta.env.VITE_ORDER_URL || '/api/orders';
 
 function App() {
   const [token, setToken] = useState(() => localStorage.getItem('driverToken') || '');

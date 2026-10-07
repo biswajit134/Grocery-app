@@ -20,7 +20,7 @@ export default function ProductDetailModal({ product, onClose, onAddToCart, curr
     setSubmittingReview(true);
 
     try {
-      const PRODUCT_URL = import.meta.env.VITE_PRODUCT_URL || 'http://api-gateway-svc.grocery-backend.svc.cluster.local:5000/api/products';
+      const PRODUCT_URL = import.meta.env.VITE_PRODUCT_URL || '/api/products';
       const res = await fetch(`${PRODUCT_URL}/${product._id || product.id}/reviews`, {
         method: 'POST',
         headers: {

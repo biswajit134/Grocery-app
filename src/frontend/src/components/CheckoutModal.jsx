@@ -48,7 +48,7 @@ export default function CheckoutModal({ isOpen, onClose, cartItems, currentUser,
     const checkVendorApprovals = async () => {
       setCheckingVendors(true);
       const uniqueVendorIds = Array.from(new Set(cartItems.map(item => item.vendorId).filter(Boolean)));
-      const AUTH_URL = import.meta.env.VITE_AUTH_URL || 'http://api-gateway-svc.grocery-backend.svc.cluster.local:5000/api/auth';
+      const AUTH_URL = import.meta.env.VITE_AUTH_URL || '/api/auth';
       
       const unapprovedList = [];
       for (const vendorId of uniqueVendorIds) {
@@ -80,7 +80,7 @@ export default function CheckoutModal({ isOpen, onClose, cartItems, currentUser,
     setCouponMsg({ type: '', text: '' });
     try {
       const token = localStorage.getItem('token');
-      const ORDER_URL = import.meta.env.VITE_ORDER_URL || 'http://api-gateway-svc.grocery-backend.svc.cluster.local:5000/api/orders';
+      const ORDER_URL = import.meta.env.VITE_ORDER_URL || '/api/orders';
       const res = await fetch(`${ORDER_URL}/coupons/validate`, {
         method: 'POST',
         headers: {
