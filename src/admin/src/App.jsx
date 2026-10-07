@@ -22,9 +22,9 @@ import {
   MessageSquare
 } from 'lucide-react';
 
-const AUTH_URL = import.meta.env.VITE_AUTH_URL || 'http://localhost:5001/api/auth';
-const PRODUCT_URL = import.meta.env.VITE_PRODUCT_URL || 'http://localhost:5002/api/products';
-const ORDER_URL = import.meta.env.VITE_ORDER_URL || 'http://localhost:5003/api/orders';
+const AUTH_URL = import.meta.env.VITE_AUTH_URL || 'http://api-gateway-svc.grocery-backend.svc.cluster.local:5000/api/auth';
+const PRODUCT_URL = import.meta.env.VITE_PRODUCT_URL || 'http://api-gateway-svc.grocery-backend.svc.cluster.local:5000/api/products';
+const ORDER_URL = import.meta.env.VITE_ORDER_URL || 'http://api-gateway-svc.grocery-backend.svc.cluster.local:5000/api/orders';
 
 export default function App() {
   const [token, setToken] = useState(localStorage.getItem('admin_token') || null);
