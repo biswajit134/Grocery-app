@@ -27,7 +27,7 @@ FROM nginx:alpine
 COPY --from=build /usr/src/app/dist /usr/share/nginx/html
 
 # Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf.template
 
 # Modify permissions to run Nginx as a non-root user
 RUN touch /var/run/nginx.pid && \
@@ -41,4 +41,4 @@ EXPOSE 3003
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
   CMD wget --quiet --spider --tries=1 http://localhost:3003/ || exit 1
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/bin/sh", "-c", "envsubst '${API_GATEWAY_URL}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
