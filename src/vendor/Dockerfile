@@ -39,4 +39,4 @@ EXPOSE 3002
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
   CMD wget --quiet --spider --tries=1 http://localhost:3002/ || exit 1
 
-CMD ["/bin/sh", "-c", "envsubst '${API_GATEWAY_URL}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
+CMD ["/bin/sh", "-c", "envsubst '${API_GATEWAY_URL} ${SERVER_NAME}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
