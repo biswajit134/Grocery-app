@@ -120,9 +120,11 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - VITE_AUTH_URL=http://localhost:5000/api/auth
-      - VITE_PRODUCT_URL=http://localhost:5000/api/products
-      - VITE_ORDER_URL=http://localhost:5000/api/orders
+      # - VITE_AUTH_URL=/api/auth
+      # - VITE_PRODUCT_URL=/api/products
+      # - VITE_ORDER_URL=/api/orders
+      - API_GATEWAY_URL=http://api-gateway:5000
+      - SERVER_NAME=localhost
     depends_on:
       - auth-service
       - product-service
@@ -136,8 +138,10 @@ services:
     ports:
       - "3001:3001"
     environment:
-      - VITE_AUTH_URL=http://localhost:5000/api/auth
-      - VITE_ORDER_URL=http://localhost:5000/api/orders
+      # - VITE_AUTH_URL=/api/auth
+      # - VITE_ORDER_URL=/api/orders
+      - API_GATEWAY_URL=http://api-gateway:5000
+      - SERVER_NAME=localhost
     depends_on:
       - auth-service
       - order-service
@@ -150,8 +154,10 @@ services:
     ports:
       - "3002:3002"
     environment:
-      - VITE_AUTH_URL=http://localhost:5000/api/auth
-      - VITE_PRODUCT_URL=http://localhost:5000/api/products
+      # - VITE_AUTH_URL=/api/auth
+      # - VITE_PRODUCT_URL=/api/products
+      - API_GATEWAY_URL=http://api-gateway:5000
+      - SERVER_NAME=localhost
     depends_on:
       - auth-service
       - product-service
@@ -164,9 +170,11 @@ services:
     ports:
       - "3003:3003"
     environment:
-      - VITE_AUTH_URL=http://localhost:5000/api/auth
-      - VITE_PRODUCT_URL=http://localhost:5000/api/products
-      - VITE_ORDER_URL=http://localhost:5000/api/orders
+      # - VITE_AUTH_URL=/api/auth
+      # - VITE_PRODUCT_URL=/api/products
+      # - VITE_ORDER_URL=/api/orders
+      - API_GATEWAY_URL=http://api-gateway:5000
+      - SERVER_NAME=localhost
     depends_on:
       - auth-service
       - product-service
