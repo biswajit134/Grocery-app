@@ -35,14 +35,14 @@ istio:
       simple: ROUND_ROBIN
     connectionPool:
       tcp:
-        maxConnections: 100
+        maxConnections: 1024
       http:
-        http1MaxPendingRequests: 100
-        maxRequestsPerConnection: 10
+        http1MaxPendingRequests: 1024
+        maxRequestsPerConnection: 0
     outlierDetection:
-      consecutive5xxErrors: 3
+      consecutive5xxErrors: 5
       interval: 10s
-      baseEjectionTime: 30s
+      baseEjectionTime: 10s
       maxEjectionPercent: 50
 
 # Network Policy
@@ -66,11 +66,11 @@ clients:
       SERVER_NAME: "localhost"
     resources:
       requests:
-        cpu: 50m
-        memory: 64Mi
+        cpu: 100m
+        memory: 128Mi
       limits:
-        cpu: 250m
-        memory: 256Mi
+        cpu: "1"
+        memory: 512Mi
 
   deliveryPartner:
     enabled: true
@@ -87,11 +87,11 @@ clients:
       SERVER_NAME: "localhost"
     resources:
       requests:
-        cpu: 50m
-        memory: 64Mi
+        cpu: 100m
+        memory: 128Mi
       limits:
-        cpu: 250m
-        memory: 256Mi
+        cpu: "1"
+        memory: 512Mi
 
   frontend:
     enabled: true
@@ -108,11 +108,11 @@ clients:
       SERVER_NAME: "localhost"
     resources:
       requests:
-        cpu: 50m
-        memory: 64Mi
+        cpu: 100m
+        memory: 128Mi
       limits:
-        cpu: 250m
-        memory: 256Mi
+        cpu: "1"
+        memory: 512Mi
 
   vendor:
     enabled: true
@@ -129,8 +129,8 @@ clients:
       SERVER_NAME: "localhost"
     resources:
       requests:
-        cpu: 50m
-        memory: 64Mi
+        cpu: 100m
+        memory: 128Mi
       limits:
-        cpu: 250m
-        memory: 256Mi
+        cpu: "1"
+        memory: 512Mi
