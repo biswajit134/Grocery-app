@@ -1,6 +1,23 @@
-.terraform/
+# Terraform state files containing sensitive resource arguments and outputs
 *.tfstate
+*.tfstate.*
 *.tfstate.backup
-*-config
-crash.log
+.terraform/
 .terraform.lock.hcl
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+!terraform.tfvars.example
+
+# Cluster Kubeconfig containing admin certificates and tokens
+kind-cilium-config
+*kubeconfig*
+
+# Secret values overrides
+*-secret.yaml
+*-secrets.yaml
+values-secrets.yaml
+secret-values.yaml
+# Executable tools
+bin/
+*.exe

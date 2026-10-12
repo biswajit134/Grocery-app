@@ -1,0 +1,18 @@
+# ==============================================================================
+# Terraform Variables Example Template
+# ==============================================================================
+# Usage:
+#   1. Copy this file to 'terraform.tfvars':
+#        cp terraform.tfvars.example terraform.tfvars
+#   2. Replace the placeholder values below with your real secure credentials.
+#   3. Never commit 'terraform.tfvars' to version control!
+# ==============================================================================
+
+# Administrator password for ArgoCD web UI and CLI
+ARGOCD_PASSWORD = "ChangeMe_ArgoCD_Admin_Password!"
+
+# Encryption secret key for ArgoCD server tokens and sessions (minimum 32 characters)
+ARGOCD_SERVER_SECRETKEY = "ChangeMe_32_Character_Random_Key!"
+
+# Administrator password for Grafana dashboard
+GRAFANA_ADMIN_PASSWORD = "ChangeMe_Grafana_Admin_Password!"

@@ -163,7 +163,7 @@ service:
   nodePort: ${var.grafana_node_port}
 persistence:
   enabled: false
-adminPassword: "admin"
+adminPassword: "${var.grafana_admin_password}"
 testFramework:
   enabled: false
 grafana.ini:

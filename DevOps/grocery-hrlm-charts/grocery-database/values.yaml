@@ -32,9 +32,11 @@ mongodb:
     - "--wiredTigerCacheSizeGB"
     - "0.25"
   auth:
+    # Use existingSecret for production (managed by External Secrets, Sealed Secrets, or Vault)
+    existingSecret: "mongodb-secret"
     secretName: mongodb-secret
     rootUsername: admin
-    rootPassword: adminpassword123
+    rootPassword: ""
   resources:
     requests:
       cpu: 100m
@@ -119,4 +121,11 @@ backup:
     claimName: mongodb-backup-pvc
     storageClass: grocery-storage
     size: 2Gi
+
+# Bitnami Sealed Secrets (Encrypted credentials safely committed to Git)
+sealedSecret:
+  enabled: true
+  encryptedData:
+    MONGO_INITDB_ROOT_USERNAME: "AgC4CCuWKou6/w+o7LQKL6F7tfYB+55iEH0HyQTk7c3oXp4iuy0TN5SKSYMJFH//DfYC+I53q6BM8TS+9EIIQOfVUb2uKMJS6HSj6bP8F6KxYKqY3X2pSbnDgftOlT6C4gyKAqqmefdyMmH+LfJOYhhglwz7n3vnVlcCAy22aYYGnm9WzBguSsiV3BJh2qU8hZkZ2CMYS+e3guik1adRyw5pnFl4B/cfoRgAAQqMUftuHlZy/7oTT/m/nCag4HF5VRGTCWhTW4KnAsmRgrTaoJOJP9FmvJZPLfLRqepoF//AemUfsm5TbE0Pc+nHzEHFykYekK4eFW8OCb12LqFkpTL/Czwgl8ON4HJNW3eZwerko93SpfCvT6E7qqZYc4fBWDcurdxF8IeCRAkjIL7zr5jR5cTokgxSlHE/zk/E6LWIktyCNWnFqv9vNk47jQ+OQ34zBjn+UXE0FgFUtuvJG95TZf1vXNc1Mc0PH26rZTfoezOHTcm0dEJoCAzzKXuYLm+VxW6tj2NyrSnuZeTpem+oT2sRlj72Fyia0qGHzy0ypfx7K26FIRKQKxASsXoqLwEqM/MA2rs7htX78/mIaP1OSWM1ThY9H5VmX25LB8FbEfLg02ao0IhVbG9fFQhdn5/lw9btBIzL52fDDzqXtL+vlTMI37xqSwHxgrOtEFipDUDp78lv+2z4AWYIE+YuXx83wHi4wA=="
+    MONGO_INITDB_ROOT_PASSWORD: "AgBpmtx1HvU8Vy8U+jwocZCqA4b3cUa6b8hv3p+lY7JrBAZ/iT4gpL3I8UJ+XWHp3bWZkC/JR3sy0FABVXPdLJJqCQdcH4vcJawIhWH8os5KBrg0Tt/hgsEaLORrKdoSKmEMh1w0pnQmuGGTPuj25MoFCGpz46CHsbjYAiVFcmm0dDTi9uuxswISS7rRriSvqo77AONEml5Q5m6QC9SOkOhtgEA8cuf5TzQQ84Uvhz9Y2qzZeLrWNqwlRTeA9HNiO1C6Yz/PgLeV4i9429VNwM7a2tiBchphwQMj971lxgDtmbAgDyWb2ng9z1elmLG89evozTeSet500v9/YCk/KcUtL4XuyNYqSIzWuj/wIWWSCKSVrJ6aqPv6iX77OmFx/sNMpLdoicZc/K6p3kI9IPP0JEOlD43qrnsaPwM7gy6F+QYNQHLQ8y02TvnG9cYlpCvGZLVvgsGA/f9jIuUdBTqh3Iaj2dZcaWLE398aRwG2o5ioTE7V+KT4BZlPAii5u/cCU6WlUwFBR+L/qmBiqvxfAf6+FWoD63RtXvq/KM9p+AOEnHDUPvkis5xqVGbeI++58vh9VeybKaOBk5Sn/ZQ+m91FIsiy/bMaeoSNpy6dl2Ri9Ytd/eRVgcYIpfHTaVHCAO2Uh5M+Cea0H3/noopU4wF1UwJ+NnYaKVnEzlYv3/eJkqyo86Cr1e9FQQpAsei1oOHC1z2qbXQ3BXqllmM7"
 

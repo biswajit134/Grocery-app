@@ -45,7 +45,7 @@ resource "helm_release" "argocd" {
       secret = {
         argocdServerAdminPassword = bcrypt(var.ARGOCD_PASSWORD, 10)
         extra = {
-          "server.secretkey" = "a-very-secure-random-secret-key-32chars!"
+          "server.secretkey" = var.ARGOCD_SERVER_SECRETKEY
         }
       }
     }

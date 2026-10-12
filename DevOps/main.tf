@@ -27,20 +27,28 @@ module "istio" {
 }
 
 module "argocd" {
-  source = "./modules/addons/ArgoCD"
-  ARGOCD_PASSWORD = var.ARGOCD_PASSWORD
+  source                  = "./modules/addons/ArgoCD"
+  ARGOCD_PASSWORD         = var.ARGOCD_PASSWORD
+  ARGOCD_SERVER_SECRETKEY = var.ARGOCD_SERVER_SECRETKEY
 
   depends_on = [module.istio]
 }
 
 module "observability" {
-  source = "./modules/addons/observability"
+  source                  = "./modules/addons/observability"
+  grafana_admin_password  = var.GRAFANA_ADMIN_PASSWORD
 
   depends_on = [module.istio]
 }
 
 module "metrics_server" {
   source = "./modules/addons/metrics-server"
+
+  depends_on = [module.cilium]
+}
+
+module "sealed_secrets" {
+  source = "./modules/addons/sealed-secrets"
 
   depends_on = [module.cilium]
 }
@@ -52,7 +60,7 @@ module "metrics_server" {
 module "argocd_grocery_app" {
   source = "./modules/ArgoCD-grocery-app"
 
-  depends_on = [module.argocd]
+  depends_on = [module.argocd, module.sealed_secrets]
 }
 
 module "istio_gateway" {

@@ -56,12 +56,12 @@ spec:
                 - name: MONGO_INITDB_ROOT_USERNAME
                   valueFrom:
                     secretKeyRef:
-                      name: {{ .Values.mongodb.auth.secretName }}
+                      name: {{ .Values.mongodb.auth.existingSecret | default .Values.mongodb.auth.secretName }}
                       key: MONGO_INITDB_ROOT_USERNAME
                 - name: MONGO_INITDB_ROOT_PASSWORD
                   valueFrom:
                     secretKeyRef:
-                      name: {{ .Values.mongodb.auth.secretName }}
+                      name: {{ .Values.mongodb.auth.existingSecret | default .Values.mongodb.auth.secretName }}
                       key: MONGO_INITDB_ROOT_PASSWORD
               resources:
                 {{- toYaml .Values.backup.resources | nindent 16 }}

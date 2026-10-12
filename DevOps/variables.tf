@@ -17,8 +17,25 @@ variable "istio_version" {
 }
 
 variable "ARGOCD_PASSWORD" {
-  type = string
-  default = "admin"
+  type        = string
+  description = "Administrator password for ArgoCD"
+  sensitive   = true
+  default     = "admin"
 }
+
+variable "GRAFANA_ADMIN_PASSWORD" {
+  type        = string
+  description = "Administrator password for Grafana"
+  sensitive   = true
+  default     = "admin"
+}
+
+variable "ARGOCD_SERVER_SECRETKEY" {
+  type        = string
+  description = "Encryption secret key for ArgoCD server"
+  sensitive   = true
+  default     = "a-very-secure-random-secret-key-32chars!"
+}
+
 
 

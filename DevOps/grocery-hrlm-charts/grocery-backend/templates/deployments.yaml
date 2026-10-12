@@ -94,12 +94,12 @@ spec:
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: backend-secret
+                  name: {{ $.Values.secrets.existingSecret | default "backend-secret" }}
                   key: JWT_SECRET
             - name: MONGO_URI
               valueFrom:
                 secretKeyRef:
-                  name: backend-secret
+                  name: {{ $.Values.secrets.existingSecret | default "backend-secret" }}
                   key: AUTH_MONGO_URI
             {{- else if eq $service.appName "order-service" }}
             - name: AUTH_SERVICE_URL
@@ -115,12 +115,12 @@ spec:
             - name: MONGO_URI
               valueFrom:
                 secretKeyRef:
-                  name: backend-secret
+                  name: {{ $.Values.secrets.existingSecret | default "backend-secret" }}
                   key: ORDER_MONGO_URI
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: backend-secret
+                  name: {{ $.Values.secrets.existingSecret | default "backend-secret" }}
                   key: JWT_SECRET
             {{- else if eq $service.appName "product-service" }}
             - name: REDIS_URL
@@ -131,7 +131,7 @@ spec:
             - name: MONGO_URI
               valueFrom:
                 secretKeyRef:
-                  name: backend-secret
+                  name: {{ $.Values.secrets.existingSecret | default "backend-secret" }}
                   key: PRODUCT_MONGO_URI
             {{- end }}
 {{- end }}

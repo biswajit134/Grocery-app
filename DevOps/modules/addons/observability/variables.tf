@@ -39,3 +39,10 @@ variable "grafana_host_port" {
   type    = number
   default = 31004
 }
+
+variable "grafana_admin_password" {
+  type        = string
+  description = "Administrator password for Grafana"
+  sensitive   = true
+  default     = "admin"
+}
