@@ -12,7 +12,7 @@ spec:
   # 1. API Traffic -> API Gateway
   - match:
     - uri:
-        prefix: /api/
+        prefix: /api
     route:
     - destination:
         host: api-gateway-svc.grocery-backend.svc.cluster.local

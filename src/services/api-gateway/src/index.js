@@ -159,9 +159,9 @@ app.get('/api/gateway/stats', (req, res) => {
   res.json(stats);
 });
 
-// Health check
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'API Gateway is running' });
+// Health check and root API endpoints
+app.get(['/', '/api', '/api/', '/api/health', '/health'], (req, res) => {
+  res.status(200).json({ status: 'UP', service: 'api-gateway' });
 });
 
 server.listen(PORT, () => {
