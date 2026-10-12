@@ -9,7 +9,7 @@ storageClass:
   create: true
   name: grocery-storage
   provisioner: rancher.io/local-path
-  reclaimPolicy: Retain
+  reclaimPolicy: Delete
   volumeBindingMode: WaitForFirstConsumer
 
 # NetworkPolicy restricting database access strictly to backend services
