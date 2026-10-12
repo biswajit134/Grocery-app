@@ -166,6 +166,10 @@ persistence:
 adminPassword: "admin"
 testFramework:
   enabled: false
+grafana.ini:
+  auth.anonymous:
+    enabled: true
+    org_role: Viewer
 env:
   JAEGER_AGENT_PORT: "6831"
 datasources:
@@ -220,6 +224,37 @@ resource "kubernetes_service_v1" "jaeger_nodeport" {
   depends_on = [helm_release.jaeger]
 }
 
+resource "kubernetes_service_v1" "jaeger_query" {
+  metadata {
+    name      = "jaeger-query"
+    namespace = kubernetes_namespace_v1.observability.metadata[0].name
+  }
+  spec {
+    type = "ClusterIP"
+    selector = {
+      "app.kubernetes.io/name"      = "jaeger"
+      "app.kubernetes.io/component" = "all-in-one"
+      "app.kubernetes.io/instance"  = "jaeger"
+    }
+    port {
+      name        = "http"
+      port        = 80
+      target_port = 16686
+    }
+    port {
+      name        = "http-query"
+      port        = 16686
+      target_port = 16686
+    }
+    port {
+      name        = "grpc-query"
+      port        = 16685
+      target_port = 16685
+    }
+  }
+  depends_on = [helm_release.jaeger]
+}
+
 resource "helm_release" "kiali" {
   name             = "kiali"
   repository       = "https://kiali.org/helm-charts"
@@ -255,10 +290,13 @@ external_services:
     url: "http://localhost:${var.grafana_host_port}"
   tracing:
     enabled: true
-    in_cluster_url: "http://jaeger-query.${var.namespace}.svc.cluster.local:16686"
-    url: "http://localhost:${var.jaeger_host_port}"
+    provider: "jaeger"
+    use_grpc: true
+    grpc_port: 16685
+    internal_url: "http://jaeger-query.${var.namespace}.svc.cluster.local:16685"
+    external_url: "http://localhost:${var.jaeger_host_port}"
 EOF
   ]
 
-  depends_on = [helm_release.prometheus, helm_release.grafana, helm_release.jaeger]
+  depends_on = [helm_release.prometheus, helm_release.grafana, helm_release.jaeger, kubernetes_service_v1.jaeger_query]
 }
