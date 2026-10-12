@@ -7,4 +7,8 @@ resource "kubectl_manifest" "grocery-app-vs" {
   depends_on = [kubectl_manifest.grocery-gateway-gateway]
 }
 
+resource "kubectl_manifest" "peer_authentication" {
+  yaml_body = file("${path.module}/PeerAuthentication.yaml")
+}
+
 
