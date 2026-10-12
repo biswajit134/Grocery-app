@@ -4,6 +4,8 @@ kind: PersistentVolumeClaim
 metadata:
   name: {{ .Values.backup.persistence.claimName | default "mongodb-backup-pvc" }}
   namespace: {{ .Values.namespace }}
+  annotations:
+    argocd.argoproj.io/ignore-health: "true"
   labels:
     app: mongodb-backup
     {{- include "grocery-database.labels" . | nindent 4 }}

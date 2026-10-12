@@ -102,6 +102,11 @@ spec:
                   name: backend-secret
                   key: AUTH_MONGO_URI
             {{- else if eq $service.appName "order-service" }}
+            - name: AUTH_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: AUTH_SERVICE_URL
             - name: PRODUCT_SERVICE_URL
               valueFrom:
                 configMapKeyRef:

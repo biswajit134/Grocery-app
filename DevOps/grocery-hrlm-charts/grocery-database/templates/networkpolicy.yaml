@@ -12,6 +12,14 @@ spec:
     - Ingress
     - Egress
   ingress:
+    # Allow intra-namespace communication (e.g. backup jobs)
+    - from:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 27017
+        - protocol: TCP
+          port: 6379
     # Restrict database access strictly to microservices running in grocery-backend
     - from:
         - namespaceSelector:
@@ -29,6 +37,14 @@ spec:
           port: 53
         - protocol: TCP
           port: 53
+    # Allow intra-namespace communication (backup jobs to mongodb)
+    - to:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 27017
+        - protocol: TCP
+          port: 6379
     # Allow Istio Envoy control plane communication
     - to:
         - namespaceSelector:
