@@ -14,9 +14,9 @@ resource "helm_release" "prometheus" {
   chart            = "prometheus"
   namespace        = kubernetes_namespace_v1.observability.metadata[0].name
   create_namespace = false
-  version          = "29.36.1" # using a recent stable version
-  upgrade_install = true
-  cleanup_on_fail = true
+  version          = "29.36.1"
+  upgrade_install  = true
+  cleanup_on_fail  = true
   timeout          = 600
 
   values = [
@@ -29,8 +29,89 @@ server:
   service:
     type: NodePort
     nodePort: ${var.prometheus_node_port}
+
+serverFiles:
+  alerting_rules.yml:
+    groups:
+      - name: groceryhub-alerts
+        rules:
+          - alert: PodCrashLooping
+            expr: rate(kube_pod_container_status_restarts_total{namespace=~"grocery-.*"}[5m]) * 300 > 2
+            for: 2m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Pod {{ $labels.pod }} is crash looping"
+              description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} restarted more than 2 times in 5 minutes."
+
+          - alert: HighHttp5xxErrorRate
+            expr: sum(rate(istio_requests_total{reporter="destination", response_code=~"5.*"}[2m])) by (destination_workload, destination_workload_namespace) / (sum(rate(istio_requests_total{reporter="destination"}[2m])) by (destination_workload, destination_workload_namespace) + 0.001) * 100 > 5
+            for: 2m
+            labels:
+              severity: critical
+            annotations:
+              summary: "High 5xx error rate on {{ $labels.destination_workload }}"
+              description: "HTTP 5xx error rate exceeded 5% for more than 2 minutes."
+
+          - alert: HighHttp4xxClientErrorRate
+            expr: sum(rate(istio_requests_total{reporter="destination", response_code=~"4.*"}[5m])) by (destination_workload, destination_workload_namespace) / (sum(rate(istio_requests_total{reporter="destination"}[5m])) by (destination_workload, destination_workload_namespace) + 0.001) * 100 > 20
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High 4xx error rate on {{ $labels.destination_workload }}"
+              description: "HTTP 4xx error rate exceeded 20% for 5 minutes."
+
+          - alert: HighLatencyP95
+            expr: histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{reporter="destination"}[5m])) by (le, destination_workload)) > 2000
+            for: 3m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High p95 response latency on {{ $labels.destination_workload }}"
+              description: "p95 latency is exceeding 2 seconds."
+
+          - alert: ContainerHighCpuUsage
+            expr: sum(rate(container_cpu_usage_seconds_total{container!="", namespace=~"grocery-.*"}[5m])) by (pod, namespace) / sum(kube_pod_container_resource_limits{resource="cpu", namespace=~"grocery-.*"}) by (pod, namespace) * 100 > 85
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Container CPU > 85% on {{ $labels.pod }}"
+              description: "CPU usage is sustained above 85%."
+
+          - alert: ContainerHighMemoryUsage
+            expr: sum(container_memory_working_set_bytes{container!="", namespace=~"grocery-.*"}) by (pod, namespace) / sum(kube_pod_container_resource_limits{resource="memory", namespace=~"grocery-.*"}) by (pod, namespace) * 100 > 85
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Container Memory > 85% on {{ $labels.pod }}"
+              description: "Memory usage is sustained above 85%."
+
 alertmanager:
   enabled: true
+  persistentVolume:
+    enabled: false
+
+alertmanagerFiles:
+  alertmanager.yml:
+    global:
+      resolve_timeout: 5m
+    route:
+      group_by: ['alertname', 'namespace']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+      receiver: 'default-receiver'
+      routes:
+        - match:
+            severity: critical
+          receiver: 'critical-alerts'
+    receivers:
+      - name: 'default-receiver'
+      - name: 'critical-alerts'
+
 prometheus-node-exporter:
   enabled: true
 kube-state-metrics:
@@ -41,8 +122,30 @@ EOF
   ]
 }
 
+resource "helm_release" "loki_stack" {
+  depends_on       = [kubernetes_namespace_v1.observability]
+  name             = "loki"
+  repository       = "https://grafana.github.io/helm-charts"
+  chart            = "loki-stack"
+  namespace        = kubernetes_namespace_v1.observability.metadata[0].name
+  create_namespace = false
+  version          = "2.10.2"
+  timeout          = 600
+
+  values = [
+    <<EOF
+loki:
+  enabled: true
+  persistence:
+    enabled: false
+promtail:
+  enabled: true
+EOF
+  ]
+}
+
 resource "helm_release" "grafana" {
-  depends_on       = [helm_release.prometheus]
+  depends_on       = [helm_release.prometheus, helm_release.loki_stack]
   name             = "grafana"
   repository       = "https://grafana-community.github.io/helm-charts"
   chart            = "grafana"
@@ -74,6 +177,11 @@ datasources:
         url: http://prometheus-server:80
         access: proxy
         isDefault: true
+      - name: Loki
+        type: loki
+        url: http://loki:3100
+        access: proxy
+        isDefault: false
 EOF
   ]
 }
@@ -146,7 +254,9 @@ external_services:
     in_cluster_url: "http://grafana.${var.namespace}.svc.cluster.local:80"
     url: "http://localhost:${var.grafana_host_port}"
   tracing:
-    enabled: false
+    enabled: true
+    in_cluster_url: "http://jaeger-query.${var.namespace}.svc.cluster.local:16686"
+    url: "http://localhost:${var.jaeger_host_port}"
 EOF
   ]
 

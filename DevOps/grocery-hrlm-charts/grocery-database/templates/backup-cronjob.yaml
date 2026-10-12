@@ -1,0 +1,73 @@
+{{- if .Values.backup.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mongodb-backup-cronjob
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: mongodb-backup
+    {{- include "grocery-database.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.backup.schedule | quote }}
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: mongodb-backup
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: mongodump
+              image: "{{ .Values.backup.image.repository }}:{{ .Values.backup.image.tag }}"
+              imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+                  TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+                  BACKUP_DIR="/backups"
+                  ARCHIVE_NAME="mongodb_backup_${TIMESTAMP}.gz"
+                  
+                  echo "[INFO] Starting automated MongoDB backup at ${TIMESTAMP}..."
+                  
+                  mongodump \
+                    --host={{ .Values.mongodb.serviceName }}:{{ .Values.mongodb.port }} \
+                    --username=$MONGO_INITDB_ROOT_USERNAME \
+                    --password=$MONGO_INITDB_ROOT_PASSWORD \
+                    --authenticationDatabase=admin \
+                    --archive="${BACKUP_DIR}/${ARCHIVE_NAME}" \
+                    --gzip
+                  
+                  echo "[INFO] Backup successfully created: ${ARCHIVE_NAME}"
+                  
+                  # Retention policy: remove backups older than specified retention days
+                  echo "[INFO] Cleaning up archives older than {{ .Values.backup.retentionDays }} days..."
+                  find ${BACKUP_DIR} -type f -name "mongodb_backup_*.gz" -mtime +{{ .Values.backup.retentionDays }} -delete
+                  
+                  echo "[INFO] Automated backup cycle completed successfully."
+              env:
+                - name: MONGO_INITDB_ROOT_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.mongodb.auth.secretName }}
+                      key: MONGO_INITDB_ROOT_USERNAME
+                - name: MONGO_INITDB_ROOT_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.mongodb.auth.secretName }}
+                      key: MONGO_INITDB_ROOT_PASSWORD
+              resources:
+                {{- toYaml .Values.backup.resources | nindent 16 }}
+              volumeMounts:
+                - name: backup-storage
+                  mountPath: /backups
+          volumes:
+            - name: backup-storage
+              persistentVolumeClaim:
+                claimName: {{ .Values.backup.persistence.claimName | default "mongodb-backup-pvc" }}
+{{- end }}

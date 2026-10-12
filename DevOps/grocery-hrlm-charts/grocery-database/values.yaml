@@ -9,7 +9,7 @@ storageClass:
   create: true
   name: grocery-storage
   provisioner: rancher.io/local-path
-  reclaimPolicy: Delete
+  reclaimPolicy: Retain
   volumeBindingMode: WaitForFirstConsumer
 
 # NetworkPolicy restricting database access strictly to backend services
@@ -23,6 +23,7 @@ mongodb:
   serviceName: mongodb-svc
   statefulSetName: mongodb-ss
   replicas: 1
+  podAntiAffinity: true
   image:
     repository: mongo
     tag: "6.0"
@@ -97,3 +98,25 @@ redis:
     initialDelaySeconds: 5
     periodSeconds: 10
     timeoutSeconds: 3
+
+# Automated Scheduled Database Backups
+backup:
+  enabled: true
+  schedule: "0 2 * * *" # Daily at 02:00 AM
+  retentionDays: 7
+  image:
+    repository: mongo
+    tag: "6.0"
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  persistence:
+    enabled: true
+    claimName: mongodb-backup-pvc
+    storageClass: grocery-storage
+    size: 2Gi
+

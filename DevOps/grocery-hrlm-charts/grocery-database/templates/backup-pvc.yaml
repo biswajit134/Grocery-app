@@ -1,0 +1,17 @@
+{{- if and .Values.backup.enabled .Values.backup.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.backup.persistence.claimName | default "mongodb-backup-pvc" }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: mongodb-backup
+    {{- include "grocery-database.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.backup.persistence.storageClass | default .Values.storageClass.name }}
+  resources:
+    requests:
+      storage: {{ .Values.backup.persistence.size }}
+{{- end }}
