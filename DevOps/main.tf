@@ -39,6 +39,12 @@ module "observability" {
   depends_on = [module.istio]
 }
 
+module "metrics_server" {
+  source = "./modules/addons/metrics-server"
+
+  depends_on = [module.cilium]
+}
+
 #
 #   Grocery App Module (ArgoCD GitOps)
 #
