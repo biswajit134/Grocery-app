@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: grocery-gateway
+  namespace: istio-gateway
+  labels:
+    app.kubernetes.io/name: grocery-gateway
+spec:
+  selector:
+    app: istio-gateway # Matches the cluster's ingress gateway controller(what is istio gateway service name)
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+
+

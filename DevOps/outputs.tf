@@ -47,3 +47,8 @@ output "observability_urls" {
   description = "URLs to access observability dashboards."
   value       = module.observability.urls
 }
+
+output "argocd_apps" {
+  description = "ArgoCD applications for the GroceryHub stack."
+  value       = module.argocd_grocery_app.applications
+}

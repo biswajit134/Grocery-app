@@ -40,31 +40,33 @@ module "observability" {
 }
 
 #
-#   Grocery App Module
+#   Grocery App Module (ArgoCD GitOps)
 #
 
-module "grocery_database" {
-  source = "./modules/grocery-app/3-grocery-database"
+module "argocd_grocery_app" {
+  source = "./modules/ArgoCD-grocery-app"
 
-  depends_on = [module.istio]
-}
-
-module "grocery_backend" {
-  source = "./modules/grocery-app/2-grocery-backend"
-
-  depends_on = [module.grocery_database]
-}
-
-module "grocery_clint" {
-  source = "./modules/grocery-app/1-grocery-clint"
-
-  depends_on = [module.grocery_backend]
+  depends_on = [module.argocd]
 }
 
 module "istio_gateway" {
-  source = "./modules/grocery-app/istio-gateway"
+  source = "./modules/istio-gateway"
 
-  depends_on = [module.grocery_clint]
+  depends_on = [module.argocd_grocery_app]
 }
+
+# (Optional: Direct Terraform manifest deployment without ArgoCD)
+# module "grocery_database" {
+#   source = "./modules/grocery-app/3-grocery-database"
+#   depends_on = [module.istio]
+# }
+# module "grocery_backend" {
+#   source = "./modules/grocery-app/2-grocery-backend"
+#   depends_on = [module.grocery_database]
+# }
+# module "grocery_clint" {
+#   source = "./modules/grocery-app/1-grocery-clint"
+#   depends_on = [module.grocery_backend]
+# }
 
 

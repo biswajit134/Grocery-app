@@ -1,0 +1,113 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: grocery-clint-vs
+  namespace: grocery-clint
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - istio-gateway/grocery-gateway
+  http:
+  # 1. API Traffic -> API Gateway
+  - match:
+    - uri:
+        prefix: /api/
+    route:
+    - destination:
+        host: api-gateway-svc.grocery-backend.svc.cluster.local
+        port:
+          number: 5000
+
+  # 2. Admin Portal
+  - match:
+    - uri:
+        prefix: /admin
+    route:
+    - destination:
+        host: admin-svc.grocery-clint.svc.cluster.local
+        port:
+          number: 3003
+
+  # 3. Vendor Portal
+  - match:
+    - uri:
+        prefix: /vendor
+    route:
+    - destination:
+        host: vendor-svc.grocery-clint.svc.cluster.local
+        port:
+          number: 3002
+
+  # 4. Delivery Partner Portal
+  - match:
+    - uri:
+        prefix: /delivery-partner
+    route:
+    - destination:
+        host: delivery-partner-svc.grocery-clint.svc.cluster.local
+        port:
+          number: 3001
+
+  # Admin Assets
+  - match:
+    - uri:
+        prefix: /assets
+      headers:
+        referer:
+          regex: ".*admin.*"
+    route:
+    - destination:
+        host: admin-svc.grocery-clint.svc.cluster.local
+        port:
+          number: 3003
+
+  # Vendor Assets
+  - match:
+    - uri:
+        prefix: /assets
+      headers:
+        referer:
+          regex: ".*vendor.*"
+    route:
+    - destination:
+        host: vendor-svc.grocery-clint.svc.cluster.local
+        port:
+          number: 3002
+
+  # Delivery Partner Assets
+  - match:
+    - uri:
+        prefix: /assets
+      headers:
+        referer:
+          regex: ".*delivery-partner.*"
+    route:
+    - destination:
+        host: delivery-partner-svc.grocery-clint.svc.cluster.local
+        port:
+          number: 3001
+
+  # 5. Frontend
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: frontend-svc.grocery-clint.svc.cluster.local
+        port:
+          number: 3000
+
+
+
+
+
+
+
+
+
+
+
+
+
+
