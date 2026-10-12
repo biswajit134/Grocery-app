@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const { WebSocketServer } = require('ws');
 const http = require('http');
@@ -7,6 +9,14 @@ const http = require('http');
 const app = express();
 const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
+
+// Trust reverse proxy (Istio Envoy/Ingress) to extract accurate client IP from X-Forwarded-For
+app.set('trust proxy', 1);
+
+// Security Headers (Helmet) with permissive cross-origin resource policy for frontends
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 
 app.use(cors());
 
@@ -114,8 +124,48 @@ const trafficMiddleware = (req, res, next) => {
 app.use(trafficMiddleware);
 // ---------------------------------
 
+// --- Rate Limiting & DDoS Protection ---
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes window
+  max: parseInt(process.env.RATE_LIMIT_GLOBAL_MAX || '300', 10), // 300 requests per IP per 15 min
+  standardHeaders: true, // Return standard RateLimit-* headers
+  legacyHeaders: false, // Disable X-RateLimit-* headers
+  skip: (req) => {
+    // Exclude health probes and internal dashboard metrics
+    return req.path === '/' || 
+           req.path === '/health' || 
+           req.path === '/api' || 
+           req.path === '/api/' || 
+           req.path === '/api/health' || 
+           req.path.startsWith('/api/gateway');
+  },
+  handler: (req, res) => {
+    res.status(429).json({
+      status: 429,
+      error: 'Too Many Requests',
+      message: 'Rate limit exceeded. Please wait 15 minutes before retrying.'
+    });
+  }
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes window
+  max: parseInt(process.env.RATE_LIMIT_AUTH_MAX || '25', 10), // Stricter limit for login/register: 25 attempts
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    res.status(429).json({
+      status: 429,
+      error: 'Too Many Requests',
+      message: 'Too many authentication attempts. Please try again after 15 minutes.'
+    });
+  }
+});
+
+app.use(globalLimiter);
+
 // Proxy endpoints
-app.use('/api/auth', createProxyMiddleware({ 
+app.use('/api/auth', authLimiter, createProxyMiddleware({ 
   target: process.env.AUTH_SERVICE_URL || 'http://auth-service:5001', 
   changeOrigin: true 
 }));
