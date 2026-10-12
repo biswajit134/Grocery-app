@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: vendor-svc
+  namespace: grocery-clint
+  labels:
+    app: vendor
+spec:
+  type: ClusterIP
+  selector:
+    app: vendor
+  ports:
+  - name: http
+    port: 3002
+    targetPort: 3002

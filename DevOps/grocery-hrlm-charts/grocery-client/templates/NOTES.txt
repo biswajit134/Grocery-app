@@ -1,0 +1,15 @@
+Thank you for installing {{ .Chart.Name }}!
+
+Your release is named {{ .Release.Name }} deployed in namespace {{ .Values.namespace }}.
+
+The following frontend client applications have been provisioned:
+{{- range $key, $client := .Values.clients }}
+{{- if $client.enabled }}
+- {{ $client.appName }} (Service: {{ $client.serviceName }}:{{ $client.port }}, Replicas: {{ $client.replicaCount }})
+{{- end }}
+{{- end }}
+
+To verify the deployment:
+  kubectl get pods -n {{ .Values.namespace }}
+  kubectl get hpa -n {{ .Values.namespace }}
+  kubectl get dr -n {{ .Values.namespace }}

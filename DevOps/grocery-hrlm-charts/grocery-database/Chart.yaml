@@ -1,0 +1,13 @@
+apiVersion: v2
+name: grocery-database
+description: Production-grade Helm chart for GroceryHub Databases (MongoDB StatefulSet and Redis Deployment)
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - database
+  - mongodb
+  - redis
+  - groceryhub
+maintainers:
+  - name: Biswajit

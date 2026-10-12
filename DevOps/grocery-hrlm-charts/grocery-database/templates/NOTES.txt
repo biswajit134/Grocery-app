@@ -1,0 +1,20 @@
+Thank you for installing {{ .Chart.Name }}!
+
+Your database tier is being deployed into namespace: {{ .Values.namespace }}
+
+Components deployed:
+{{- if .Values.mongodb.enabled }}
+- MongoDB StatefulSet (Service: {{ .Values.mongodb.serviceName }}:{{ .Values.mongodb.port }})
+{{- end }}
+{{- if .Values.redis.enabled }}
+- Redis Cache (Service: {{ .Values.redis.serviceName }}:{{ .Values.redis.port }})
+{{- end }}
+
+To check the database pods and PVC status:
+  kubectl get pods,pvc -n {{ .Values.namespace }} -l app.kubernetes.io/part-of=groceryhub
+
+To test connectivity to MongoDB from backend:
+  kubectl exec -it -n grocery-backend deploy/auth-service-dp -c auth-service -- nc -zv mongodb-svc.grocery-database.svc.cluster.local 27017
+
+To test connectivity to Redis from backend:
+  kubectl exec -it -n grocery-backend deploy/product-service-dp -c product-service -- nc -zv redis-svc.grocery-database.svc.cluster.local 6379

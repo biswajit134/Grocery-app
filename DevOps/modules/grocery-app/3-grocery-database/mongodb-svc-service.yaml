@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-svc
+  namespace: grocery-database
+  labels:
+    app: mongodb
+spec:
+  type: ClusterIP
+  ports:
+  - port: 27017
+    name: tcp-mongodb
+    appProtocol: tcp
+    targetPort: 27017
+  selector:
+    app: mongodb

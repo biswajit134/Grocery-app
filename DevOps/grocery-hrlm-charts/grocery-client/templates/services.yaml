@@ -1,0 +1,22 @@
+{{- range $key, $client := .Values.clients }}
+{{- if $client.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $client.serviceName }}
+  namespace: {{ $.Values.namespace }}
+  labels:
+    app: {{ $client.appName }}
+    {{- include "grocery-client.labels" $ | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ $client.appName }}
+  ports:
+    - name: http
+      port: {{ $client.port }}
+      targetPort: {{ $client.port }}
+      protocol: TCP
+{{- end }}
+{{- end }}

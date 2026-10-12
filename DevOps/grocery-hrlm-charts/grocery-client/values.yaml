@@ -1,0 +1,136 @@
+namespace: grocery-clint
+
+global:
+  environment: production
+  imagePullPolicy: IfNotPresent
+  podAntiAffinity: true
+
+# Zero-downtime rolling update strategy
+rollingUpdate:
+  maxSurge: 1
+  maxUnavailable: 0
+
+# Termination grace period
+terminationGracePeriodSeconds: 30
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Autoscaling
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# Istio Traffic Management
+istio:
+  enabled: true
+  destinationRule:
+    enabled: true
+    loadBalancer:
+      simple: ROUND_ROBIN
+    connectionPool:
+      tcp:
+        maxConnections: 100
+      http:
+        http1MaxPendingRequests: 100
+        maxRequestsPerConnection: 10
+    outlierDetection:
+      consecutive5xxErrors: 3
+      interval: 10s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+
+# Network Policy
+networkPolicy:
+  enabled: true
+
+# Client Applications
+clients:
+  admin:
+    enabled: true
+    appName: admin
+    deploymentName: admin-dp
+    serviceName: admin-svc
+    replicaCount: 2
+    image:
+      repository: biswajit134/grocery-admin-app
+      tag: latest
+    port: 3003
+    env:
+      API_GATEWAY_URL: "http://api-gateway-svc.grocery-backend.svc.cluster.local:5000"
+      SERVER_NAME: "localhost"
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
+
+  deliveryPartner:
+    enabled: true
+    appName: delivery-partner
+    deploymentName: delivery-partner-dp
+    serviceName: delivery-partner-svc
+    replicaCount: 2
+    image:
+      repository: biswajit134/grocery-delivery-app
+      tag: latest
+    port: 3001
+    env:
+      API_GATEWAY_URL: "http://api-gateway-svc.grocery-backend.svc.cluster.local:5000"
+      SERVER_NAME: "localhost"
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
+
+  frontend:
+    enabled: true
+    appName: frontend
+    deploymentName: frontend-dp
+    serviceName: frontend-svc
+    replicaCount: 2
+    image:
+      repository: biswajit134/grocery-frontend-app
+      tag: latest
+    port: 3000
+    env:
+      API_GATEWAY_URL: "http://api-gateway-svc.grocery-backend.svc.cluster.local:5000"
+      SERVER_NAME: "localhost"
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
+
+  vendor:
+    enabled: true
+    appName: vendor
+    deploymentName: vendor-dp
+    serviceName: vendor-svc
+    replicaCount: 2
+    image:
+      repository: biswajit134/grocery-vendor-app
+      tag: latest
+    port: 3002
+    env:
+      API_GATEWAY_URL: "http://api-gateway-svc.grocery-backend.svc.cluster.local:5000"
+      SERVER_NAME: "localhost"
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi

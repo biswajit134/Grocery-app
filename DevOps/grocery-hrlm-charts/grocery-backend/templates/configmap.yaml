@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "grocery-backend.labels" . | nindent 4 }}
+data:
+  AUTH_SERVICE_URL: {{ .Values.config.authServiceUrl | quote }}
+  PRODUCT_SERVICE_URL: {{ .Values.config.productServiceUrl | quote }}
+  ORDER_SERVICE_URL: {{ .Values.config.orderServiceUrl | quote }}
+  REDIS_URL: {{ .Values.config.redisUrl | quote }}

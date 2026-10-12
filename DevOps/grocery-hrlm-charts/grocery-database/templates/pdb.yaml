@@ -1,0 +1,31 @@
+{{- if and .Values.mongodb.enabled .Values.mongodb.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Values.mongodb.name }}-pdb
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.mongodb.name }}
+    {{- include "grocery-database.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.mongodb.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      app: {{ .Values.mongodb.name }}
+{{- end }}
+{{- if and .Values.redis.enabled .Values.redis.podDisruptionBudget.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Values.redis.name }}-pdb
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.redis.name }}
+    {{- include "grocery-database.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.redis.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      app: {{ .Values.redis.name }}
+{{- end }}

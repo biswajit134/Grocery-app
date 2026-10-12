@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: grocery-backend
+  labels:
+    app.kubernetes.io/part-of: grocery-backend
+data:
+  AUTH_SERVICE_URL: "http://auth-svc.grocery-backend.svc.cluster.local:5001"
+  PRODUCT_SERVICE_URL: "http://product-svc.grocery-backend.svc.cluster.local:5002"
+  ORDER_SERVICE_URL: "http://order-svc.grocery-backend.svc.cluster.local:5003"
+  REDIS_URL: "redis://redis-svc.grocery-database.svc.cluster.local:6379"

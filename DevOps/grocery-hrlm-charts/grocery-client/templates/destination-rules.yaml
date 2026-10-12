@@ -1,0 +1,31 @@
+{{- if and .Values.istio.enabled .Values.istio.destinationRule.enabled }}
+{{- range $key, $client := .Values.clients }}
+{{- if $client.enabled }}
+---
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: {{ $client.appName }}-dr
+  namespace: {{ $.Values.namespace }}
+  labels:
+    app: {{ $client.appName }}
+    {{- include "grocery-client.labels" $ | nindent 4 }}
+spec:
+  host: {{ $client.serviceName }}.{{ $.Values.namespace }}.svc.cluster.local
+  trafficPolicy:
+    loadBalancer:
+      simple: {{ $.Values.istio.destinationRule.loadBalancer.simple }}
+    connectionPool:
+      tcp:
+        maxConnections: {{ $.Values.istio.destinationRule.connectionPool.tcp.maxConnections }}
+      http:
+        http1MaxPendingRequests: {{ $.Values.istio.destinationRule.connectionPool.http.http1MaxPendingRequests }}
+        maxRequestsPerConnection: {{ $.Values.istio.destinationRule.connectionPool.http.maxRequestsPerConnection }}
+    outlierDetection:
+      consecutive5xxErrors: {{ $.Values.istio.destinationRule.outlierDetection.consecutive5xxErrors }}
+      interval: {{ $.Values.istio.destinationRule.outlierDetection.interval }}
+      baseEjectionTime: {{ $.Values.istio.destinationRule.outlierDetection.baseEjectionTime }}
+      maxEjectionPercent: {{ $.Values.istio.destinationRule.outlierDetection.maxEjectionPercent }}
+{{- end }}
+{{- end }}
+{{- end }}

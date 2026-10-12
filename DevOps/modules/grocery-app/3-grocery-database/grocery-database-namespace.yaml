@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: grocery-database
+  labels:
+    name: grocery-database
+    istio-injection: enabled

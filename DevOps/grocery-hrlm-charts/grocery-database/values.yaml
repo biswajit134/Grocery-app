@@ -1,0 +1,99 @@
+namespace: grocery-database
+
+global:
+  environment: production
+  imagePullPolicy: IfNotPresent
+
+# StorageClass configuration
+storageClass:
+  create: true
+  name: grocery-storage
+  provisioner: rancher.io/local-path
+  reclaimPolicy: Delete
+  volumeBindingMode: WaitForFirstConsumer
+
+# NetworkPolicy restricting database access strictly to backend services
+networkPolicy:
+  enabled: true
+
+# MongoDB StatefulSet Configuration
+mongodb:
+  enabled: true
+  name: mongodb
+  serviceName: mongodb-svc
+  statefulSetName: mongodb-ss
+  replicas: 1
+  image:
+    repository: mongo
+    tag: "6.0"
+  port: 27017
+  args:
+    - "--wiredTigerCacheSizeGB"
+    - "0.25"
+  auth:
+    secretName: mongodb-secret
+    rootUsername: admin
+    rootPassword: adminpassword123
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 768Mi
+  persistence:
+    enabled: true
+    storageClass: grocery-storage
+    accessMode: ReadWriteOnce
+    size: 512Mi
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 5
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 3
+
+# Redis Deployment Configuration
+redis:
+  enabled: true
+  name: redis
+  serviceName: redis-svc
+  deploymentName: redis
+  replicas: 1
+  image:
+    repository: redis
+    tag: alpine
+  port: 6379
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  persistence:
+    enabled: true
+    claimName: redis-pvc
+    storageClass: grocery-storage
+    accessMode: ReadWriteOnce
+    size: 512Mi
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 15
+    periodSeconds: 15
+    timeoutSeconds: 3
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 3

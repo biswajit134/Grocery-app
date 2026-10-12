@@ -1,0 +1,12 @@
+apiVersion: v2
+name: grocery-client
+description: Production-grade Helm chart for GroceryHub frontend client applications
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - groceryhub
+  - frontend
+  - client
+maintainers:
+  - name: GroceryHub Team

@@ -1,0 +1,80 @@
+{{- range $key, $client := .Values.clients }}
+{{- if $client.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $client.deploymentName }}
+  namespace: {{ $.Values.namespace }}
+  labels:
+    app: {{ $client.appName }}
+    version: v1
+    {{- include "grocery-client.labels" $ | nindent 4 }}
+spec:
+  replicas: {{ $client.replicaCount }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: {{ $.Values.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ $.Values.rollingUpdate.maxUnavailable }}
+  selector:
+    matchLabels:
+      app: {{ $client.appName }}
+  template:
+    metadata:
+      labels:
+        app: {{ $client.appName }}
+        version: v1
+        {{- include "grocery-client.labels" $ | nindent 8 }}
+    spec:
+      terminationGracePeriodSeconds: {{ $.Values.terminationGracePeriodSeconds }}
+      {{- if $.Values.global.podAntiAffinity }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - {{ $client.appName }}
+                topologyKey: "kubernetes.io/hostname"
+      {{- end }}
+      containers:
+        - name: {{ $client.appName }}
+          image: "{{ $client.image.repository }}:{{ $client.image.tag }}"
+          imagePullPolicy: {{ $.Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ $client.port }}
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep 5"]
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ $client.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ $client.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            {{- toYaml $client.resources | nindent 12 }}
+          env:
+            {{- range $envKey, $envVal := $client.env }}
+            - name: {{ $envKey }}
+              value: {{ $envVal | quote }}
+            {{- end }}
+{{- end }}
+{{- end }}

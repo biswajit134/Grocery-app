@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: delivery-partner-dp
+  namespace: grocery-clint
+  labels:
+    app: delivery-partner
+    version: v1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: delivery-partner
+  template:
+    metadata:
+      labels:
+        app: delivery-partner
+        version: v1
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - delivery-partner
+              topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: delivery-partner
+        image: biswajit134/grocery-delivery-app:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3001
+          name: http
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3001
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3001
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        env:
+        # - name: PORT
+        #   value: "3001"
+        # - name: VITE_AUTH_URL
+        #   value: "/api/auth"
+        # - name: VITE_ORDER_URL
+        #   value: "/api/orders"
+        # - name: API_GATEWAY_URL
+        #   value: "http://istio-gateway.istio-gateway.svc.cluster.local:80"
+        - name: API_GATEWAY_URL
+          value: "http://api-gateway-svc.grocery-backend.svc.cluster.local:5000"
+        # - name: API_GATEWAY_URL
+        #   value: "/api"
+        - name: SERVER_NAME
+          value: "localhost"

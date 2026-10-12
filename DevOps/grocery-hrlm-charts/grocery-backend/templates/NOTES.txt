@@ -1,0 +1,16 @@
+Thank you for installing {{ .Chart.Name }}!
+
+Your backend microservices are being deployed into namespace: {{ .Values.namespace }}
+
+Components deployed:
+{{- range $key, $service := .Values.services }}
+{{- if $service.enabled }}
+- {{ $service.appName }} (Service: {{ $service.serviceName }}:{{ $service.port }})
+{{- end }}
+{{- end }}
+
+To monitor backend pods:
+  kubectl get pods -n {{ .Values.namespace }} -l app.kubernetes.io/part-of=groceryhub
+
+To test API Gateway health:
+  kubectl run curl-test --rm -i --tty --image=curlimages/curl -n {{ .Values.namespace }} -- curl -s http://api-gateway-svc:5000/health

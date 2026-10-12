@@ -1,0 +1,78 @@
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: grocery-backend-netpol
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "grocery-backend.labels" . | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # 1. Allow ingress from Client Apps and Istio Gateway to API Gateway (port 5000)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: grocery-clint
+        - namespaceSelector:
+            matchLabels:
+              name: istio-gateway
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+      ports:
+        - protocol: TCP
+          port: 5000
+    # 2. Allow inter-service communication within the backend namespace (ports 5000-5003)
+    - from:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 5000
+        - protocol: TCP
+          port: 5001
+        - protocol: TCP
+          port: 5002
+        - protocol: TCP
+          port: 5003
+  egress:
+    # 1. DNS resolution
+    - ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # 2. Inter-service calls inside backend
+    - to:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 5000
+        - protocol: TCP
+          port: 5001
+        - protocol: TCP
+          port: 5002
+        - protocol: TCP
+          port: 5003
+    # 3. Database connectivity (MongoDB & Redis in grocery-database namespace)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: grocery-database
+      ports:
+        - protocol: TCP
+          port: 27017
+        - protocol: TCP
+          port: 6379
+    # 4. Istio control plane communication
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+      ports:
+        - protocol: TCP
+          port: 15012
+{{- end }}

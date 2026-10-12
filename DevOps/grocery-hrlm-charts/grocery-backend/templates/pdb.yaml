@@ -1,0 +1,20 @@
+{{- if .Values.podDisruptionBudget.enabled }}
+{{- range $key, $service := .Values.services }}
+{{- if $service.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ $service.appName }}-pdb
+  namespace: {{ $.Values.namespace }}
+  labels:
+    app: {{ $service.appName }}
+    {{- include "grocery-backend.labels" $ | nindent 4 }}
+spec:
+  minAvailable: {{ $.Values.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      app: {{ $service.appName }}
+{{- end }}
+{{- end }}
+{{- end }}

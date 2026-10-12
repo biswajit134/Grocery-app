@@ -1,0 +1,20 @@
+{{- if .Values.podDisruptionBudget.enabled }}
+{{- range $key, $client := .Values.clients }}
+{{- if $client.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ $client.appName }}-pdb
+  namespace: {{ $.Values.namespace }}
+  labels:
+    app: {{ $client.appName }}
+    {{- include "grocery-client.labels" $ | nindent 4 }}
+spec:
+  minAvailable: {{ $.Values.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      app: {{ $client.appName }}
+{{- end }}
+{{- end }}
+{{- end }}

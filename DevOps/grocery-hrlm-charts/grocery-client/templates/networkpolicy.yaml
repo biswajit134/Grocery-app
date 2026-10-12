@@ -1,0 +1,55 @@
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: grocery-client-netpol
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "grocery-client.labels" . | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow traffic from Istio Ingress Gateway
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: istio-gateway
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+      ports:
+        - protocol: TCP
+          port: 3000
+        - protocol: TCP
+          port: 3001
+        - protocol: TCP
+          port: 3002
+        - protocol: TCP
+          port: 3003
+  egress:
+    # Allow DNS
+    - ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Allow communication to Backend API Gateway
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: grocery-backend
+      ports:
+        - protocol: TCP
+          port: 5000
+    # Allow Istio Envoy control plane communication
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+      ports:
+        - protocol: TCP
+          port: 15012
+{{- end }}

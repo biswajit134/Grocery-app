@@ -1,0 +1,142 @@
+namespace: grocery-backend
+
+global:
+  environment: production
+  imagePullPolicy: IfNotPresent
+  podAntiAffinity: true
+
+# Zero-downtime rolling update strategy
+rollingUpdate:
+  maxSurge: 1
+  maxUnavailable: 0
+
+# Termination grace period
+terminationGracePeriodSeconds: 30
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Autoscaling
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# Istio Traffic Management
+istio:
+  enabled: true
+  destinationRule:
+    enabled: true
+    loadBalancer:
+      simple: LEAST_REQUEST
+    connectionPool:
+      tcp:
+        maxConnections: 100
+      http:
+        http1MaxPendingRequests: 100
+        maxRequestsPerConnection: 10
+    outlierDetection:
+      consecutive5xxErrors: 3
+      interval: 10s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+
+# Network Policy
+networkPolicy:
+  enabled: true
+
+# ConfigMap Data (Discovery URLs)
+config:
+  authServiceUrl: "http://auth-svc.grocery-backend.svc.cluster.local:5001"
+  productServiceUrl: "http://product-svc.grocery-backend.svc.cluster.local:5002"
+  orderServiceUrl: "http://order-svc.grocery-backend.svc.cluster.local:5003"
+  redisUrl: "redis://redis-svc.grocery-database.svc.cluster.local:6379"
+
+# Secret Data (Sensitive Credentials)
+secrets:
+  jwtSecret: "supersecretjwtkeyforgroceryhub"
+  authMongoUri: "mongodb://admin:adminpassword123@mongodb-svc.grocery-database.svc.cluster.local:27017/grocery_auth?authSource=admin"
+  productMongoUri: "mongodb://admin:adminpassword123@mongodb-svc.grocery-database.svc.cluster.local:27017/grocery_products?authSource=admin"
+  orderMongoUri: "mongodb://admin:adminpassword123@mongodb-svc.grocery-database.svc.cluster.local:27017/grocery_orders?authSource=admin"
+
+# Microservices
+services:
+  apiGateway:
+    enabled: true
+    appName: api-gateway
+    serviceName: api-gateway-svc
+    deploymentName: api-gateway-dp
+    replicaCount: 2
+    image:
+      repository: biswajit134/grocery-api-gateway
+      tag: latest
+    port: 5000
+    healthPath: /health
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
+
+  authService:
+    enabled: true
+    appName: auth-service
+    serviceName: auth-svc
+    deploymentName: auth-service-dp
+    replicaCount: 2
+    image:
+      repository: biswajit134/grocery-auth-service
+      tag: latest
+    port: 5001
+    healthPath: /health
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
+
+  orderService:
+    enabled: true
+    appName: order-service
+    serviceName: order-svc
+    deploymentName: order-service-dp
+    replicaCount: 2
+    image:
+      repository: biswajit134/grocery-order-service
+      tag: latest
+    port: 5003
+    healthPath: /health
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
+
+  productService:
+    enabled: true
+    appName: product-service
+    serviceName: product-svc
+    deploymentName: product-service-dp
+    replicaCount: 2
+    image:
+      repository: biswajit134/grocery-product-service
+      tag: latest
+    port: 5002
+    healthPath: /health
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
