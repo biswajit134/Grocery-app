@@ -52,3 +52,9 @@ output "argocd_apps" {
   description = "ArgoCD applications for the GroceryHub stack."
   value       = module.argocd_grocery_app.applications
 }
+
+output "vault_url" {
+  description = "URL to access HashiCorp Vault Web UI."
+  value       = module.vault.vault_ui_url
+}
+

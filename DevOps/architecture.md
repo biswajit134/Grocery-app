@@ -35,7 +35,12 @@ flowchart TD
             Redis[(Redis Cache)]
         end
 
-        subgraph Observability [5. Monitoring & Observability]
+        subgraph Secrets [5. Secret Management]
+            Vault[HashiCorp Vault]
+            ESO[External Secrets Operator]
+        end
+
+        subgraph Observability [6. Monitoring & Observability]
             Prometheus[Prometheus]
             Grafana[Grafana]
             Jaeger[Jaeger]
@@ -71,4 +76,5 @@ flowchart TD
 3. **Routing to the Frontends:** If you just go to `/`, Istio sends you to the **Frontend App**. If you go to `/admin`, it sends you to the **Admin Dashboard**, and so on.
 4. **Routing to the Backends:** When the frontend apps need data (like a list of groceries or to log you in), they send a request to `/api/...`. Istio sees the `/api/` path and routes it directly to the correct **Backend Microservice** (Auth, Product, or Order).
 5. **Saving Data:** The backend microservices talk to **MongoDB** to permanently save data, and use **Redis** to temporarily cache data so the app loads faster.
-6. **Under the Hood:** **Cilium** handles all the invisible networking between the pods, and tools like **Grafana** and **Prometheus** watch the cluster to make sure everything is healthy.
+6. **Secret Management:** **HashiCorp Vault** securely stores all database credentials, root passwords, and JWT secret tokens. The **External Secrets Operator (ESO)** automatically synchronizes them from Vault into native Kubernetes secrets.
+7. **Under the Hood:** **Cilium** handles all the invisible networking between the pods, and tools like **Grafana** and **Prometheus** watch the cluster to make sure everything is healthy.

@@ -27,7 +27,8 @@ grocery-hrlm-charts/
 │   └── templates/
 │       ├── _helpers.tpl
 │       ├── configmap.yaml        # Service discovery URLs
-│       ├── secret.yaml           # JWT secret & MongoDB URIs
+│       ├── secret.yaml           # Fallback local secret
+│       ├── backend-externalsecret.yaml # ExternalSecret pulling credentials from Vault
 │       ├── deployments.yaml      # RollingUpdate, /health probes, env bindings
 │       ├── services.yaml         # ClusterIP services for all 4 backend services
 │       ├── hpa.yaml              # HorizontalPodAutoscalers (autoscaling/v2)
@@ -42,7 +43,8 @@ grocery-hrlm-charts/
     └── templates/
         ├── _helpers.tpl
         ├── storageclass.yaml     # Local-path dynamic storage class
-        ├── mongodb-secret.yaml   # MongoDB root credentials
+        ├── mongodb-secret.yaml   # Fallback local secret
+        ├── mongodb-externalsecret.yaml # ExternalSecret pulling credentials from Vault
         ├── mongodb-service.yaml  # MongoDB ClusterIP service (27017)
         ├── mongodb-statefulset.yaml # MongoDB StatefulSet with PVC template
         ├── redis-pvc.yaml        # PersistentVolumeClaim for Redis

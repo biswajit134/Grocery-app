@@ -35,8 +35,8 @@ module "argocd" {
 }
 
 module "observability" {
-  source                  = "./modules/addons/observability"
-  grafana_admin_password  = var.GRAFANA_ADMIN_PASSWORD
+  source                 = "./modules/addons/observability"
+  grafana_admin_password = var.GRAFANA_ADMIN_PASSWORD
 
   depends_on = [module.istio]
 }
@@ -47,10 +47,21 @@ module "metrics_server" {
   depends_on = [module.cilium]
 }
 
-module "sealed_secrets" {
-  source = "./modules/addons/sealed-secrets"
+module "vault" {
+  source           = "./modules/addons/vault"
+  vault_root_token = var.VAULT_DEV_ROOT_TOKEN
+  vault_version    = var.vault_version
 
   depends_on = [module.cilium]
+}
+
+module "external_secrets" {
+  source                   = "./modules/addons/external-secrets"
+  external_secrets_version = var.external_secrets_version
+  vault_root_token         = var.VAULT_DEV_ROOT_TOKEN
+  vault_server_url         = module.vault.vault_server_url
+
+  depends_on = [module.vault]
 }
 
 #
@@ -60,7 +71,7 @@ module "sealed_secrets" {
 module "argocd_grocery_app" {
   source = "./modules/ArgoCD-grocery-app"
 
-  depends_on = [module.argocd, module.sealed_secrets]
+  depends_on = [module.argocd, module.external_secrets]
 }
 
 module "istio_gateway" {

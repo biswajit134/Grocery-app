@@ -1,10 +1,10 @@
 resource "kubectl_manifest" "mongodb-secret-secret" {
-  yaml_body = file("${path.module}/mongodb-secret-secret.yaml")
+  yaml_body  = file("${path.module}/mongodb-secret-secret.yaml")
   depends_on = [kubectl_manifest.grocery-database-namespace]
 }
 
 resource "kubectl_manifest" "mongodb-svc-service" {
-  yaml_body = file("${path.module}/mongodb-svc-service.yaml")
+  yaml_body  = file("${path.module}/mongodb-svc-service.yaml")
   depends_on = [kubectl_manifest.grocery-database-namespace]
 }
 
@@ -29,17 +29,17 @@ resource "kubectl_manifest" "redis-pvc-persistentvolumeclaim" {
 }
 
 resource "kubectl_manifest" "redis-deployment" {
-  yaml_body = file("${path.module}/redis-deployment.yaml")
+  yaml_body  = file("${path.module}/redis-deployment.yaml")
   depends_on = [kubectl_manifest.grocery-database-namespace]
 }
 
 resource "kubectl_manifest" "redis-svc-service" {
-  yaml_body = file("${path.module}/redis-svc-service.yaml")
+  yaml_body  = file("${path.module}/redis-svc-service.yaml")
   depends_on = [kubectl_manifest.grocery-database-namespace]
 }
 
 resource "kubectl_manifest" "grocery-storage-storageclass" {
-  yaml_body = file("${path.module}/grocery-storage-storageclass.yaml")
+  yaml_body  = file("${path.module}/grocery-storage-storageclass.yaml")
   depends_on = [kubectl_manifest.grocery-database-namespace]
 }
 

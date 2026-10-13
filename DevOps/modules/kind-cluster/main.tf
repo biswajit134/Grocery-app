@@ -61,6 +61,12 @@ resource "kind_cluster" "this" {
         listen_address = "127.0.0.1"
       }
 
+      extra_port_mappings {
+        container_port = 30007
+        host_port      = 31007
+        listen_address = "127.0.0.1"
+      }
+
     }
 
     node {

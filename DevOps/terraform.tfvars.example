@@ -16,3 +16,6 @@ ARGOCD_SERVER_SECRETKEY = "ChangeMe_32_Character_Random_Key!"
 
 # Administrator password for Grafana dashboard
 GRAFANA_ADMIN_PASSWORD = "ChangeMe_Grafana_Admin_Password!"
+
+# Dev root token for HashiCorp Vault
+VAULT_DEV_ROOT_TOKEN = "root"

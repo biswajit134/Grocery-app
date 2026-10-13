@@ -37,5 +37,21 @@ variable "ARGOCD_SERVER_SECRETKEY" {
   default     = "a-very-secure-random-secret-key-32chars!"
 }
 
+variable "VAULT_DEV_ROOT_TOKEN" {
+  type        = string
+  description = "Dev mode root token for HashiCorp Vault"
+  sensitive   = true
+  default     = "root"
+}
 
+variable "vault_version" {
+  type        = string
+  description = "Version of the HashiCorp Vault Helm chart"
+  default     = "0.29.1"
+}
 
+variable "external_secrets_version" {
+  type        = string
+  description = "Version of the External Secrets Operator Helm chart"
+  default     = "0.14.3"
+}
