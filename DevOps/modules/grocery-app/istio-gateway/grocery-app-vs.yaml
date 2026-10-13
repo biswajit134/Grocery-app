@@ -18,6 +18,10 @@ spec:
         host: api-gateway-svc.grocery-backend.svc.cluster.local
         port:
           number: 5000
+    retries:
+      attempts: 3
+      perTryTimeout: 2s
+      retryOn: "5xx,connect-failure,refused-stream"
 
   # 2. Admin Portal
   - match:

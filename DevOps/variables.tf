@@ -13,7 +13,7 @@ variable "cilium_version" {
 variable "istio_version" {
   type        = string
   description = "Version of the Istio Helm chart to deploy."
-  default     = "1.31.0-rc.0"
+  default     = "1.31.0"
 }
 
 variable "ARGOCD_PASSWORD" {

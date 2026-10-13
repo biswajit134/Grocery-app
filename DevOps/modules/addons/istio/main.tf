@@ -11,46 +11,59 @@ resource "kubernetes_namespace_v1" "istio-gateway" {
   metadata {
     name = "istio-gateway"
     labels = {
-      name            = "istio-gateway"
-      istio-injection = "enabled"
+      name = "istio-gateway"
     }
   }
 }
 
 resource "helm_release" "istio_base" {
-  name         = "istio-base"
-  repository   = "https://istio-release.storage.googleapis.com/charts"
-  force_update = true
-  chart        = "base"
-  version      = var.istio_version
-  namespace    = "istio-system"
-  depends_on   = [kubernetes_namespace_v1.istio-system]
+  name             = "istio-base"
+  repository       = "https://blob.istio.io/istio-release/charts"
+  force_update     = true
+  chart            = "base"
+  version          = var.istio_version
+  namespace        = kubernetes_namespace_v1.istio-system.metadata[0].name
+  create_namespace = false
+  cleanup_on_fail  = true
+  wait             = true
+  timeout          = 600
+
+  depends_on = [kubernetes_namespace_v1.istio-system]
 }
 
 resource "helm_release" "istiod" {
-  name         = "istiod"
-  repository   = "https://istio-release.storage.googleapis.com/charts"
-  force_update = true
-  chart        = "istiod"
-  version      = var.istio_version
-  namespace    = "istio-system"
-  depends_on   = [kubernetes_namespace_v1.istio-system, helm_release.istio_base]
+  name             = "istiod"
+  repository       = "https://blob.istio.io/istio-release/charts"
+  force_update     = true
+  chart            = "istiod"
+  version          = var.istio_version
+  namespace        = kubernetes_namespace_v1.istio-system.metadata[0].name
+  create_namespace = false
+  cleanup_on_fail  = true
+  wait             = true
+  timeout          = 600
+
+  depends_on = [kubernetes_namespace_v1.istio-system, helm_release.istio_base]
 }
 
 resource "helm_release" "istio_gateway" {
-  name         = "istio-gateway"
-  repository   = "https://istio-release.storage.googleapis.com/charts"
-  force_update = true
-  chart        = "gateway"
-  version      = var.istio_version
-  namespace    = "istio-gateway"
+  name             = "istio-gateway"
+  repository       = "https://blob.istio.io/istio-release/charts"
+  force_update     = true
+  chart            = "gateway"
+  version          = var.istio_version
+  namespace        = kubernetes_namespace_v1.istio-gateway.metadata[0].name
+  create_namespace = false
+  cleanup_on_fail  = true
+  wait             = true
+  timeout          = 600
 
   values = [yamlencode({
     service = {
       type = "NodePort"
       ports = [
         {
-          name       = "status-port"
+          name       = "tcp-status-port"
           port       = 15021
           protocol   = "TCP"
           targetPort = 15021
