@@ -90,6 +90,16 @@ spec:
                 configMapKeyRef:
                   name: backend-config
                   key: ORDER_SERVICE_URL
+            - name: RATE_LIMIT_GLOBAL_MAX
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: RATE_LIMIT_GLOBAL_MAX
+            - name: RATE_LIMIT_AUTH_MAX
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: RATE_LIMIT_AUTH_MAX
             {{- else if eq $service.appName "auth-service" }}
             - name: JWT_SECRET
               valueFrom:

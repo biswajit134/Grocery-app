@@ -20,7 +20,7 @@ resource "helm_release" "vault" {
   values = [yamlencode({
     server = {
       dev = {
-        enabled      = true
+        enabled       = true
         devRootToken = var.vault_root_token
       }
       service = {
@@ -29,9 +29,8 @@ resource "helm_release" "vault" {
       }
     }
     ui = {
-      enabled         = true
-      serviceType     = "NodePort"
-      serviceNodePort = var.vault_node_port
+      enabled     = true
+      serviceType = "ClusterIP"
     }
     injector = {
       enabled = false

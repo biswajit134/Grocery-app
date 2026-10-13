@@ -9,10 +9,12 @@ spec:
   gateways:
   - istio-gateway/grocery-gateway
   http:
-  # 1. API Traffic -> API Gateway
+  # 1. API & WebSocket Traffic -> API Gateway
   - match:
     - uri:
         prefix: /api
+    - uri:
+        prefix: /ws
     route:
     - destination:
         host: api-gateway-svc.grocery-backend.svc.cluster.local

@@ -70,7 +70,7 @@ switch ($Action) {
             Write-Host "  Sealed:      $($resp.sealed)"
             Write-Host "  Version:     $($resp.version)"
         } catch {
-            Write-Error "Failed to connect to Vault at $VaultUrl: $_"
+            Write-Error "Failed to connect to Vault at $($VaultUrl): $_"
         }
     }
 

@@ -55,6 +55,8 @@ config:
   productServiceUrl: "http://product-svc.grocery-backend.svc.cluster.local:5002"
   orderServiceUrl: "http://order-svc.grocery-backend.svc.cluster.local:5003"
   redisUrl: "redis://redis-svc.grocery-database.svc.cluster.local:6379"
+  rateLimitGlobalMax: "10000"
+  rateLimitAuthMax: "1000"
 
 # Secret Data (Sensitive Credentials)
 # In production and GitOps, secrets are managed out-of-band via SealedSecrets, ExternalSecrets, or Vault.

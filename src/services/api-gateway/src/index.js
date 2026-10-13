@@ -127,7 +127,7 @@ app.use(trafficMiddleware);
 // --- Rate Limiting & DDoS Protection ---
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes window
-  max: parseInt(process.env.RATE_LIMIT_GLOBAL_MAX || '300', 10), // 300 requests per IP per 15 min
+  max: parseInt(process.env.RATE_LIMIT_GLOBAL_MAX || '10000', 10), // Accommodates multi-client polling
   standardHeaders: true, // Return standard RateLimit-* headers
   legacyHeaders: false, // Disable X-RateLimit-* headers
   skip: (req) => {
@@ -150,9 +150,15 @@ const globalLimiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes window
-  max: parseInt(process.env.RATE_LIMIT_AUTH_MAX || '25', 10), // Stricter limit for login/register: 25 attempts
+  max: parseInt(process.env.RATE_LIMIT_AUTH_MAX || '1000', 10), // Stricter limit for login/register attempts
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => {
+    // Only apply rate limiting to authentication attempts (login / register)
+    const isAuthAttempt = req.path === '/login' || req.path === '/register' || 
+                          req.path === '/api/auth/login' || req.path === '/api/auth/register';
+    return !isAuthAttempt;
+  },
   handler: (req, res) => {
     res.status(429).json({
       status: 429,

@@ -21,26 +21,18 @@ app.use(cors());
 
 // Database connection
 async function connectDB() {
-  const connectionStrings = [
-    MONGO_URI,
-    MONGO_URI.replace('mongodb://mongodb:', 'mongodb://localhost:')
-  ].filter(Boolean);
-
-  let connected = false;
-  for (const uri of connectionStrings) {
+  const uri = MONGO_URI;
+  while (true) {
     try {
       console.log(`Attempting to connect to MongoDB: ${uri}`);
-      await mongoose.connect(uri, { serverSelectionTimeoutMS: 2000 });
+      await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 });
       console.log('Order Service connected to MongoDB successfully!');
-      connected = true;
       break;
     } catch (err) {
       console.warn(`Connection attempt failed for ${uri}:`, err.message);
+      console.log('Retrying MongoDB connection in 5 seconds...');
+      await new Promise(resolve => setTimeout(resolve, 5000));
     }
-  }
-
-  if (!connected) {
-    console.error('All database connection strategies failed in Order Service.');
   }
 }
 connectDB();
