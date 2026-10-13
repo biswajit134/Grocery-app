@@ -1,8 +1,8 @@
-apiVersion: security.istio.io/v1beta1
+apiVersion: security.istio.io/v1
 kind: PeerAuthentication
 metadata:
-  name: groceryhub-permissive-mtls
-  namespace: istio-gateway
+  name: default
+  namespace: grocery-backend
 spec:
   mtls:
-    mode: PERMISSIVE
+    mode: STRICT
