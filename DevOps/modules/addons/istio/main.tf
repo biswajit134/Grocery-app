@@ -58,13 +58,14 @@ resource "helm_release" "istio_gateway" {
         {
           name       = "http2"
           port       = 80
-          nodePort   = 30000
+          nodePort   = 30080
           protocol   = "TCP"
           targetPort = 80
         },
         {
           name       = "https"
           port       = 443
+          nodePort   = 30000
           protocol   = "TCP"
           targetPort = 443
         }

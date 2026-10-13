@@ -29,12 +29,12 @@ output "kubectl_hint" {
 }
 
 output "client_apps" {
-  description = "URLs to access the grocery client applications."
+  description = "URLs to access the grocery client applications (HTTPS with TLS)."
   value = {
-    frontend         = "http://localhost:31000/"
-    admin            = "http://localhost:31000/admin"
-    vendor           = "http://localhost:31000/vendor"
-    delivery_partner = "http://localhost:31000/delivery-partner"
+    frontend         = "https://localhost:31000/"
+    admin            = "https://localhost:31000/admin"
+    vendor           = "https://localhost:31000/vendor"
+    delivery_partner = "https://localhost:31000/delivery-partner"
   }
 }
 
@@ -56,5 +56,10 @@ output "argocd_apps" {
 output "vault_url" {
   description = "URL to access HashiCorp Vault Web UI."
   value       = module.vault.vault_ui_url
+}
+
+output "root_ca_cert_pem" {
+  description = "The Root CA certificate PEM for trusting in browser and OS."
+  value       = module.istio_gateway.root_ca_cert_pem
 }
 

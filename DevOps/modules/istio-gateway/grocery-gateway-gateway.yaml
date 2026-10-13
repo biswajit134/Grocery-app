@@ -15,5 +15,14 @@ spec:
       protocol: HTTP
     hosts:
     - "*/*"
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      credentialName: grocery-tls-cert
+    hosts:
+    - "*/*"
 
 
