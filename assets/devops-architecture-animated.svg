@@ -1,0 +1,740 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1260 920" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#080b11"/>
+      <stop offset="50%" stop-color="#0d131f"/>
+      <stop offset="100%" stop-color="#06090e"/>
+    </linearGradient>
+
+    <!-- Card Background Gradient -->
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#141c2b" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#0f1622" stop-opacity="0.98"/>
+    </linearGradient>
+
+    <!-- Subcard Gradient -->
+    <linearGradient id="subcardGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1a2436"/>
+      <stop offset="100%" stop-color="#151e2e"/>
+    </linearGradient>
+
+    <!-- Accent Gradients -->
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ff6b00"/>
+      <stop offset="100%" stop-color="#ff9233"/>
+    </linearGradient>
+
+    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+
+    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#34d399"/>
+    </linearGradient>
+
+    <linearGradient id="amberGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#60a5fa"/>
+    </linearGradient>
+
+    <!-- Glowing Filters -->
+    <filter id="glowOrange" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="glowEmerald" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Arrow Markers -->
+    <marker id="arrowOrange" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M 0 0 L 8 4 L 0 8 Z" fill="#ff6b00"/>
+    </marker>
+
+    <marker id="arrowCyan" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M 0 0 L 8 4 L 0 8 Z" fill="#06b6d4"/>
+    </marker>
+
+    <marker id="arrowPurple" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M 0 0 L 8 4 L 0 8 Z" fill="#a855f7"/>
+    </marker>
+
+    <marker id="arrowEmerald" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M 0 0 L 8 4 L 0 8 Z" fill="#10b981"/>
+    </marker>
+
+    <marker id="arrowBlue" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M 0 0 L 8 4 L 0 8 Z" fill="#3b82f6"/>
+    </marker>
+
+    <style>
+      .title-text { font-family: 'Segoe UI', Inter, -apple-system, sans-serif; font-weight: 800; }
+      .header-text { font-family: 'Segoe UI', Inter, -apple-system, sans-serif; font-weight: 700; }
+      .body-text { font-family: 'Segoe UI', Inter, -apple-system, sans-serif; font-weight: 500; }
+      .mono-text { font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace; font-weight: 600; }
+
+      /* Flowing dashes animation */
+      @keyframes dashFlow {
+        from { stroke-dashoffset: 48; }
+        to { stroke-dashoffset: 0; }
+      }
+
+      @keyframes dashFlowReverse {
+        from { stroke-dashoffset: 0; }
+        to { stroke-dashoffset: 48; }
+      }
+
+      @keyframes pulseGlow {
+        0%, 100% { opacity: 0.3; transform: scale(1); }
+        50% { opacity: 0.9; transform: scale(1.08); }
+      }
+
+      @keyframes beaconFader {
+        0%, 100% { opacity: 0.4; }
+        50% { opacity: 1; }
+      }
+
+      @keyframes radarSweep {
+        0% { r: 3px; opacity: 1; }
+        100% { r: 14px; opacity: 0; }
+      }
+
+      .animated-flow-orange {
+        stroke-dasharray: 6 6;
+        animation: dashFlow 1.8s linear infinite;
+      }
+
+      .animated-flow-cyan {
+        stroke-dasharray: 6 6;
+        animation: dashFlow 1.6s linear infinite;
+      }
+
+      .animated-flow-purple {
+        stroke-dasharray: 6 6;
+        animation: dashFlow 2s linear infinite;
+      }
+
+      .animated-flow-emerald {
+        stroke-dasharray: 6 6;
+        animation: dashFlow 1.5s linear infinite;
+      }
+
+      .animated-flow-amber {
+        stroke-dasharray: 6 6;
+        animation: dashFlow 2.2s linear infinite;
+      }
+
+      .pulse-dot {
+        animation: beaconFader 2s ease-in-out infinite;
+      }
+
+      .radar-ring {
+        animation: radarSweep 2.5s ease-out infinite;
+        transform-origin: center;
+      }
+    </style>
+  </defs>
+
+  <!-- Deep Background -->
+  <rect width="1260" height="920" fill="url(#bgGrad)" rx="16"/>
+  <rect width="1258" height="918" x="1" y="1" fill="none" stroke="#1e293b" stroke-width="1.5" rx="15"/>
+
+  <!-- Subtle Blueprint Grid Pattern -->
+  <g opacity="0.08" stroke="#38bdf8" stroke-width="0.75">
+    <line x1="0" y1="90" x2="1260" y2="90"/>
+    <line x1="0" y1="360" x2="1260" y2="360"/>
+    <line x1="0" y1="670" x2="1260" y2="670"/>
+    <line x1="310" y1="90" x2="310" y2="920"/>
+    <line x1="620" y1="90" x2="620" y2="920"/>
+    <line x1="940" y1="90" x2="940" y2="920"/>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- TOP HEADER BANNER                                                         -->
+  <!-- ========================================================================= -->
+  <g transform="translate(30, 20)">
+    <!-- Header Container -->
+    <rect width="1200" height="64" rx="10" fill="#0f172a" stroke="#1e293b" stroke-width="1.2"/>
+    <rect width="6" height="64" rx="3" fill="url(#orangeGrad)"/>
+
+    <!-- Brand Logo / Badge -->
+    <rect x="24" y="14" width="36" height="36" rx="8" fill="#1e293b" stroke="#ff6b00" stroke-width="1.5"/>
+    <text x="42" y="38" text-anchor="middle" font-size="20">🍊</text>
+
+    <!-- Header Titles -->
+    <text x="74" y="33" class="title-text" font-size="18" fill="#f8fafc" letter-spacing="0.5">
+      GROCERYHUB DEVOPS INFRASTRUCTURE &amp; LIFECYCLE ARCHITECTURE
+    </text>
+    <text x="74" y="50" class="body-text" font-size="11.5" fill="#94a3b8">
+      Terraform IaC • Kind • Cilium eBPF CNI • HashiCorp Vault • Istio Service Mesh (mTLS + HTTPS) • ArgoCD GitOps • 360° Observability
+    </text>
+
+    <!-- Cluster Status Indicator -->
+    <g transform="translate(1020, 16)">
+      <rect width="160" height="32" rx="16" fill="#13231b" stroke="#10b981" stroke-width="1"/>
+      <circle cx="18" cy="16" r="5" fill="#10b981" class="pulse-dot"/>
+      <circle cx="18" cy="16" r="10" fill="none" stroke="#10b981" stroke-width="1.5" class="radar-ring" opacity="0.6"/>
+      <text x="32" y="20" class="mono-text" font-size="10.5" fill="#34d399">CLUSTER HEALTHY</text>
+    </g>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- STAGE 01: INFRASTRUCTURE AS CODE & LOCAL RUNTIME (Left Top)               -->
+  <!-- ========================================================================= -->
+  <g transform="translate(30, 100)">
+    <!-- Card Frame -->
+    <rect width="260" height="250" rx="12" fill="url(#cardGrad)" stroke="#1e293b" stroke-width="1.2"/>
+    <rect width="260" height="34" rx="12" fill="#161f30"/>
+    <rect y="22" width="260" height="12" fill="#161f30"/>
+
+    <!-- Stage Tag -->
+    <rect x="12" y="8" width="68" height="18" rx="4" fill="#3b82f6" fill-opacity="0.2" stroke="#3b82f6" stroke-width="0.8"/>
+    <text x="46" y="21" text-anchor="middle" class="mono-text" font-size="9" fill="#60a5fa">STAGE 01</text>
+    <text x="88" y="21" class="header-text" font-size="12" fill="#f1f5f9">INFRASTRUCTURE AS CODE</text>
+
+    <!-- Developer & Git -->
+    <g transform="translate(15, 46)">
+      <rect width="230" height="36" rx="6" fill="url(#subcardGrad)" stroke="#27354a" stroke-width="0.8"/>
+      <text x="12" y="22" font-size="14">💻</text>
+      <text x="36" y="17" class="header-text" font-size="11" fill="#e2e8f0">Local Dev / Git Repo</text>
+      <text x="36" y="29" class="mono-text" font-size="9" fill="#64748b">branch: origin/main • HCL</text>
+    </g>
+
+    <!-- Terraform Engine -->
+    <g transform="translate(15, 92)">
+      <rect width="230" height="48" rx="6" fill="url(#subcardGrad)" stroke="#7c3aed" stroke-width="1"/>
+      <text x="12" y="28" font-size="14">🟣</text>
+      <text x="36" y="19" class="header-text" font-size="11" fill="#c4b5fd">Terraform Core v1.14</text>
+      <text x="36" y="32" class="body-text" font-size="9" fill="#94a3b8">10 Managed Modules &amp; State</text>
+      <text x="36" y="42" class="mono-text" font-size="8.5" fill="#a78bfa">kind, helm, kubectl, kubernetes, tls</text>
+    </g>
+
+    <!-- Kind Node Cluster Engine -->
+    <g transform="translate(15, 150)">
+      <rect width="230" height="46" rx="6" fill="url(#subcardGrad)" stroke="#0284c7" stroke-width="1"/>
+      <text x="12" y="28" font-size="14">☸️</text>
+      <text x="36" y="18" class="header-text" font-size="11" fill="#7dd3fc">Kind Cluster: kind-cilium</text>
+      <text x="36" y="30" class="body-text" font-size="9" fill="#94a3b8">K8s v1.36.4 Control-Plane (Docker)</text>
+      <text x="36" y="40" class="mono-text" font-size="8.5" fill="#38bdf8">extraPortMappings: 31000..31007</text>
+    </g>
+
+    <!-- Status badge -->
+    <g transform="translate(15, 206)">
+      <rect width="230" height="28" rx="6" fill="#0d231b" stroke="#10b981" stroke-width="0.8"/>
+      <circle cx="14" cy="14" r="4" fill="#10b981"/>
+      <text x="26" y="18" class="mono-text" font-size="9.5" fill="#34d399">CNI: kindnet disabled (Cilium only)</text>
+    </g>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- STAGE 02: ZERO-TRUST SECRECY & TLS PKI (Left Bottom)                      -->
+  <!-- ========================================================================= -->
+  <g transform="translate(30, 365)">
+    <!-- Card Frame -->
+    <rect width="260" height="290" rx="12" fill="url(#cardGrad)" stroke="#1e293b" stroke-width="1.2"/>
+    <rect width="260" height="34" rx="12" fill="#161f30"/>
+    <rect y="22" width="260" height="12" fill="#161f30"/>
+
+    <!-- Stage Tag -->
+    <rect x="12" y="8" width="68" height="18" rx="4" fill="#f59e0b" fill-opacity="0.2" stroke="#f59e0b" stroke-width="0.8"/>
+    <text x="46" y="21" text-anchor="middle" class="mono-text" font-size="9" fill="#fbbf24">STAGE 02</text>
+    <text x="88" y="21" class="header-text" font-size="12" fill="#f1f5f9">SECRETS &amp; TLS PKI ENGINE</text>
+
+    <!-- HashiCorp Vault -->
+    <g transform="translate(15, 46)">
+      <rect width="230" height="52" rx="6" fill="url(#subcardGrad)" stroke="#d97706" stroke-width="1"/>
+      <text x="12" y="30" font-size="16">🔐</text>
+      <text x="36" y="19" class="header-text" font-size="11" fill="#fde68a">HashiCorp Vault (Port 31007)</text>
+      <text x="36" y="32" class="body-text" font-size="9" fill="#94a3b8">KV-v2 Engine: secret/grocery/*</text>
+      <text x="36" y="44" class="mono-text" font-size="8.5" fill="#f59e0b">DB credentials, JWT secrets, Root keys</text>
+    </g>
+
+    <!-- External Secrets Operator -->
+    <g transform="translate(15, 108)">
+      <rect width="230" height="50" rx="6" fill="url(#subcardGrad)" stroke="#8b5cf6" stroke-width="1"/>
+      <text x="12" y="29" font-size="14">🔄</text>
+      <text x="36" y="18" class="header-text" font-size="11" fill="#ddd6fe">External Secrets Operator</text>
+      <text x="36" y="31" class="body-text" font-size="9" fill="#94a3b8">ClusterSecretStore (vault-backend)</text>
+      <text x="36" y="42" class="mono-text" font-size="8.5" fill="#a78bfa">Continuous Sync to K8s Secrets</text>
+    </g>
+
+    <!-- TLS PKI & Root CA -->
+    <g transform="translate(15, 168)">
+      <rect width="230" height="60" rx="6" fill="url(#subcardGrad)" stroke="#10b981" stroke-width="1"/>
+      <text x="12" y="32" font-size="16">📜</text>
+      <text x="36" y="18" class="header-text" font-size="11" fill="#a7f3d0">Automated TLS PKI (Root CA)</text>
+      <text x="36" y="31" class="body-text" font-size="9" fill="#94a3b8">GroceryHub Local Root CA (10yr)</text>
+      <text x="36" y="43" class="mono-text" font-size="8.5" fill="#34d399">Leaf: localhost, *.localhost, 127.0.0.1</text>
+      <text x="36" y="53" class="mono-text" font-size="8" fill="#6ee7b7">Secret: istio-gateway/grocery-tls-cert</text>
+    </g>
+
+    <!-- Trust Command Hint -->
+    <g transform="translate(15, 238)">
+      <rect width="230" height="38" rx="6" fill="#182333" stroke="#2563eb" stroke-width="0.8"/>
+      <text x="8" y="16" class="mono-text" font-size="8.5" fill="#93c5fd">Windows OS &amp; Browser Trust:</text>
+      <text x="8" y="28" class="mono-text" font-size="8" fill="#38bdf8">certutil -user -addstore Root ca.crt</text>
+    </g>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- STAGE 03: GITOPS & ARGO CD CONTINUOUS DELIVERY (Middle Top)               -->
+  <!-- ========================================================================= -->
+  <g transform="translate(310, 100)">
+    <!-- Card Frame -->
+    <rect width="300" height="250" rx="12" fill="url(#cardGrad)" stroke="#1e293b" stroke-width="1.2"/>
+    <rect width="300" height="34" rx="12" fill="#161f30"/>
+    <rect y="22" width="300" height="12" fill="#161f30"/>
+
+    <!-- Stage Tag -->
+    <rect x="12" y="8" width="68" height="18" rx="4" fill="#ff6b00" fill-opacity="0.2" stroke="#ff6b00" stroke-width="0.8"/>
+    <text x="46" y="21" text-anchor="middle" class="mono-text" font-size="9" fill="#ff9233">STAGE 03</text>
+    <text x="88" y="21" class="header-text" font-size="12" fill="#f1f5f9">GITOPS CONTINUOUS DELIVERY</text>
+
+    <!-- ArgoCD Header Subcard -->
+    <g transform="translate(15, 46)">
+      <rect width="270" height="42" rx="6" fill="url(#subcardGrad)" stroke="#ea580c" stroke-width="1"/>
+      <text x="12" y="26" font-size="16">🐙</text>
+      <text x="36" y="18" class="header-text" font-size="11" fill="#fed7aa">ArgoCD Controller (Port 31006)</text>
+      <text x="36" y="31" class="body-text" font-size="9" fill="#94a3b8">Declarative GitOps Engine • Auto-Heal &amp; Sync</text>
+    </g>
+
+    <!-- Sync Waves Pipeline -->
+    <g transform="translate(15, 96)">
+      <!-- Wave 1 -->
+      <rect width="270" height="36" rx="6" fill="#14211a" stroke="#10b981" stroke-width="0.9"/>
+      <rect x="8" y="8" width="46" height="20" rx="3" fill="#065f46"/>
+      <text x="31" y="22" text-anchor="middle" class="mono-text" font-size="9" fill="#6ee7b7">WAVE 1</text>
+      <text x="62" y="17" class="header-text" font-size="10.5" fill="#a7f3d0">grocery-database</text>
+      <text x="62" y="28" class="body-text" font-size="8.5" fill="#6ee7b7">MongoDB &amp; Redis Cache (StatefulSets)</text>
+
+      <!-- Wave 2 -->
+      <g transform="translate(0, 42)">
+        <rect width="270" height="36" rx="6" fill="#191f33" stroke="#3b82f6" stroke-width="0.9"/>
+        <rect x="8" y="8" width="46" height="20" rx="3" fill="#1e3a8a"/>
+        <text x="31" y="22" text-anchor="middle" class="mono-text" font-size="9" fill="#93c5fd">WAVE 2</text>
+        <text x="62" y="17" class="header-text" font-size="10.5" fill="#bfdbfe">grocery-backend</text>
+        <text x="62" y="28" class="body-text" font-size="8.5" fill="#93c5fd">Auth, Product, Order &amp; API-Gateway</text>
+      </g>
+
+      <!-- Wave 3 -->
+      <g transform="translate(0, 84)">
+        <rect width="270" height="36" rx="6" fill="#251a2e" stroke="#a855f7" stroke-width="0.9"/>
+        <rect x="8" y="8" width="46" height="20" rx="3" fill="#581c87"/>
+        <text x="31" y="22" text-anchor="middle" class="mono-text" font-size="9" fill="#f5d0fe">WAVE 3</text>
+        <text x="62" y="17" class="header-text" font-size="10.5" fill="#e9d5ff">grocery-client</text>
+        <text x="62" y="28" class="body-text" font-size="8.5" fill="#d8b4fe">Frontend, Admin, Vendor &amp; Delivery SPAs</text>
+      </g>
+    </g>
+
+    <!-- Self Healing Status -->
+    <g transform="translate(15, 226)">
+      <circle cx="8" cy="8" r="3" fill="#ff6b00" class="pulse-dot"/>
+      <text x="18" y="11" class="mono-text" font-size="8.5" fill="#cbd5e1">Sync Policy: Automated Prune &amp; Self-Heal Active</text>
+    </g>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- STAGE 04: KERNEL CNI & SECURE TRAFFIC EDGE (Middle Bottom)                -->
+  <!-- ========================================================================= -->
+  <g transform="translate(310, 365)">
+    <!-- Card Frame -->
+    <rect width="300" height="290" rx="12" fill="url(#cardGrad)" stroke="#1e293b" stroke-width="1.2"/>
+    <rect width="300" height="34" rx="12" fill="#161f30"/>
+    <rect y="22" width="300" height="12" fill="#161f30"/>
+
+    <!-- Stage Tag -->
+    <rect x="12" y="8" width="68" height="18" rx="4" fill="#06b6d4" fill-opacity="0.2" stroke="#06b6d4" stroke-width="0.8"/>
+    <text x="46" y="21" text-anchor="middle" class="mono-text" font-size="9" fill="#22d3ee">STAGE 04</text>
+    <text x="88" y="21" class="header-text" font-size="12" fill="#f1f5f9">KERNEL CNI &amp; INGRESS EDGE</text>
+
+    <!-- Cilium eBPF Engine -->
+    <g transform="translate(15, 46)">
+      <rect width="270" height="50" rx="6" fill="url(#subcardGrad)" stroke="#06b6d4" stroke-width="1"/>
+      <text x="12" y="28" font-size="16">🐝</text>
+      <text x="36" y="18" class="header-text" font-size="11" fill="#a5f3fc">Cilium eBPF CNI (v1.21.0-pre.3)</text>
+      <text x="36" y="31" class="body-text" font-size="9" fill="#94a3b8">Bypasses kube-proxy via Linux Kernel eBPF</text>
+      <text x="36" y="42" class="mono-text" font-size="8.5" fill="#38bdf8">L3/L4/L7 Filtering • Hubble Flow Export</text>
+    </g>
+
+    <!-- Istio Control Plane (istiod) -->
+    <g transform="translate(15, 104)">
+      <rect width="270" height="42" rx="6" fill="url(#subcardGrad)" stroke="#8b5cf6" stroke-width="1"/>
+      <text x="12" y="26" font-size="16">⛵</text>
+      <text x="36" y="18" class="header-text" font-size="11" fill="#ddd6fe">Istio Control Plane (istiod v1.23)</text>
+      <text x="36" y="31" class="body-text" font-size="9" fill="#94a3b8">mTLS PeerAuthentication (PERMISSIVE) • Envoy</text>
+    </g>
+
+    <!-- Istio Ingress Gateway (HTTPS Edge) -->
+    <g transform="translate(15, 154)">
+      <rect width="270" height="74" rx="6" fill="#132338" stroke="#38bdf8" stroke-width="1.2"/>
+      <text x="12" y="28" font-size="18">🔒</text>
+      <text x="38" y="19" class="header-text" font-size="11.5" fill="#38bdf8">Istio Ingress Gateway (HTTPS)</text>
+      <text x="38" y="33" class="mono-text" font-size="9" fill="#fdba74">Host Port: 31000 → NodePort: 30000 (TLS 443)</text>
+      <text x="38" y="47" class="body-text" font-size="8.5" fill="#94a3b8">Cert: grocery-tls-cert (Root CA Signed)</text>
+      <text x="38" y="61" class="mono-text" font-size="8" fill="#34d399">VirtualService: / , /admin, /vendor, /api/*</text>
+    </g>
+
+    <!-- Edge Routing Flow -->
+    <g transform="translate(15, 236)">
+      <rect width="270" height="42" rx="6" fill="#141c2b" stroke="#334155" stroke-width="0.8"/>
+      <text x="10" y="16" class="mono-text" font-size="8.5" fill="#cbd5e1">L7 Route Match:</text>
+      <text x="10" y="28" class="mono-text" font-size="8" fill="#60a5fa">Prefix / → frontend-svc:80</text>
+      <text x="10" y="38" class="mono-text" font-size="8" fill="#f97316">Prefix /api/* → api-gateway-svc:5000</text>
+    </g>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- STAGE 05: MULTI-TIER KUBERNETES WORKLOADS (Center Right)                  -->
+  <!-- ========================================================================= -->
+  <g transform="translate(630, 100)">
+    <!-- Card Frame -->
+    <rect width="320" height="555" rx="12" fill="url(#cardGrad)" stroke="#1e293b" stroke-width="1.2"/>
+    <rect width="320" height="34" rx="12" fill="#161f30"/>
+    <rect y="22" width="320" height="12" fill="#161f30"/>
+
+    <!-- Stage Tag -->
+    <rect x="12" y="8" width="68" height="18" rx="4" fill="#10b981" fill-opacity="0.2" stroke="#10b981" stroke-width="0.8"/>
+    <text x="46" y="21" text-anchor="middle" class="mono-text" font-size="9" fill="#34d399">STAGE 05</text>
+    <text x="88" y="21" class="header-text" font-size="12" fill="#f1f5f9">APPLICATION WORKLOADS (K8S)</text>
+
+    <!-- Tier 1: Client Frontends (grocery-clint) -->
+    <g transform="translate(15, 46)">
+      <rect width="290" height="124" rx="8" fill="#141c2c" stroke="#3b82f6" stroke-width="0.9"/>
+      <rect x="10" y="6" width="140" height="16" rx="3" fill="#1e293b"/>
+      <text x="16" y="18" class="mono-text" font-size="8.5" fill="#93c5fd">CLIENT SPAS (grocery-clint)</text>
+
+      <g transform="translate(10, 28)">
+        <!-- Frontend -->
+        <rect width="130" height="38" rx="4" fill="#1b253b" stroke="#2563eb" stroke-width="0.8"/>
+        <text x="8" y="16" class="header-text" font-size="10" fill="#bfdbfe">🛒 Customer Storefront</text>
+        <text x="8" y="30" class="mono-text" font-size="8" fill="#94a3b8">Path: / • Port 3000</text>
+
+        <!-- Admin -->
+        <g transform="translate(140, 0)">
+          <rect width="130" height="38" rx="4" fill="#1b253b" stroke="#2563eb" stroke-width="0.8"/>
+          <text x="8" y="16" class="header-text" font-size="10" fill="#bfdbfe">📊 Admin Dashboard</text>
+          <text x="8" y="30" class="mono-text" font-size="8" fill="#94a3b8">Path: /admin • Port 3003</text>
+        </g>
+
+        <!-- Vendor -->
+        <g transform="translate(0, 46)">
+          <rect width="130" height="38" rx="4" fill="#1b253b" stroke="#2563eb" stroke-width="0.8"/>
+          <text x="8" y="16" class="header-text" font-size="10" fill="#bfdbfe">🏪 Vendor Portal</text>
+          <text x="8" y="30" class="mono-text" font-size="8" fill="#94a3b8">Path: /vendor • Port 3002</text>
+        </g>
+
+        <!-- Delivery -->
+        <g transform="translate(140, 46)">
+          <rect width="130" height="38" rx="4" fill="#1b253b" stroke="#2563eb" stroke-width="0.8"/>
+          <text x="8" y="16" class="header-text" font-size="10" fill="#bfdbfe">🚚 Delivery Partner</text>
+          <text x="8" y="30" class="mono-text" font-size="8" fill="#94a3b8">/delivery-partner • 3001</text>
+        </g>
+      </g>
+    </g>
+
+    <!-- Tier 2: API Gateway -->
+    <g transform="translate(15, 178)">
+      <rect width="290" height="42" rx="6" fill="#1f1a2e" stroke="#c084fc" stroke-width="1.2"/>
+      <text x="12" y="26" font-size="15">⚡</text>
+      <text x="36" y="18" class="header-text" font-size="11" fill="#f3e8ff">API Gateway Microservice</text>
+      <text x="36" y="32" class="mono-text" font-size="8.5" fill="#d8b4fe">Express Proxy • Port 5000 • In-cluster Service</text>
+    </g>
+
+    <!-- Tier 3: Core Microservices (grocery-backend) -->
+    <g transform="translate(15, 228)">
+      <rect width="290" height="170" rx="8" fill="#141d2e" stroke="#ff6b00" stroke-width="0.9"/>
+      <rect x="10" y="6" width="150" height="16" rx="3" fill="#1e293b"/>
+      <text x="16" y="18" class="mono-text" font-size="8.5" fill="#fed7aa">BACKEND (grocery-backend)</text>
+
+      <g transform="translate(10, 28)">
+        <!-- Auth Service -->
+        <rect width="270" height="40" rx="5" fill="#201a1c" stroke="#f97316" stroke-width="0.8"/>
+        <text x="10" y="18" class="header-text" font-size="10.5" fill="#ffedd5">🔑 Auth Service (Port 5001)</text>
+        <text x="10" y="30" class="body-text" font-size="8.5" fill="#fdba74">JWT Authentications, Roles &amp; User Lifecycle • Vault Secrets</text>
+
+        <!-- Product Service -->
+        <g transform="translate(0, 46)">
+          <rect width="270" height="40" rx="5" fill="#201a1c" stroke="#f97316" stroke-width="0.8"/>
+          <text x="10" y="18" class="header-text" font-size="10.5" fill="#ffedd5">📦 Product Service (Port 5002)</text>
+          <text x="10" y="30" class="body-text" font-size="8.5" fill="#fdba74">Catalog Management, Inventories &amp; Redis Cache Invalidation</text>
+        </g>
+
+        <!-- Order Service -->
+        <g transform="translate(0, 92)">
+          <rect width="270" height="40" rx="5" fill="#201a1c" stroke="#f97316" stroke-width="0.8"/>
+          <text x="10" y="18" class="header-text" font-size="10.5" fill="#ffedd5">🛒 Order &amp; Fulfillment (Port 5003)</text>
+          <text x="10" y="30" class="body-text" font-size="8.5" fill="#fdba74">Order State Engine, Checkout Pipeline &amp; Driver Polling Sync</text>
+        </g>
+      </g>
+    </g>
+
+    <!-- Tier 4: Database StatefulSets (grocery-database) -->
+    <g transform="translate(15, 406)">
+      <rect width="290" height="136" rx="8" fill="#13231a" stroke="#10b981" stroke-width="0.9"/>
+      <rect x="10" y="6" width="160" height="16" rx="3" fill="#1e293b"/>
+      <text x="16" y="18" class="mono-text" font-size="8.5" fill="#a7f3d0">DATA TIER (grocery-database)</text>
+
+      <g transform="translate(10, 28)">
+        <!-- MongoDB -->
+        <rect width="270" height="44" rx="5" fill="#162e22" stroke="#059669" stroke-width="1"/>
+        <text x="10" y="19" class="header-text" font-size="11" fill="#6ee7b7">🍃 MongoDB 6.0 (StatefulSet)</text>
+        <text x="10" y="33" class="body-text" font-size="8.5" fill="#d1fae5">Persistent Volumes • Vault Managed Root Password</text>
+
+        <!-- Redis -->
+        <g transform="translate(0, 52)">
+          <rect width="270" height="44" rx="5" fill="#162e22" stroke="#dc2626" stroke-width="0.9"/>
+          <text x="10" y="19" class="header-text" font-size="11" fill="#fca5a5">⚡ Redis In-Memory Cache (Port 6379)</text>
+          <text x="10" y="33" class="body-text" font-size="8.5" fill="#fee2e2">High-speed catalog querying &amp; session cache</text>
+        </g>
+      </g>
+    </g>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- STAGE 06: UNIFIED OBSERVABILITY & TELEMETRY (Rightmost Column)            -->
+  <!-- ========================================================================= -->
+  <g transform="translate(970, 100)">
+    <!-- Card Frame -->
+    <rect width="260" height="555" rx="12" fill="url(#cardGrad)" stroke="#1e293b" stroke-width="1.2"/>
+    <rect width="260" height="34" rx="12" fill="#161f30"/>
+    <rect y="22" width="260" height="12" fill="#161f30"/>
+
+    <!-- Stage Tag -->
+    <rect x="12" y="8" width="68" height="18" rx="4" fill="#a855f7" fill-opacity="0.2" stroke="#a855f7" stroke-width="0.8"/>
+    <text x="46" y="21" text-anchor="middle" class="mono-text" font-size="9" fill="#c084fc">STAGE 06</text>
+    <text x="88" y="21" class="header-text" font-size="12" fill="#f1f5f9">360° OBSERVABILITY</text>
+
+    <!-- Prometheus -->
+    <g transform="translate(15, 46)">
+      <rect width="230" height="68" rx="6" fill="url(#subcardGrad)" stroke="#ea580c" stroke-width="0.9"/>
+      <text x="12" y="28" font-size="15">🔥</text>
+      <text x="36" y="18" class="header-text" font-size="11" fill="#fdba74">Prometheus (Port 31003)</text>
+      <text x="36" y="31" class="body-text" font-size="9" fill="#94a3b8">Time-Series Metrics Scraper</text>
+      <text x="36" y="44" class="mono-text" font-size="8.5" fill="#fb923c">Kubelet, Envoy &amp; Pod Scrapes</text>
+      <text x="36" y="56" class="mono-text" font-size="8" fill="#cbd5e1">Alertmanager Rules &amp; HPA Target</text>
+    </g>
+
+    <!-- Grafana -->
+    <g transform="translate(15, 122)">
+      <rect width="230" height="68" rx="6" fill="url(#subcardGrad)" stroke="#f59e0b" stroke-width="0.9"/>
+      <text x="12" y="28" font-size="15">📊</text>
+      <text x="36" y="18" class="header-text" font-size="11" fill="#fde68a">Grafana (Port 31004)</text>
+      <text x="36" y="31" class="body-text" font-size="9" fill="#94a3b8">Central Executive Dashboards</text>
+      <text x="36" y="44" class="mono-text" font-size="8.5" fill="#fbbf24">Login: admin / admin</text>
+      <text x="36" y="56" class="mono-text" font-size="8" fill="#cbd5e1">Pre-provisioned Istio &amp; K8s boards</text>
+    </g>
+
+    <!-- Jaeger -->
+    <g transform="translate(15, 198)">
+      <rect width="230" height="68" rx="6" fill="url(#subcardGrad)" stroke="#06b6d4" stroke-width="0.9"/>
+      <text x="12" y="28" font-size="15">🔍</text>
+      <text x="36" y="18" class="header-text" font-size="11" fill="#a5f3fc">Jaeger Tracing (Port 31002)</text>
+      <text x="36" y="31" class="body-text" font-size="9" fill="#94a3b8">Distributed Request Waterfalls</text>
+      <text x="36" y="44" class="mono-text" font-size="8.5" fill="#38bdf8">W3C Trace Context Propagation</text>
+      <text x="36" y="56" class="mono-text" font-size="8" fill="#cbd5e1">Latency Bottle-neck Diagnostics</text>
+    </g>
+
+    <!-- Kiali -->
+    <g transform="translate(15, 274)">
+      <rect width="230" height="68" rx="6" fill="url(#subcardGrad)" stroke="#8b5cf6" stroke-width="0.9"/>
+      <text x="12" y="28" font-size="15">🕸️</text>
+      <text x="36" y="18" class="header-text" font-size="11" fill="#ddd6fe">Kiali Console (Port 31001)</text>
+      <text x="36" y="31" class="body-text" font-size="9" fill="#94a3b8">Istio Service Mesh Visualizer</text>
+      <text x="36" y="44" class="mono-text" font-size="8.5" fill="#a78bfa">Live Traffic Graph &amp; mTLS Status</text>
+      <text x="36" y="56" class="mono-text" font-size="8" fill="#cbd5e1">Routing verification &amp; health</text>
+    </g>
+
+    <!-- Loki -->
+    <g transform="translate(15, 350)">
+      <rect width="230" height="68" rx="6" fill="url(#subcardGrad)" stroke="#10b981" stroke-width="0.9"/>
+      <text x="12" y="28" font-size="15">📋</text>
+      <text x="36" y="18" class="header-text" font-size="11" fill="#a7f3d0">Loki Stack (Logs)</text>
+      <text x="36" y="31" class="body-text" font-size="9" fill="#94a3b8">Cluster-wide Log Aggregation</text>
+      <text x="36" y="44" class="mono-text" font-size="8.5" fill="#34d399">Promtail DaemonSet Scraper</text>
+      <text x="36" y="56" class="mono-text" font-size="8" fill="#cbd5e1">Unified LogQL Queries in Grafana</text>
+    </g>
+
+    <!-- Hubble UI -->
+    <g transform="translate(15, 426)">
+      <rect width="230" height="68" rx="6" fill="url(#subcardGrad)" stroke="#0284c7" stroke-width="0.9"/>
+      <text x="12" y="28" font-size="15">🌐</text>
+      <text x="36" y="18" class="header-text" font-size="11" fill="#7dd3fc">Hubble UI (Port 31005)</text>
+      <text x="36" y="31" class="body-text" font-size="9" fill="#94a3b8">eBPF Network Observability</text>
+      <text x="36" y="44" class="mono-text" font-size="8.5" fill="#38bdf8">Real-time L3/L4/L7 Flow Map</text>
+      <text x="36" y="56" class="mono-text" font-size="8" fill="#cbd5e1">TCP drops &amp; DNS inspection</text>
+    </g>
+
+    <!-- Live Telemetry Sync Beacon -->
+    <g transform="translate(15, 508)">
+      <rect width="230" height="32" rx="6" fill="#1a182e" stroke="#8b5cf6" stroke-width="0.8"/>
+      <circle cx="16" cy="16" r="4" fill="#a855f7" class="pulse-dot"/>
+      <text x="28" y="20" class="mono-text" font-size="9" fill="#c084fc">REAL-TIME TELEMETRY ACTIVE</text>
+    </g>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- ANIMATED FLOW LINES & DATA CHANNELS                                       -->
+  <!-- ========================================================================= -->
+  <!-- 1. Terraform -> Kind Cluster Engine -->
+  <path d="M 145 236 L 145 250" fill="none" stroke="#7c3aed" stroke-width="2.5" class="animated-flow-purple"/>
+
+  <!-- 2. Terraform -> ArgoCD & Vault -->
+  <path d="M 290 170 L 310 170" fill="none" stroke="#3b82f6" stroke-width="2.5" class="animated-flow-cyan" marker-end="url(#arrowBlue)"/>
+  <path d="M 160 350 L 160 365" fill="none" stroke="#f59e0b" stroke-width="2.5" class="animated-flow-amber" marker-end="url(#arrowCyan)"/>
+
+  <!-- 3. ArgoCD GitOps Sync Wave -> Workloads -->
+  <path d="M 610 200 L 630 200" fill="none" stroke="#ff6b00" stroke-width="2.5" class="animated-flow-orange" marker-end="url(#arrowOrange)"/>
+
+  <!-- 4. Vault & ESO -> Workloads (Secrets Sync) -->
+  <path d="M 290 440 C 300 440, 305 450, 310 450" fill="none" stroke="#f59e0b" stroke-width="2" class="animated-flow-amber"/>
+  <path d="M 290 535 C 450 535, 520 480, 630 480" fill="none" stroke="#10b981" stroke-width="2" class="animated-flow-emerald" marker-end="url(#arrowEmerald)"/>
+
+  <!-- 5. Istio Ingress Gateway (HTTPS) -> Frontends & API Gateway -->
+  <path d="M 610 520 C 620 520, 620 200, 630 200" fill="none" stroke="#38bdf8" stroke-width="2.5" class="animated-flow-cyan" marker-end="url(#arrowCyan)"/>
+
+  <!-- 6. Workloads -> Observability Telemetry Streams -->
+  <path d="M 950 200 L 970 200" fill="none" stroke="#a855f7" stroke-width="2" class="animated-flow-purple" marker-end="url(#arrowPurple)"/>
+  <path d="M 950 350 L 970 350" fill="none" stroke="#06b6d4" stroke-width="2" class="animated-flow-cyan" marker-end="url(#arrowCyan)"/>
+  <path d="M 950 480 L 970 480" fill="none" stroke="#10b981" stroke-width="2" class="animated-flow-emerald" marker-end="url(#arrowEmerald)"/>
+
+  <!-- ========================================================================= -->
+  <!-- BOTTOM BAR: LIVE PLATFORM URL ACCESS DASHBOARD                            -->
+  <!-- ========================================================================= -->
+  <g transform="translate(30, 675)">
+    <!-- Container -->
+    <rect width="1200" height="225" rx="12" fill="url(#cardGrad)" stroke="#1e293b" stroke-width="1.2"/>
+    <rect width="1200" height="34" rx="12" fill="#161f30"/>
+    <rect y="22" width="1200" height="12" fill="#161f30"/>
+
+    <!-- Bar Title -->
+    <rect x="12" y="8" width="80" height="18" rx="4" fill="#10b981" fill-opacity="0.2" stroke="#10b981" stroke-width="0.8"/>
+    <text x="52" y="21" text-anchor="middle" class="mono-text" font-size="9" fill="#34d399">PORT MAPPING</text>
+    <text x="100" y="21" class="header-text" font-size="12" fill="#f1f5f9">LIVE PLATFORM ENDPOINTS &amp; INGRESS MATRIX</text>
+
+    <!-- Subtitle -->
+    <text x="1000" y="21" text-anchor="end" class="mono-text" font-size="9" fill="#94a3b8">
+      TLS / SSL CERTIFICATE TERMINATION AT ISTIO INGRESS (NODEPORT 30000 → HOST 31000)
+    </text>
+
+    <!-- Endpoint Chips Grid -->
+    <g transform="translate(15, 46)">
+      <!-- Customer App -->
+      <g transform="translate(0, 0)">
+        <rect width="280" height="64" rx="8" fill="#152033" stroke="#2563eb" stroke-width="1"/>
+        <text x="12" y="20" class="header-text" font-size="11" fill="#93c5fd">🛒 Customer Storefront (HTTPS)</text>
+        <rect x="12" y="28" width="180" height="22" rx="4" fill="#0f172a"/>
+        <text x="18" y="43" class="mono-text" font-size="9.5" fill="#38bdf8">https://localhost:31000/</text>
+        <rect x="202" y="28" width="66" height="22" rx="4" fill="#065f46"/>
+        <text x="235" y="43" text-anchor="middle" class="mono-text" font-size="9" fill="#34d399">200 OK</text>
+      </g>
+
+      <!-- Admin Dashboard -->
+      <g transform="translate(295, 0)">
+        <rect width="280" height="64" rx="8" fill="#152033" stroke="#2563eb" stroke-width="1"/>
+        <text x="12" y="20" class="header-text" font-size="11" fill="#93c5fd">📊 Admin Dashboard (HTTPS)</text>
+        <rect x="12" y="28" width="180" height="22" rx="4" fill="#0f172a"/>
+        <text x="18" y="43" class="mono-text" font-size="9.5" fill="#38bdf8">https://localhost:31000/admin</text>
+        <rect x="202" y="28" width="66" height="22" rx="4" fill="#065f46"/>
+        <text x="235" y="43" text-anchor="middle" class="mono-text" font-size="9" fill="#34d399">200 OK</text>
+      </g>
+
+      <!-- Vendor Portal -->
+      <g transform="translate(590, 0)">
+        <rect width="280" height="64" rx="8" fill="#152033" stroke="#2563eb" stroke-width="1"/>
+        <text x="12" y="20" class="header-text" font-size="11" fill="#93c5fd">🏪 Vendor Portal (HTTPS)</text>
+        <rect x="12" y="28" width="180" height="22" rx="4" fill="#0f172a"/>
+        <text x="18" y="43" class="mono-text" font-size="9.5" fill="#38bdf8">https://localhost:31000/vendor</text>
+        <rect x="202" y="28" width="66" height="22" rx="4" fill="#065f46"/>
+        <text x="235" y="43" text-anchor="middle" class="mono-text" font-size="9" fill="#34d399">200 OK</text>
+      </g>
+
+      <!-- Delivery Partner -->
+      <g transform="translate(885, 0)">
+        <rect width="280" height="64" rx="8" fill="#152033" stroke="#2563eb" stroke-width="1"/>
+        <text x="12" y="20" class="header-text" font-size="11" fill="#93c5fd">🚚 Delivery Partner (HTTPS)</text>
+        <rect x="12" y="28" width="180" height="22" rx="4" fill="#0f172a"/>
+        <text x="18" y="43" class="mono-text" font-size="9.5" fill="#38bdf8">...:31000/delivery-partner</text>
+        <rect x="202" y="28" width="66" height="22" rx="4" fill="#065f46"/>
+        <text x="235" y="43" text-anchor="middle" class="mono-text" font-size="9" fill="#34d399">200 OK</text>
+      </g>
+
+      <!-- Row 2: DevOps Management Portals -->
+      <g transform="translate(0, 76)">
+        <!-- Kiali -->
+        <rect width="185" height="58" rx="6" fill="#1a152e" stroke="#8b5cf6" stroke-width="0.9"/>
+        <text x="10" y="18" class="header-text" font-size="10" fill="#ddd6fe">🕸️ Kiali Service Mesh</text>
+        <text x="10" y="32" class="mono-text" font-size="9" fill="#a78bfa">http://localhost:31001</text>
+        <text x="10" y="45" class="body-text" font-size="8" fill="#94a3b8">mTLS &amp; Traffic Graph</text>
+      </g>
+
+      <g transform="translate(197, 76)">
+        <!-- Jaeger -->
+        <rect width="185" height="58" rx="6" fill="#10232c" stroke="#06b6d4" stroke-width="0.9"/>
+        <text x="10" y="18" class="header-text" font-size="10" fill="#a5f3fc">🔍 Jaeger Tracing</text>
+        <text x="10" y="32" class="mono-text" font-size="9" fill="#38bdf8">http://localhost:31002</text>
+        <text x="10" y="45" class="body-text" font-size="8" fill="#94a3b8">Trace Spans &amp; Latency</text>
+      </g>
+
+      <g transform="translate(394, 76)">
+        <!-- Prometheus -->
+        <rect width="185" height="58" rx="6" fill="#241916" stroke="#ea580c" stroke-width="0.9"/>
+        <text x="10" y="18" class="header-text" font-size="10" fill="#fdba74">🔥 Prometheus</text>
+        <text x="10" y="32" class="mono-text" font-size="9" fill="#fb923c">http://localhost:31003</text>
+        <text x="10" y="45" class="body-text" font-size="8" fill="#94a3b8">Metric Scrapes &amp; HPA</text>
+      </g>
+
+      <g transform="translate(591, 76)">
+        <!-- Grafana -->
+        <rect width="185" height="58" rx="6" fill="#241e15" stroke="#f59e0b" stroke-width="0.9"/>
+        <text x="10" y="18" class="header-text" font-size="10" fill="#fde68a">📊 Grafana Dashboards</text>
+        <text x="10" y="32" class="mono-text" font-size="9" fill="#fbbf24">http://localhost:31004</text>
+        <text x="10" y="45" class="body-text" font-size="8" fill="#94a3b8">admin / admin</text>
+      </g>
+
+      <g transform="translate(788, 76)">
+        <!-- Hubble UI -->
+        <rect width="185" height="58" rx="6" fill="#0f212f" stroke="#0284c7" stroke-width="0.9"/>
+        <text x="10" y="18" class="header-text" font-size="10" fill="#7dd3fc">🌐 Hubble eBPF UI</text>
+        <text x="10" y="32" class="mono-text" font-size="9" fill="#38bdf8">http://localhost:31005</text>
+        <text x="10" y="45" class="body-text" font-size="8" fill="#94a3b8">Kernel Network Flows</text>
+      </g>
+
+      <g transform="translate(985, 76)">
+        <!-- ArgoCD & Vault -->
+        <rect width="185" height="58" rx="6" fill="#261719" stroke="#ef4444" stroke-width="0.9"/>
+        <text x="10" y="18" class="header-text" font-size="10" fill="#fca5a5">🐙 ArgoCD / 🔐 Vault</text>
+        <text x="10" y="32" class="mono-text" font-size="9" fill="#f87171">:31006 / :31007</text>
+        <text x="10" y="45" class="body-text" font-size="8" fill="#94a3b8">GitOps &amp; Secrets Web UI</text>
+      </g>
+    </g>
+  </g>
+</svg>

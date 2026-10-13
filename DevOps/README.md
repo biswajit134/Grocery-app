@@ -1,6 +1,12 @@
-# Kind Cluster with Cilium CNI
+# Kind Cluster with Cilium CNI & Cloud-Native DevOps Stack
 
-This project provisions a local Kubernetes cluster using `kind` and deploys the `Cilium` CNI using Terraform. It disables the default `kindnet` CNI so Cilium can manage all cluster networking.
+This project provisions an enterprise-grade local Kubernetes cluster using `kind`, managed with modular **Terraform**, networked via **Cilium eBPF CNI**, secured by **HashiCorp Vault**, synchronized via **ArgoCD GitOps**, and routed via **Istio Ingress Gateway** with **TLS/SSL certificate termination**.
+
+## 🎬 Animated DevOps Architecture & Lifecycle Diagram
+
+![GroceryHub DevOps Infrastructure & Lifecycle Architecture](assets/devops-architecture-animated.svg)
+
+---
 
 ## Prerequisites
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (must be running!)
@@ -44,14 +50,16 @@ kubectl -n kube-system get deploy hubble-relay hubble-ui
 ### Platform Endpoints
 | Service | Host URL | Description |
 |---|---|---|
-| **Customer Web App** | [http://localhost:31000/](http://localhost:31000/) | Main grocery storefront |
-| **Admin Portal** | [http://localhost:31000/admin](http://localhost:31000/admin) | Administration dashboard |
-| **Vendor Portal** | [http://localhost:31000/vendor](http://localhost:31000/vendor) | Vendor catalog portal |
-| **Delivery Portal** | [http://localhost:31000/delivery-partner](http://localhost:31000/delivery-partner) | Delivery driver portal |
+| **Customer Web App** | [https://localhost:31000/](https://localhost:31000/) | Main grocery storefront (TLS 443) |
+| **Admin Portal** | [https://localhost:31000/admin](https://localhost:31000/admin) | Administration dashboard (TLS 443) |
+| **Vendor Portal** | [https://localhost:31000/vendor](https://localhost:31000/vendor) | Vendor catalog portal (TLS 443) |
+| **Delivery Portal** | [https://localhost:31000/delivery-partner](https://localhost:31000/delivery-partner) | Delivery driver portal (TLS 443) |
+| **Backend API Gateway** | [https://localhost:31000/api/products](https://localhost:31000/api/products) | Reverse-proxy gateway (TLS 443) |
 | **Kiali Console** | [http://localhost:31001/](http://localhost:31001/) | Istio service mesh console |
 | **Jaeger Tracing** | [http://localhost:31002/](http://localhost:31002/) | Distributed trace waterfalls |
 | **Prometheus** | [http://localhost:31003/](http://localhost:31003/) | Metrics and alerts |
 | **Grafana** | [http://localhost:31004/](http://localhost:31004/) | Dashboards (`admin` / `admin`) |
+| **Hubble UI** | [http://localhost:31005/](http://localhost:31005/) | eBPF kernel network flow visualizer |
 | **ArgoCD** | [http://localhost:31006/](http://localhost:31006/) | GitOps management (`admin` / `admin`) |
 | **HashiCorp Vault** | [http://localhost:31007/](http://localhost:31007/) | Secrets engine UI (token: `root`) |
 
