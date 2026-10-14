@@ -7,5 +7,11 @@ variable "cilium_version" {
 variable "hubble_ui_node_port" {
   type        = number
   description = "The NodePort to expose Hubble UI."
-  default     = 30000
+  default     = 30005
+}
+
+variable "hubble_ui_host_port" {
+  type        = number
+  description = "The HostPort to access Hubble UI."
+  default     = 31005
 }

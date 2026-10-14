@@ -31,7 +31,8 @@ resource "helm_release" "cilium" {
       ui = {
         enabled = true
         service = {
-          type = "ClusterIP"
+          type     = "NodePort"
+          nodePort = var.hubble_ui_node_port
         }
       }
     }
